@@ -1180,9 +1180,21 @@ namespace CODEEATER
 
 
 
-                    Log.Info($"读取了第{chunk}个区块，大小为:{chunk_size}");
+                    Log.Info($"读取了第{chunk}个区块，大小为:{chunk_size}，读取到的内容大小：{data.Length}");
+                    Log.Info($"目前指针：{br.BaseStream.Position},文件长度：{file.Length}");
 
-                    list.Add(data);
+                    if (data.Length > 0)
+                    {
+                        list.Add(data);
+                    }
+                    else
+                    {
+                        Log.Info($"这个文件不合法！{file.FullName},因为他的{chunk}区块大小为:{data.Length}");
+                        File.WriteAllText(TargetDirectory.FullName+"\\"+file.Name+".log", $"这个文件不合法！{file.FullName},因为他的{chunk}区块大小为:{data.Length}");
+                        return;
+                    }
+
+                    
                     chunk++;
                 }
 

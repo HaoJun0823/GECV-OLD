@@ -19,6 +19,7 @@ namespace GECV
                 CopyStream(inMemoryStream, outZStream);
                 outZStream.finish();
                 outData = outMemoryStream.ToArray();
+                Log.Info($"压缩数据：原始：{inData.Length}压缩：{outData.Length}");
             }
         }
 
@@ -66,12 +67,28 @@ namespace GECV
 
             List<byte> slist = new List<byte>();
 
-            for(int i = 0; i < input.Length; i++)
+            int first_size = input.Length % size;
+
+            Log.Info($"第一组长度应该是:{first_size}");
+
+
+            for(int i = 0; i < first_size; i++)
+            {
+                slist.Add(input[i] );
+
+            }
+
+            list.Add(slist.ToArray());
+            Log.Info($"切割第{list.Count}个数组，大小为：{slist.Count}");
+            slist.Clear();
+
+
+            for (int i = first_size; i < input.Length; i++)
             {
 
                 slist.Add(input[i]);
 
-                if(slist.Count >= size)
+                if(slist.Count == size)
                 {
                     list.Add(slist.ToArray());
                     Log.Info($"切割第{list.Count}个数组，大小为：{slist.Count}");
@@ -79,6 +96,7 @@ namespace GECV
                 }
 
             }
+
 
 
 
