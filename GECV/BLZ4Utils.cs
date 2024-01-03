@@ -35,15 +35,15 @@ namespace GECV
         }
 
 
-        //https://blog.csdn.net/qq_41973169/article/details/125589780
-        public static byte[] ZLibDecompress(byte[] data,int size)
-        {
-            MemoryStream compressed = new MemoryStream(data);
-            ZInputStream zIn = new ZInputStream(compressed);
-            byte[] result = new byte[size];
-            zIn.read(result,0, result.Length);
-            return result;
-        }
+        ////https://blog.csdn.net/qq_41973169/article/details/125589780
+        //public static byte[] ZLibDecompress(byte[] data,int size)
+        //{
+        //    MemoryStream compressed = new MemoryStream(data);
+        //    ZInputStream zIn = new ZInputStream(compressed);
+        //    byte[] result = new byte[size];
+        //    zIn.read(result,0, result.Length);
+        //    return result;
+        //}
 
         public static void CopyStream(Stream input, Stream output)
         {
@@ -56,5 +56,37 @@ namespace GECV
             }
             output.Flush();
         }
+
+
+        public static List<byte[]> SplitBytes(byte[] input,int size)
+        {
+
+            Log.Info($"切割数组，大小为，{input.Length},切割大小为:{size}");
+            List<byte[]> list = new List<byte[]>();
+
+            List<byte> slist = new List<byte>();
+
+            for(int i = 0; i < input.Length; i++)
+            {
+
+                slist.Add(input[i]);
+
+                if(slist.Count >= size)
+                {
+                    list.Add(slist.ToArray());
+                    Log.Info($"切割第{list.Count}个数组，大小为：{slist.Count}");
+                    slist.Clear();
+                }
+
+            }
+
+
+
+
+            return list;
+        }
+
+
+
     }
 }

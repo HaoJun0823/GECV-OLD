@@ -20,15 +20,20 @@ namespace GECV
         public static readonly int BLZ4_MAGIC = 0x347a6c62;
         
 
-        public static string GetExtension(int magic)
+        public static string GetExtension(uint magic)
         {
-            Dictionary<int, string> extension_dic = new Dictionary<int, string>
+            Dictionary<uint, string> extension_dic = new Dictionary<uint, string>
             {
                 { 0x46534e42, ".bnsf" },
                 { 0x6c566d47, ".gmvl" },
                 { 0x3272742e, ".tr2" },
-                { PRES_MAGIC, ".pres" },
-                { BLZ4_MAGIC, ".blz4" },
+                { 0x6B737431, ".kst" },
+                { 0xffd8ffe1, ".jpg" },
+                { 0x52494646, ".riff" },
+                { 0x89504E47, ".png" },
+                { 0x646F7466, ".dotf" },
+                { 0x73657250, ".pres" },
+                { 0x347a6c62, ".blz4" },
             };
 
             string extension_str;

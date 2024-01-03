@@ -33,19 +33,21 @@ namespace GECV
             return str;
         }
 
-        public static void PrintByteArray(byte[] bytes)
+        public static string PrintByteArray(byte[] bytes)
         {
             StringBuilder sb = new StringBuilder();
+            StringBuilder sb2 = new StringBuilder();
             for (int i = 0; i < bytes.Length; i++)
             {
                 sb.Append(bytes[i].ToString("X2"));
+                sb2.Append(bytes[i].ToString("X2"));
                 if (i < bytes.Length - 1)
                 {
                     sb.Append(" ");
                 }
             }
             Log.Info(sb.ToString());
-
+            return sb2.ToString();
 
         }
 
