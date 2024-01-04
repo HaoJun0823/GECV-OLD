@@ -31,7 +31,8 @@ namespace GODVEIN
             Log.Info("GOD VEIN 噬神者资源映射 打包器 BY 兰德里奥（HaoJun0823）");
             Log.Info("https://blog.haojun0823.xyz/");
             Log.Info("https://github.com/HaoJun0823/GECV");
-
+            Log.Info("参考：https://github.com/mhvuze/GEUndub/ By mhvuze");
+            Log.Info(@"License: MiniExcel,Zlib.Net,Protobuf-net,Protobuf-net-data");
 
             if (args.Length != 0)
             {
@@ -59,7 +60,7 @@ namespace GODVEIN
                     Log.Info($"2.压缩散装BLZ4，压缩{QpckBlz4Directory.FullName}，生成文件到{ExtraDirectory.FullName}");
                     Log.Info($"3.压缩Pres解压的BLZ4，压缩{PresRealDirectory.FullName}，生成文件到{PresRealBLZ4Directory.FullName}");
                     Log.Info($"4.压缩并根据{PresRealBLZ4Directory.FullName}生成对应的pres操作表");
-                    Log.Info($".执行操作表反打包到pres，存储于{ExtraDirectory.FullName}");
+                    Log.Info($"5.执行操作表{RootDirectory.FullName}+\\packer.bin，反打包到pres，存储于{ExtraDirectory.FullName}");
                     Log.Info("0.退出");
 
                     try
@@ -90,6 +91,9 @@ namespace GODVEIN
                         case 4:
                             PreparingPRES();
                             break;
+                        case 5:
+                            AppendPRES();
+                            break;
                         case 0:
                             input = 0;
                             break;
@@ -115,9 +119,61 @@ namespace GODVEIN
 
         }
 
+        public static void AppendPRES()
+        {
+            DataTable dt = new DataTable();
+
+            using (FileStream fs = File.OpenRead(RootDirectory + "\\packer.bin"))
+            {
+                using (IDataReader dr = DataSerializer.Deserialize(fs))
+                {
+                    dt.Load(dr);
+                }
+            }
+
+            Dictionary<string, PresAppender> file_maps = new Dictionary<string, PresAppender>();
+
+            foreach(DataRow dr in dt.Rows)
+            {
+                string key = dr["file_name"].ToString();
+
+                Log.Info($"现在读取{key}");
+
+                if (file_maps.ContainsKey(key))
+                {
+                    file_maps[key].AppendNewFile(dr);
+                    Log.Info($"字典有{key}，拼合文件。");
+                }
+                else
+                {
+                    Log.Info($"字典无{key}，读取新文件并存进去。");
+                    byte[] read_bytes = File.ReadAllBytes(dr["file_path"].ToString());
+                    Log.Info($"新文件读取到的大小为：{read_bytes.Length}。");
+                    file_maps.Add(key, new PresAppender(read_bytes));
+                }
+
+
+
+
+
+            }
+
+            foreach(var i in file_maps)
+            {
+
+                i.Value.SaveFile(ExtraDirectory+"\\"+i.Key);
+
+
+            }
+
+
+
+
+        }
+
         public static void PreparingPRES()
         {
-
+            
             
 
             using (FileStream fs = File.OpenRead(RootDirectory + "\\pres.bin"))
@@ -127,8 +183,16 @@ namespace GODVEIN
                     PresTable.Load(dr);
                 }
             }
+            
+            PresTable.Columns.Add("n_file_path", typeof(string));
+            PresTable.Columns.Add("n_file_csize",typeof(Int32));
+            PresTable.Columns.Add("n_file_csize_16", typeof(Int32));
+            PresTable.Columns.Add("n_file_usize", typeof(Int32));
+
             DataTable resultTable = PresTable.Clone();
+
             var files = PresRealBLZ4Directory.GetFiles("*.*",SearchOption.AllDirectories);
+
 
             foreach(var i in files)
             {
@@ -147,9 +211,57 @@ namespace GODVEIN
                 {
 
                     Log.Info($"找到{i.FullName}");
+                    
+
+
+
+
+
+
+
 
                     foreach (var item in query)
                     {
+                        item["n_file_path"] = i.FullName;
+                        
+                        int n_file_csize = Convert.ToInt32(i.Length);
+                        int n_file_csize_16 = n_file_csize;
+                        item["n_file_csize"] = n_file_csize_16;
+
+                        if (n_file_csize_16 % 16 != 0)
+                        {
+                            n_file_csize_16 = n_file_csize_16 / 16;
+                            n_file_csize_16 += 1;
+                            n_file_csize_16 *= 16;
+                        }
+                        else
+                        {
+                            n_file_csize_16 = n_file_csize_16 / 16;
+                            n_file_csize_16 *= 16; //我这写的什么垃圾代码，我看了我都想吐，真累啊，有没有大佬给弟弟做做汉化啊，我不想过年的时候都在做这个东西啊！ 不想动脑子了就这样吧毁灭吧！！！
+                        }
+                        Log.Info($"理论分配区域为：{n_file_csize_16}");
+                        item["n_file_csize_16"] = n_file_csize_16;
+
+                        using(BinaryReader br = new BinaryReader(i.OpenRead()))
+                        {
+                            int magic = br.ReadInt32();
+
+                            if(magic == Define.BLZ4_MAGIC)
+                            {
+                                int u_size = br.ReadInt32();
+
+                                item["n_file_usize"] = u_size;
+                                Log.Info($"是个BLZ4，因此文件大小是{item["n_file_usize"]}");
+                            }
+                            else
+                            {
+                                item["n_file_usize"] = n_file_csize;
+                                Log.Info($"不是个BLZ4，因此文件大小{item["n_file_usize"]}和csize一样。");
+                            }
+
+
+                        }
+
                         resultTable.ImportRow(item);
                         Log.Info($"添加{item["file_name"]}");
                     }
@@ -171,6 +283,14 @@ namespace GODVEIN
             using (var stream = excel.OpenWrite())
             {
                 MiniExcel.SaveAs(stream, resultTable);
+            }
+
+            using (FileStream fs = File.OpenWrite(RootDirectory + "\\packer.bin"))
+            {
+                using (IDataReader dr = resultTable.CreateDataReader())
+                {
+                    DataSerializer.Serialize(fs,dr);
+                }
             }
 
             PreparingFullPRES(resultTable);

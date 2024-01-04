@@ -36,16 +36,6 @@ namespace GECV
         }
 
 
-        ////https://blog.csdn.net/qq_41973169/article/details/125589780
-        //public static byte[] ZLibDecompress(byte[] data,int size)
-        //{
-        //    MemoryStream compressed = new MemoryStream(data);
-        //    ZInputStream zIn = new ZInputStream(compressed);
-        //    byte[] result = new byte[size];
-        //    zIn.read(result,0, result.Length);
-        //    return result;
-        //}
-
         public static void CopyStream(Stream input, Stream output)
         {
             byte[] buffer = new byte[1000000];
@@ -67,7 +57,7 @@ namespace GECV
 
             List<byte> slist = new List<byte>();
 
-            int first_size = input.Length % size;
+            int first_size = input.Length % size; //学别人学的，这一步没啥意义，末尾余数组在前后都一样。
 
             Log.Info($"第一组长度应该是:{first_size}");
 

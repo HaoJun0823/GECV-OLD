@@ -39,7 +39,8 @@ namespace CODEEATER
             Log.Info("CODE EATER 噬神者资源映射 解包器 BY 兰德里奥（HaoJun0823）");
             Log.Info("https://blog.haojun0823.xyz/");
             Log.Info("https://github.com/HaoJun0823/GECV");
-
+            Log.Info("参考：https://github.com/mhvuze/GEUndub/ By mhvuze");
+            Log.Info(@"License: MiniExcel,Zlib.Net,Protobuf-net,Protobuf-net-data");
 
 
 
@@ -578,9 +579,11 @@ namespace CODEEATER
             PresTable.Columns.Add("set_data_3_file_count", typeof(Int32));
 
             PresTable.Columns.Add("set_data_3_file_index", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_file_address", typeof(Int32));
             PresTable.Columns.Add("set_data_3_file_offset", typeof(Int32));
             PresTable.Columns.Add("set_data_3_file_offset_real", typeof(string));
             PresTable.Columns.Add("set_data_3_size", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_size_16", typeof(Int32));
             PresTable.Columns.Add("set_data_3_name_off_file", typeof(Int32));
             PresTable.Columns.Add("set_data_3_name_elements_file", typeof(Int32));
             PresTable.Columns.Add("set_data_3_file_unk1", typeof(Int32));
@@ -841,6 +844,8 @@ namespace CODEEATER
                     for (int fi = 0; fi < count_file; fi++)
                     {
 
+                        int set_data_3_file_address = Convert.ToInt32(br.BaseStream.Position);
+
                         int offset_file = br.ReadInt32();
                         int csize_file = br.ReadInt32();
                         int name_off_file = br.ReadInt32();
@@ -987,12 +992,24 @@ namespace CODEEATER
 
 
                         dr["set_data_3_file_index"] = fi;
-
+                        dr["set_data_3_file_address"] = set_data_3_file_address;
                         dr["set_data_3_file_offset"] = offset_file;
                         dr["set_data_3_file_offset_real"] = real_offset_file;
 
 
                         dr["set_data_3_size"] = csize_file;
+
+                        if (csize_file % 16 != 0)
+                        {
+                            dr["set_data_3_size_16"] = ((csize_file /16) + 1)*16;
+                        }
+                        else
+                        {
+                            dr["set_data_3_size_16"] = (csize_file /16)*16 ;
+                        }
+
+
+                        
                         dr["set_data_3_name_off_file"] = name_off_file;
                         dr["set_data_3_name_elements_file"] = name_elements_file;
                         dr["set_data_3_file_unk1"] = file_unk1;
@@ -1143,6 +1160,9 @@ namespace CODEEATER
                 dr["data_unpacked_size"] = unpacked_size;
 
                 Log.Info($" 解压后大小:{unpacked_size}B");
+
+                //我认为zerozero应该是4字节，unpacked_size是8字节，因为没有文件大于int32.max，所以这么取也可以。
+
                 long zerozero = br.ReadInt64();
 
                 byte[] md5 = br.ReadBytes(16);
