@@ -8,11 +8,12 @@ namespace GECV
     public class Log
     {
 
-
+        public static List<string> LogRecord = new List<string>();
 
         public static void Info(string str)
         {
             Console.WriteLine(str);
+            LogRecord.Add(str);
         }
 
 
@@ -20,6 +21,7 @@ namespace GECV
         public static void Error(string str)
         {
             Console.Error.WriteLine(str);
+            LogRecord.Add(str);
         }
 
         public static void Pass()

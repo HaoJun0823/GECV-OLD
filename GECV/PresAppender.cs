@@ -43,7 +43,7 @@ namespace GECV
             return pres.Length;
         }
 
-        public int CalcOffset(int origin)
+        private int CalcOffset(int origin)
         {
             int result = 0;
 
@@ -62,6 +62,32 @@ namespace GECV
         public PresAppender(byte[] pres_file)
         {
             this.pres = pres_file;
+        }
+
+        public void RemoveLastFileAndAppendNewFile(DataRow dr)
+        {
+
+            Log.Info($"YS启动！删除末尾文件，拼合新文件。");
+
+            string set_data_3_file_offset_real = dr["set_data_3_file_offset_real"].ToString();
+            Log.Info($"原始文件在{set_data_3_file_offset_real}，真实偏移应该是：{set_data_3_file_offset_real.Substring(1)}。");
+
+            int header_length = Convert.ToInt32(set_data_3_file_offset_real.Substring(1), 16);
+
+            Log.Info($"头长度：{header_length}");
+
+            byte[] new_pres_header = new byte[header_length];
+
+            for(int i = 0; i < new_pres_header.Length; i++)
+            {
+                new_pres_header[i] = this.pres[i];
+            }
+
+            this.pres = new_pres_header;
+
+            Log.Info($"文件去尾完成！目前头长度：{new_pres_header.Length},/16:{new_pres_header.Length/16},%16:{new_pres_header.Length%16}");
+
+            AppendNewFile(dr);
         }
 
         public void AppendNewFile(DataRow dr)

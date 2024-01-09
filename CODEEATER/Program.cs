@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using GECV;
 using MiniExcelLibs;
@@ -29,7 +30,7 @@ namespace CODEEATER
         public static DataTable Blz4Table;
         public static DataTable GnfTable;
         public static DataTable PresTable;
-        public static Dictionary<string,DataTable> PresTableMap;
+        public static Dictionary<string, DataTable> PresTableMap;
         public static DataTable GlobalPresTable;
 
 
@@ -76,7 +77,8 @@ namespace CODEEATER
                         Log.Info($"2.处理PRES");
                         Log.Info($"3.处理BLZ4");
                         Log.Info($"4.处理GNF");
-                        Log.Info($"5.读取PRES的src字符串");
+                        Log.Info($"5.读取PRES的src_voiceevent_text_字符串（测试用，慢，请用6）");
+                        Log.Info($"6.多线程读取PRES的src_voiceevent_text_字符串");
                         Log.Info($"0.退出");
 
                         try
@@ -108,7 +110,10 @@ namespace CODEEATER
                                 ProcessGNF();
                                 break;
                             case 5:
-                                ProcessPresSRC();
+                                ProcessPresSRC(Utils.GetStringBytes("src_voiceevent_text_"));
+                                break;
+                            case 6:
+                                ProcessPresSRCParallel(Utils.GetStringBytes("src_voiceevent_text_"));
                                 break;
                             case 0:
                                 input = 0;
@@ -140,13 +145,106 @@ namespace CODEEATER
                 Log.Error("错误，你需要两个输入：1.原始qpck文件，2.解包后目标文件夹地址。");
             }
 
+            Utils.WriteListToFile(Log.LogRecord,TargetDirectory.FullName+"\\CODEEATER.log");
+
             Log.Info("按任意键退出……");
             Console.ReadKey();
 
 
         }
 
-        static void ProcessPresSRC()
+        static void ProcessPresSRCParallel(byte[] DEFAULT_STR)
+        {
+            DataTable table = new DataTable();
+
+            table.Columns.Add("file_name", typeof(string));
+            table.Columns.Add("text_offset", typeof(Int32));
+            table.Columns.Add("file_text", typeof(string));
+
+
+
+
+            DirectoryInfo directory = new DirectoryInfo(TargetDirectory.FullName + "_BASE\\");
+
+            var files = directory.GetFiles("*.pres", SearchOption.AllDirectories);
+            Parallel.For(0, files.Length, (i) =>
+            {
+
+                Log.Info($"正在处理{i}/{files.Length}：{files[i].FullName}");
+
+                //byte[] DEFAULT_STR = {  0x73, 0x72, 0x63, 0x5F };
+
+                int index = 0;
+
+
+
+                using (BinaryReader br = new BinaryReader(files[i].OpenRead()))
+                {
+
+                    while (br.BaseStream.Position < br.BaseStream.Length)
+                    {
+                        if (index == DEFAULT_STR.Length)
+                        {
+
+                            lock (table)
+                            {
+                            //Log.Info($" 发现目标 src_");
+                            DataRow dr = table.NewRow();
+                            dr["file_name"] = files[i].Name;
+                            dr["text_offset"] = br.BaseStream.Position - (DEFAULT_STR.Length-1)*-1;
+                            br.BaseStream.Seek((DEFAULT_STR.Length-1)*-1, SeekOrigin.Current);
+                            Log.Info($" 重定位指针到{br.BaseStream.Position}");
+                            string str = Utils.readNullterminated(br);
+                            dr["file_text"] = str;
+                            Log.Info($" 读取到有效的{str}");
+                            table.Rows.Add(dr);
+                            index = 0;
+                            }
+                        }
+                        else
+                        {
+                            byte r = br.ReadByte();
+
+
+                            if (r == DEFAULT_STR[index])
+                            {
+                                //Log.Info($" 检测到第{index + 1}个合适的字符：{read}");
+                                index++;
+                            }
+                            else
+                            {
+                                //Log.Info($" 检测到第{index + 1}个字符不合法，跳出：{read}");
+                                index = 0;
+                            }
+
+                        }
+                    }
+
+
+
+
+
+
+                }
+
+
+            });
+
+            FileInfo excel = new FileInfo(TargetDirectory + "src_parallel.xlsx");
+            if (excel.Exists)
+            {
+
+                excel.Delete();
+            }
+
+            using (var stream = excel.OpenWrite())
+            {
+                MiniExcel.SaveAs(stream, table);
+            }
+
+        }
+
+        static void ProcessPresSRC(byte[] DEFAULT_STR)
         {
             DataTable table = new DataTable();
 
@@ -166,24 +264,25 @@ namespace CODEEATER
 
                 Log.Info($"正在处理{i}/{files.Length}：{files[i].FullName}");
 
-                byte[] DEFAULT_STR = { 0x00, 0x73, 0x72, 0x63, 0x5F };
+                //byte[] DEFAULT_STR = { 0x73, 0x72, 0x63, 0x5F };
 
                 int index = 0;
 
 
+                Log.Info($"文件大小：{files[i].Length},{files[i].Length.ToString("X")}");
 
                 using (BinaryReader br = new BinaryReader(files[i].OpenRead()))
                 {
 
                     while (br.BaseStream.Position < br.BaseStream.Length)
                     {
-                        if (index == DEFAULT_STR.Length - 1)
+                        if (index == DEFAULT_STR.Length)
                         {
-                            Log.Info($" 发现目标 src_");
+                            //Log.Info($" 发现目标 src_");
                             DataRow dr = table.NewRow();
                             dr["file_name"] = files[i].Name;
-                            dr["text_offset"] = br.BaseStream.Position - 3;
-                            br.BaseStream.Seek(-3, SeekOrigin.Current);
+                            dr["text_offset"] = br.BaseStream.Position - (DEFAULT_STR.Length - 1) * -1;
+                            br.BaseStream.Seek((DEFAULT_STR.Length - 1) * -1, SeekOrigin.Current);
                             Log.Info($" 重定位指针到{br.BaseStream.Position}");
                             string str = Utils.readNullterminated(br);
                             dr["file_text"] = str;
@@ -193,17 +292,22 @@ namespace CODEEATER
                         }
                         else
                         {
+
+
+
                             byte r = br.ReadByte();
+                            
 
 
                             if (r == DEFAULT_STR[index])
                             {
-                                //Log.Info($" 检测到第{index + 1}个合适的字符：{read}");
+                                Log.Info($" 检测到第{index + 1}个合适的字符：{(char)r}，位于:{br.BaseStream.Position.ToString("X")}");
                                 index++;
+                                
                             }
                             else
                             {
-                                //Log.Info($" 检测到第{index + 1}个字符不合法，跳出：{read}");
+                                Log.Info($" 检测到第{index + 1}个字符不合法，跳出：{(char)r}，位于:{br.BaseStream.Position.ToString("X")}");
                                 index = 0;
                             }
 
@@ -664,7 +768,7 @@ namespace CODEEATER
 
             foreach (var kv in PresTableMap)
             {
-                FileInfo excelI = new FileInfo(TargetDirectory + "pres_"+ kv.Key + "_.xlsx");
+                FileInfo excelI = new FileInfo(TargetDirectory + "pres_" + kv.Key + "_.xlsx");
                 if (excelI.Exists)
                 {
 
@@ -685,10 +789,10 @@ namespace CODEEATER
                 global.Delete();
             }
 
-            
-            
 
-            
+
+
+
 
             using (var stream = global.OpenWrite())
             {
@@ -1001,15 +1105,15 @@ namespace CODEEATER
 
                         if (csize_file % 16 != 0)
                         {
-                            dr["set_data_3_size_16"] = ((csize_file /16) + 1)*16;
+                            dr["set_data_3_size_16"] = ((csize_file / 16) + 1) * 16;
                         }
                         else
                         {
-                            dr["set_data_3_size_16"] = (csize_file /16)*16 ;
+                            dr["set_data_3_size_16"] = (csize_file / 16) * 16;
                         }
 
 
-                        
+
                         dr["set_data_3_name_off_file"] = name_off_file;
                         dr["set_data_3_name_elements_file"] = name_elements_file;
                         dr["set_data_3_file_unk1"] = file_unk1;
@@ -1038,7 +1142,7 @@ namespace CODEEATER
 
                         PresTableMap[str_ext_final].ImportRow(dr);
 
-                        
+
 
                         br.BaseStream.Position = index_file;
                     }
@@ -1210,11 +1314,11 @@ namespace CODEEATER
                     else
                     {
                         Log.Info($"这个文件不合法！{file.FullName},因为他的{chunk}区块大小为:{data.Length}");
-                        File.WriteAllText(TargetDirectory.FullName+"\\"+file.Name+".log", $"这个文件不合法！{file.FullName},因为他的{chunk}区块大小为:{data.Length}");
+                        File.WriteAllText(TargetDirectory.FullName + "\\" + file.Name + ".log", $"这个文件不合法！{file.FullName},因为他的{chunk}区块大小为:{data.Length}");
                         return;
                     }
 
-                    
+
                     chunk++;
                 }
 

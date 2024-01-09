@@ -25,6 +25,8 @@ namespace GODVEIN
 
         static DataTable PresTable = new DataTable();
 
+        static bool UseSingleFileAppender = false;
+
         static void Main(string[] args)
         {
 
@@ -60,7 +62,8 @@ namespace GODVEIN
                     Log.Info($"2.压缩散装BLZ4，压缩{QpckBlz4Directory.FullName}，生成文件到{ExtraDirectory.FullName}");
                     Log.Info($"3.压缩Pres解压的BLZ4，压缩{PresRealDirectory.FullName}，生成文件到{PresRealBLZ4Directory.FullName}");
                     Log.Info($"4.压缩并根据{PresRealBLZ4Directory.FullName}生成对应的pres操作表");
-                    Log.Info($"5.执行操作表{RootDirectory.FullName}+\\packer.bin，反打包到pres，存储于{ExtraDirectory.FullName}");
+                    Log.Info($"5.执行操作表{RootDirectory.FullName}+\\packer.bin，反打包到pres，存储于{ExtraDirectory.FullName},pres拼合模式。");
+                    Log.Info($"6.设置：pres反打包时，单set单file抹去末尾文件再拼合，目前设置选项{UseSingleFileAppender}。");
                     Log.Info("0.退出");
 
                     try
@@ -94,6 +97,9 @@ namespace GODVEIN
                         case 5:
                             AppendPRES();
                             break;
+                        case 6:
+                            UseSingleFileAppender = !UseSingleFileAppender;
+                            break;
                         case 0:
                             input = 0;
                             break;
@@ -114,8 +120,9 @@ namespace GODVEIN
                 throw new Exception("请带一个文件夹参数。");
             }
 
-
-
+            Utils.WriteListToFile(Log.LogRecord, RootDirectory.FullName + "\\CODEEATER.log");
+            Log.Info("按任意键退出……");
+            Console.ReadKey();
 
         }
 
@@ -141,8 +148,12 @@ namespace GODVEIN
 
                 if (file_maps.ContainsKey(key))
                 {
-                    file_maps[key].AppendNewFile(dr);
-                    Log.Info($"字典有{key}，拼合文件。");
+
+                        file_maps[key].AppendNewFile(dr);
+                        Log.Info($"字典有{key}，启动PDD系统，再次拼合文件。");
+                    
+
+
                 }
                 else
                 {
@@ -150,6 +161,27 @@ namespace GODVEIN
                     byte[] read_bytes = File.ReadAllBytes(dr["file_path"].ToString());
                     Log.Info($"新文件读取到的大小为：{read_bytes.Length}。");
                     file_maps.Add(key, new PresAppender(read_bytes));
+
+                    int count_set = Convert.ToInt32(dr["count_set"].ToString());
+                    int set_data_3_file_count = Convert.ToInt32(dr["set_data_3_file_count"].ToString());
+
+                    int pres_count = dt.Select($"file_name='{dr["file_name"].ToString()}'").Length;
+
+                    Log.Info($"{dr["file_name"].ToString()}，有{count_set}个集合，集合{dr["set_index"].ToString()}有:{set_data_3_file_count}个文件。");
+                    Log.Info($"这个Pres应该有多少个文件需要被打包？答案是：{pres_count}");
+
+                    if (count_set == 1 && set_data_3_file_count == 1 && pres_count == 1 && UseSingleFileAppender)
+                    {
+                        Log.Info($"字典有{key}，而且有{count_set}个集合和{set_data_3_file_count}个文件，该文件也只有{pres_count}个需要被打包的文件，而且单文件去尾拼合的状态是：{UseSingleFileAppender}，所以启动YS系统，去末尾+拼合文件。");
+                        file_maps[key].RemoveLastFileAndAppendNewFile(dr);
+                        
+                    }
+                    else
+                    {
+                        Log.Info($"启动PDD系统，拼合文件。");
+                        file_maps[key].AppendNewFile(dr);
+                        
+                    }
                 }
 
 
@@ -170,6 +202,9 @@ namespace GODVEIN
 
 
         }
+
+
+
 
         public static void PreparingPRES()
         {

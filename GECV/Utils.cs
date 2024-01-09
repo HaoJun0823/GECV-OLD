@@ -51,6 +51,35 @@ namespace GECV
 
         }
 
+        public static byte[] GetStringBytes(string str)
+        {
+
+            byte[] bytes = new byte[str.Length];
+
+
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = (byte)str[i];
+            }
+            PrintByteArray(bytes);
+            return bytes;
+
+        }
+
+        public static void WriteListToFile(List<string> list,string path)
+        {
+
+            if(File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+
+            File.WriteAllLines(path,list.ToArray());
+
+
+        }
+
 
     }
 }
