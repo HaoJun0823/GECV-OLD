@@ -79,6 +79,7 @@ namespace CODEEATER
                         Log.Info($"4.处理GNF");
                         Log.Info($"5.读取PRES的src_voiceevent_text_字符串（测试用，慢，请用6）");
                         Log.Info($"6.多线程读取PRES的src_voiceevent_text_字符串");
+                        Log.Info($"7.多线程读取输入的字符串查询PRES");
                         Log.Info($"0.退出");
 
                         try
@@ -114,6 +115,11 @@ namespace CODEEATER
                                 break;
                             case 6:
                                 ProcessPresSRCParallel(Utils.GetStringBytes("src_voiceevent_text_"));
+                                break;
+                            case 7:
+                                Log.Info($"请输入要搜索的内容，不要输入宽字符（2字节字符）：");
+                                string search = Console.ReadLine();
+                                ProcessPresSRCParallel(Utils.GetStringBytes(search));
                                 break;
                             case 0:
                                 input = 0;
