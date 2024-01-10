@@ -63,11 +63,14 @@ namespace GODVEIN
                 int input = -1;
                 while (input != 0)
                 {
+
+
+
                     Log.Info($"工作目录：{RootDirectory.FullName}");
                     Log.Info($"1.打包QPCK，优先打包{ExtraDirectory.FullName},其次打包{BaseDirectory.FullName}，生成文件到{RootDirectory}\\pack.qpck");
                     Log.Info($"2.压缩散装BLZ4，压缩{QpckBlz4Directory.FullName}，生成文件到{ExtraDirectory.FullName}");
                     Log.Info($"3.压缩Pres解压的BLZ4，压缩{PresRealDirectory.FullName}，生成文件到{PresRealBLZ4Directory.FullName}");
-                    Log.Info($"4.压缩并根据{PresRealBLZ4Directory.FullName}生成对应的pres操作表");
+                    Log.Info($"4.根据{PresRealBLZ4Directory.FullName}生成对应的pres操作表。（可以把没有压缩过的文件也放在这里）");
                     Log.Info($"5.执行操作表{RootDirectory.FullName}\\packer.bin，反打包到pres，存储于{ExtraDirectory.FullName},pres拼合模式。");
                     Log.Info($"6.设置：pres反打包时，单set单file抹去末尾文件再拼合，目前设置选项{UseSingleFileAppender}。");
                     //Log.Info($"7.执行操作表{RootDirectory.FullName}\\packer.bin，反打包到pres，存储于{ExtraDirectory.FullName},pres拼合模式。（多线程测试）");
