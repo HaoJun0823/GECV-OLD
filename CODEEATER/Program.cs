@@ -180,6 +180,8 @@ namespace CODEEATER
 
         }
 
+
+
         static void ProcessTR2Type()
         {
 
@@ -488,6 +490,15 @@ namespace CODEEATER
             {
                 MiniExcel.SaveAs(stream, GnfTable);
             }
+
+            using (FileStream fs = File.OpenWrite(TargetDirectory + "\\gnf_custom.bin"))
+            {
+                using (IDataReader dr = GnfTable.CreateDataReader())
+                {
+                    DataSerializer.Serialize(fs, dr);
+                }
+            }
+
         }
 
         static void ProcessGNF()
@@ -548,74 +559,34 @@ namespace CODEEATER
             }
 
 
+            using (FileStream fs = File.OpenWrite(TargetDirectory + "\\gnf_new.bin"))
+            {
+                using (IDataReader dr = GnfTable.CreateDataReader())
+                {
+                    DataSerializer.Serialize(fs, dr);
+                }
+            }
+
+
         }
 
-        //static void GNF(FileInfo file)
-        //{
 
-        //    if (file.Length <= 3)
-        //    {
-        //        Log.Info($"跳过无用文件。");
-        //        return;
-        //    }
-
-
-        //    using (BinaryReader br = new BinaryReader(file.OpenRead()))
-        //    {
-        //        Log.Info($"处理GNF(OLD):{file.FullName}");
-
-        //        int magic = br.ReadInt32();
-        //        int size = br.ReadInt32();
-
-        //        int dds_magic = br.ReadInt32();
-
-        //        br.BaseStream.Position = br.BaseStream.Position - 4;
-
-
-        //        if (dds_magic != 542327876)
-        //        {
-        //            Log.Info($"     非法的GNF文件：{magic}，DDS存储大小：{size}，DDS魔术码：{dds_magic}。");
-        //            File.WriteAllText(file.FullName + ".err.log", $"非法的GNF文件：{magic}，DDS存储大小：{size}，DDS魔术码：{dds_magic}（DDS=542327876）。");
-        //        }
-        //        else
-        //        {
-        //            byte[] bytes = br.ReadBytes(size);
-        //            File.WriteAllBytes(file.FullName + ".dds", bytes);
-        //            Log.Info($"     GNF文件魔术码：{magic}，DDS存储大小：{size}，DDS魔术码：{dds_magic}，保存在:{file.FullName}.dds。");
-        //        }
-
-
-
-
-
-
-
-
-
-
-
-
-        //    }
-
-
-
-        //}
 
 
         static void GNF_NEW(FileInfo file)
         {
 
-            DataRow dr = GnfTable.NewRow();
+            
 
-            dr["file_desc"] = "？";
+            //dr["file_desc"] = "？";
 
             if (file.Length <= 3)
             {
                 Log.Info($"跳过无用文件。");
                 File.WriteAllText(file.FullName + ".null.log", $"极小长度文件：{file.Length}");
-                dr["file_name"] = file.Name;
-                dr["file_size"] = file.Length;
-                dr["file_desc"] = $"极小长度文件：{file.Length}";
+                //dr["file_name"] = file.Name;
+                //dr["file_size"] = file.Length;
+                //dr["file_desc"] = $"极小长度文件：{file.Length}";
 
                 return;
             }
@@ -647,7 +618,7 @@ namespace CODEEATER
                 for (int i = 0; i < size.Length; i++)
                 {
 
-
+                    DataRow dr = GnfTable.NewRow();
                     dr["file_name"] = file.FullName;
                     dr["file_size"] = file.Length;
                     dr["file_desc"] = $"正常";
@@ -665,12 +636,12 @@ namespace CODEEATER
                     if (dds_magic != 542327876)
                     {
                         Log.Info($"     非法的GNF文件：DDS存储大小：{size[i]}，DDS魔术码：{dds_magic}。");
-                        File.WriteAllText(file.FullName + ".log", $"非法的GNF文件：DDS存储大小：{size}，DDS魔术码：{dds_magic}（DDS=542327876）。");
+                        File.WriteAllText(file.FullName + ".err.log", $"非法的GNF文件：DDS存储大小：{size}，DDS魔术码：{dds_magic}（DDS=542327876）。");
                         byte[] bytes = br.ReadBytes(size[i]);
                         File.WriteAllBytes(file.FullName + i + ".err.dds", bytes);
-                        dr["file_desc"] = $"非法的GNF文件：DDS存储大小：{size}，DDS魔术码：{dds_magic}（DDS=542327876）。";
-                        dr["dds_name"] = file.Name + i + ".err.dds";
-                        dr["dds_path"] = file.FullName + i + ".err.dds";
+                        //dr["file_desc"] = $"非法的GNF文件：DDS存储大小：{size}，DDS魔术码：{dds_magic}（DDS=542327876）。";
+                        //dr["dds_name"] = file.Name + i + ".err.dds";
+                        //dr["dds_path"] = file.FullName + i + ".err.dds";
                     }
                     else
                     {
@@ -681,12 +652,12 @@ namespace CODEEATER
                         dr["dds_name"] = $"{file.Name}_{i}_.dds";
                         dr["dds_path"] = $"{file.FullName}_{i}_.dds";
                     }
-
+                    GnfTable.Rows.Add(dr);
                 }
 
 
 
-                GnfTable.Rows.Add(dr);
+                
 
 
 

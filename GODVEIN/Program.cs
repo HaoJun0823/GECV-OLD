@@ -89,6 +89,8 @@ namespace GODVEIN
                     Log.Info($"8.从pres.bin建立缓存。");
                     Log.Info($"9.设置：只用缓存的文件类型，目前选项{OnlyUseCacheExt}。");
                     Log.Info($"10.处理res，打包{ResRealBLZ4Directory.FullName}到{PresRealBLZ4Directory.FullName}。");
+                    Log.Info($"11.打包GNF，根据gnf_new.bin把_UNPACK_PRES_REAL的dds打包成gnf存在_UNPACK_PRES_REAL_EXTRA");
+                    Log.Info($"12.打包自定义GNF，根据gnf_custom.bin把_CUSTOM_GNFL的dds打包成gnf存在_CUSTOM_GNF");
                     Log.Info("0.退出");
 
                     try
@@ -137,6 +139,12 @@ namespace GODVEIN
                         case 10:
                             PreparingRES();
                             break;
+                        case 11:
+                            ProcessGNF("gnf_new.bin", "_UNPACK_PRES_REAL", "_UNPACK_PRES_REAL_EXTRA");
+                            break;
+                        case 12:
+                            ProcessGNF("gnf_custom.bin", "_CUSTOM_GNF", "_CUSTOM_GNF\\_PACKED");
+                            break;
                         case 0:
                             input = 0;
                             break;
@@ -162,6 +170,79 @@ namespace GODVEIN
             Console.ReadKey();
 
         }
+
+        static void ProcessGNF(string bin_name,string original_folder,string target_folder)
+        {
+
+            DataTable dt = new DataTable();
+
+            using (FileStream fs = File.OpenRead(RootDirectory + "\\"+bin_name))
+            {
+                using (IDataReader dr = DataSerializer.Deserialize(fs))
+                {
+                    dt.Load(dr);
+                }
+            }
+
+            Dictionary<string, List<string>> map = new Dictionary<string, List<string>>();
+
+
+            foreach (DataRow i in dt.Rows)
+            {
+                if (!map.ContainsKey(i["file_name"].ToString()))
+                {
+                    map.Add(i["file_name"].ToString(), new List<string>());
+                    Log.Info($"没有这个关键字：{i["file_name"].ToString()}，新建一个。");
+                }
+
+                map[i["file_name"].ToString()].Add(i["dds_path"].ToString());
+                Log.Info($"添加关键字：{i["file_name"].ToString()}对象。");
+            }
+
+            Parallel.ForEach<KeyValuePair<string, List<string>>>(map, (kv) =>
+            {
+                string target = kv.Key.Replace(original_folder, target_folder);
+                Log.Info($"矫正路径到：{target}，对象数量：{kv.Value.Count}");
+                List<byte[]> dds_group = new List<byte[]>();
+                foreach (var i in kv.Value)
+                {
+                    dds_group.Add(File.ReadAllBytes(i));
+                    Log.Info($"读取了{i}！");
+                }
+
+                    using (FileStream fs = File.OpenWrite(target))
+                {
+                    using (BinaryWriter bw = new BinaryWriter(fs))
+                    {
+
+                        bw.Write(kv.Value.Count);
+                        Log.Info($"写入，数量：{kv.Value.Count}");
+                        
+                        foreach(var i in dds_group)
+                        {
+                            bw.Write(i.Length);
+                            Log.Info($"写入，大小：{i.Length}");
+                        }
+
+                        foreach (var i in dds_group)
+                        {
+                            bw.Write(i);
+                            Log.Info($"写入，文件：{i.Length}");
+                        }
+
+
+
+                    }
+
+                }
+
+
+            });
+
+        }
+
+
+
 
         public static void AppendPRES()
         {
@@ -480,7 +561,7 @@ namespace GODVEIN
                 target = target.Replace("_UNPACK", "_UNPACK_PRES_REAL_EXTRA_BLZ4");
                 Log.Info($"矫正res：{target}");
 
-                Directory.CreateDirectory( Path.GetDirectoryName(target) );
+                Directory.CreateDirectory(Path.GetDirectoryName(target));
 
                 i.Value.SaveFile(target);
 
