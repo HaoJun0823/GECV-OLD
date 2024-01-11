@@ -18,11 +18,9 @@ namespace GECV
         public static readonly int QPCK_MAGIC = 0x37402858;
         public static readonly int PRES_MAGIC = 0x73657250;
         public static readonly int BLZ4_MAGIC = 0x347a6c62;
-        
 
-        public static string GetExtension(uint magic)
-        {
-            Dictionary<uint, string> extension_dic = new Dictionary<uint, string>
+
+        public static Dictionary<uint, string> extension_ext = new Dictionary<uint, string>
             {
                 { 0x46534e42, ".bnsf" },
                 { 0x6c566d47, ".gmvl" },
@@ -34,10 +32,17 @@ namespace GECV
                 { 0x646F7466, ".dotf" },
                 { 0x73657250, ".pres" },
                 { 0x347a6c62, ".blz4" },
+                { 0x69780300, ".ixo" },
+                { 0x2E6C6F62, ".lob" },
             };
 
+
+
+        public static string GetExtension(uint magic)
+        {
+
             string extension_str;
-            if (!extension_dic.TryGetValue(magic, out extension_str)) { extension_str = ".bin"; }
+            if (!extension_ext.TryGetValue(magic, out extension_str)) { extension_str = ".bin"; }
 
             return extension_str;
         }

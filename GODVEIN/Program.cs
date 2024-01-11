@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using GECV;
 using MiniExcelLibs;
 using ProtoBuf.Data;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace GODVEIN
 {
@@ -24,10 +23,15 @@ namespace GODVEIN
 
         static DirectoryInfo PresRealDirectory;
         static DirectoryInfo PresVirtualDirectory;
+
+
         static DirectoryInfo PresRealBLZ4Directory;
-        static DirectoryInfo PresRealNOBLZ4Directory;
+        //static DirectoryInfo PresRealNOBLZ4Directory;
+        static DirectoryInfo ResRealBLZ4Directory;
+        static DirectoryInfo ResRealDirectory;
 
         static DataTable PresTable = new DataTable();
+        static DataTable ResTable = new DataTable();
 
         static bool UseSingleFileAppender = true;
         static bool OnlyUseCacheExt = true;
@@ -52,12 +56,19 @@ namespace GODVEIN
                 PresVirtualDirectory = new DirectoryInfo(RootDirectory.FullName + "\\_UNPACK_PRES_REAL");
                 PresRealDirectory = new DirectoryInfo(RootDirectory.FullName + "\\_UNPACK_PRES_REAL_EXTRA");
                 PresRealBLZ4Directory = new DirectoryInfo(RootDirectory.FullName + "\\_UNPACK_PRES_REAL_EXTRA_BLZ4");
-                PresRealNOBLZ4Directory = new DirectoryInfo(RootDirectory.FullName + "\\_UNPACK_PRES_REAL_EXTRA_NO_BLZ4");
+
+                ResRealDirectory = new DirectoryInfo(RootDirectory.FullName + "\\_UNPACK_RES_REAL_EXTRA");
+                ResRealBLZ4Directory = new DirectoryInfo(RootDirectory.FullName + "\\_UNPACK_RES_REAL_EXTRA_BLZ4");
+
+                //PresRealNOBLZ4Directory = new DirectoryInfo(RootDirectory.FullName + "\\_UNPACK_PRES_REAL_EXTRA_NO_BLZ4");
 
 
                 PresRealDirectory.Create();
                 QpckBlz4Directory.Create();
                 PresRealBLZ4Directory.Create();
+
+                ResRealDirectory.Create();
+                ResRealBLZ4Directory.Create();
 
 
                 int input = -1;
@@ -67,16 +78,17 @@ namespace GODVEIN
 
 
                     Log.Info($"工作目录：{RootDirectory.FullName}");
-                    Log.Info($"1.打包QPCK，优先打包{ExtraDirectory.FullName},其次打包{BaseDirectory.FullName}，生成文件到{RootDirectory}\\pack.qpck");
-                    Log.Info($"2.压缩散装BLZ4，压缩{QpckBlz4Directory.FullName}，生成文件到{ExtraDirectory.FullName}");
-                    Log.Info($"3.压缩Pres解压的BLZ4，压缩{PresRealDirectory.FullName}，生成文件到{PresRealBLZ4Directory.FullName}");
-                    Log.Info($"4.根据{PresRealBLZ4Directory.FullName}生成对应的pres操作表。（可以把没有压缩过的文件也放在这里）");
-                    Log.Info($"5.执行操作表{RootDirectory.FullName}\\packer.bin，反打包到pres，存储于{ExtraDirectory.FullName},pres拼合模式。");
-                    Log.Info($"6.设置：pres反打包时，单set单file抹去末尾文件再拼合，目前设置选项{UseSingleFileAppender}。");
+                    Log.Info($"1.打包QPCK，优先打包{ExtraDirectory.Name},其次打包{BaseDirectory.Name}，生成文件到{RootDirectory}\\pack.qpck");
+                    Log.Info($"2.压缩散装BLZ4，压缩{QpckBlz4Directory.Name}，生成文件到{ExtraDirectory.Name}");
+                    Log.Info($"3.压缩Pres解压的BLZ4，压缩{PresRealDirectory.Name}，生成文件到{PresRealBLZ4Directory.Name}，压缩压缩Res解压的BLZ4，压缩{ResRealDirectory.Name}，生成文件到{ResRealBLZ4Directory.Name}。");
+                    Log.Info($"4.根据{PresRealBLZ4Directory.Name}生成对应的pres操作表。（可以把没有压缩过的文件也放在这里）");
+                    Log.Info($"5.执行4生成的操作表{RootDirectory.Name}\\packer.bin，反打包到pres，存储于{ExtraDirectory.Name},pres拼合模式。");
+                    Log.Info($"6.设置：pres和res反打包时，单set单file抹去末尾文件再拼合，目前设置选项{UseSingleFileAppender}。");
                     //Log.Info($"7.执行操作表{RootDirectory.FullName}\\packer.bin，反打包到pres，存储于{ExtraDirectory.FullName},pres拼合模式。（多线程测试）");
 
                     Log.Info($"8.从pres.bin建立缓存。");
                     Log.Info($"9.设置：只用缓存的文件类型，目前选项{OnlyUseCacheExt}。");
+                    Log.Info($"10.处理res，打包{ResRealBLZ4Directory.FullName}到{PresRealBLZ4Directory.FullName}。");
                     Log.Info("0.退出");
 
                     try
@@ -118,6 +130,12 @@ namespace GODVEIN
                         //    break;
                         case 8:
                             BuildCache();
+                            break;
+                        case 9:
+                            OnlyUseCacheExt = !OnlyUseCacheExt;
+                            break;
+                        case 10:
+                            PreparingRES();
                             break;
                         case 0:
                             input = 0;
@@ -222,84 +240,6 @@ namespace GODVEIN
 
         }
 
-        //public static void AppendPRESParallel()
-        //{
-        //    DataTable dt = new DataTable();
-
-        //    using (FileStream fs = File.OpenRead(RootDirectory + "\\packer.bin"))
-        //    {
-        //        using (IDataReader dr = DataSerializer.Deserialize(fs))
-        //        {
-        //            dt.Load(dr);
-        //        }
-        //    }
-
-        //    Dictionary<string, PresAppender> file_maps = new Dictionary<string, PresAppender>();
-
-        //    //foreach (DataRow dr in dt.Rows)
-        //    Parallel.ForEach<DataRow>(dt.AsEnumerable(), (dr) => {
-        //    {
-        //        string key = dr["file_name"].ToString();
-
-        //        Log.Info($"现在读取{key}");
-
-        //        if (file_maps.ContainsKey(key))
-        //        {
-
-        //            file_maps[key].AppendNewFile(dr);
-        //            Log.Info($"字典有{key}，启动PDD系统，再次拼合文件。");
-
-
-
-        //        }
-        //        else
-        //        {
-        //            Log.Info($"字典无{key}，读取新文件并存进去。");
-        //            byte[] read_bytes = File.ReadAllBytes(dr["file_path"].ToString());
-        //            Log.Info($"新文件读取到的大小为：{read_bytes.Length}。");
-        //            file_maps.Add(key, new PresAppender(read_bytes));
-
-        //            int count_set = Convert.ToInt32(dr["count_set"].ToString());
-        //            int set_data_3_file_count = Convert.ToInt32(dr["set_data_3_file_count"].ToString());
-
-        //            int pres_count = dt.Select($"file_name='{dr["file_name"].ToString()}'").Length;
-
-        //            Log.Info($"{dr["file_name"].ToString()}，有{count_set}个集合，集合{dr["set_index"].ToString()}有:{set_data_3_file_count}个文件。");
-        //            Log.Info($"这个Pres应该有多少个文件需要被打包？答案是：{pres_count}");
-
-        //            if (count_set == 1 && set_data_3_file_count == 1 && pres_count == 1 && UseSingleFileAppender)
-        //            {
-        //                Log.Info($"字典有{key}，而且有{count_set}个集合和{set_data_3_file_count}个文件，该文件也只有{pres_count}个需要被打包的文件，而且单文件去尾拼合的状态是：{UseSingleFileAppender}，所以启动YS系统，去末尾+拼合文件。");
-        //                file_maps[key].RemoveLastFileAndAppendNewFile(dr);
-
-        //            }
-        //            else
-        //            {
-        //                Log.Info($"启动PDD系统，拼合文件。");
-        //                file_maps[key].AppendNewFile(dr);
-
-        //            }
-        //        }
-
-
-
-
-
-        //    }
-        //    });
-
-        //    Parallel.ForEach<KeyValuePair<string, PresAppender>>(file_maps, (i) =>
-        //    {
-        //        i.Value.SaveFile(ExtraDirectory + "\\" + i.Key);
-        //    });
-
-
-
-
-
-
-        //}
-
         public static void BuildCache()
         {
             PresTable = new DataTable();
@@ -364,6 +304,193 @@ namespace GODVEIN
 
 
 
+        public static void PreparingRES()
+        {
+            ResTable = new DataTable();
+
+            List<KeyValuePair<FileInfo, DataRow[]>> query_list = new List<KeyValuePair<FileInfo, DataRow[]>>();
+
+            using (FileStream fs = File.OpenRead(RootDirectory + "\\res.bin"))
+            {
+                using (IDataReader dr = DataSerializer.Deserialize(fs))
+                {
+                    ResTable.Load(dr);
+                }
+            }
+
+            ResTable.Columns.Add("n_file_path", typeof(string));
+            ResTable.Columns.Add("n_file_csize", typeof(Int32));
+            ResTable.Columns.Add("n_file_csize_16", typeof(Int32));
+            ResTable.Columns.Add("n_file_usize", typeof(Int32));
+
+            DataTable resultTable = ResTable.Clone();
+
+            var files = ResRealBLZ4Directory.GetFiles("*.*", SearchOption.AllDirectories);
+            //foreach (var i in files)
+            Parallel.ForEach<FileInfo>(files, (i) =>
+            {
+                string pack_address = i.FullName.Substring(ResRealBLZ4Directory.FullName.Length + 1);
+                Log.Info($"获取相对地址:{pack_address}");
+                string game_pack_address = pack_address.Replace('\\', '/');
+                Log.Info($"获取游戏存储地址:{game_pack_address}");
+
+                string ext = Path.GetExtension(pack_address).Substring(1);
+                Log.Info($"获取扩展名:{ext}");
+
+                DataTable query_dt;
+
+
+                Log.Info("总表读取:");
+                query_dt = ResTable;
+                Log.Info($"select * from restable where set_data_3_complete='{game_pack_address}'");
+
+
+                DataRow[] query;
+
+
+                query = query_dt.Select($"set_data_3_complete='{game_pack_address}'");
+
+                Log.Info($"查找数量结果：{query.Length}");
+
+                if (query.Length > 0)
+                {
+
+                    Log.Info($"找到{i.FullName}");
+                    lock (query_list)
+                    {
+                        query_list.Add(new KeyValuePair<FileInfo, DataRow[]>(i, query));
+                    }
+
+                }
+                else
+                {
+                    Log.Info($"没有在res.bin找到{i.FullName}");
+                }
+            });
+
+
+            foreach (var query in query_list)
+            {
+
+                foreach (var item in query.Value)
+                {
+                    item["n_file_path"] = query.Key.FullName;
+
+                    int n_file_csize = Convert.ToInt32(query.Key.Length);
+                    int n_file_csize_16 = n_file_csize;
+                    item["n_file_csize"] = n_file_csize_16;
+
+                    if (n_file_csize_16 % 16 != 0)
+                    {
+                        n_file_csize_16 = n_file_csize_16 / 16;
+                        n_file_csize_16 += 1;
+                        n_file_csize_16 *= 16;
+                    }
+                    else
+                    {
+                        n_file_csize_16 = n_file_csize_16 / 16;
+                        n_file_csize_16 *= 16; //我这写的什么垃圾代码，我看了我都想吐，真累啊，有没有大佬给弟弟做做汉化啊，我不想过年的时候都在做这个东西啊！ 不想动脑子了就这样吧毁灭吧！！！
+                    }
+                    Log.Info($"理论分配区域为：{n_file_csize_16}");
+                    item["n_file_csize_16"] = n_file_csize_16;
+
+                    using (BinaryReader br = new BinaryReader(query.Key.OpenRead()))
+                    {
+                        int magic = br.ReadInt32();
+
+                        if (magic == Define.BLZ4_MAGIC)
+                        {
+                            int u_size = br.ReadInt32();
+
+                            item["n_file_usize"] = u_size;
+                            Log.Info($"是个BLZ4，因此文件大小是{item["n_file_usize"]}");
+                        }
+                        else
+                        {
+                            item["n_file_usize"] = n_file_csize;
+                            Log.Info($"不是个BLZ4，因此文件大小{item["n_file_usize"]}和csize一样。");
+                        }
+
+
+                    }
+
+                    resultTable.ImportRow(item);
+                    Log.Info($"添加{item["file_name"]}");
+                }
+            }
+
+            Dictionary<string, PresAppender> file_maps = new Dictionary<string, PresAppender>();
+            Dictionary<string, string> file_path_maps = new Dictionary<string, string>();
+            foreach (DataRow dr in resultTable.Rows)
+            {
+                string key = dr["file_name"].ToString();
+
+                Log.Info($"现在读取{key}");
+
+                if (file_maps.ContainsKey(key))
+                {
+
+                    file_maps[key].AppendNewFile(dr);
+                    Log.Info($"字典有{key}，启动PDD系统，再次拼合文件。");
+
+
+
+                }
+                else
+                {
+                    Log.Info($"字典无{key}，读取新文件并存进去。");
+                    byte[] read_bytes = File.ReadAllBytes(dr["file_path"].ToString());
+                    Log.Info($"新文件读取到的大小为：{read_bytes.Length}。");
+                    file_maps.Add(key, new PresAppender(read_bytes));
+                    file_path_maps.Add(key, dr["file_path"].ToString());
+                    int count_set = Convert.ToInt32(dr["count_set"].ToString());
+                    int set_data_3_file_count = Convert.ToInt32(dr["set_data_3_file_count"].ToString());
+
+                    int pres_count = resultTable.Select($"file_name='{dr["file_name"].ToString()}'").Length;
+
+                    Log.Info($"{dr["file_name"].ToString()}，有{count_set}个集合，集合{dr["set_index"].ToString()}有:{set_data_3_file_count}个文件。");
+                    Log.Info($"这个Pres应该有多少个文件需要被打包？答案是：{pres_count}");
+
+                    if (count_set == 1 && set_data_3_file_count == 1 && pres_count == 1 && UseSingleFileAppender)
+                    {
+                        Log.Info($"字典有{key}，而且有{count_set}个集合和{set_data_3_file_count}个文件，该文件也只有{pres_count}个需要被打包的文件，而且单文件去尾拼合的状态是：{UseSingleFileAppender}，所以启动YS系统，去末尾+拼合文件。");
+                        file_maps[key].RemoveLastFileAndAppendNewFile(dr);
+
+                    }
+                    else
+                    {
+                        Log.Info($"启动PDD系统，拼合文件。");
+                        file_maps[key].AppendNewFile(dr);
+
+                    }
+                }
+
+
+
+
+
+            }
+
+            foreach (var i in file_maps)
+            {
+
+                string target = file_path_maps[i.Key];
+
+                Log.Info($"原始res：{target}");
+                target = target.Replace("_UNPACK", "_UNPACK_PRES_REAL_EXTRA_BLZ4");
+                Log.Info($"矫正res：{target}");
+
+                Directory.CreateDirectory( Path.GetDirectoryName(target) );
+
+                i.Value.SaveFile(target);
+
+
+            }
+
+
+
+
+        }
 
         public static void PreparingPRES()
         {
@@ -405,6 +532,8 @@ namespace GODVEIN
             PresTable.Columns.Add("n_file_csize_16", typeof(Int32));
             PresTable.Columns.Add("n_file_usize", typeof(Int32));
 
+
+
             DataTable resultTable = PresTable.Clone();
 
             List<KeyValuePair<FileInfo, DataRow[]>> query_list = new List<KeyValuePair<FileInfo, DataRow[]>>();
@@ -416,7 +545,6 @@ namespace GODVEIN
 
             //var files = files_1.Concat(files_2).ToArray();
             var files = PresRealBLZ4Directory.GetFiles("*.*", SearchOption.AllDirectories);
-
             //foreach (var i in files)
             Parallel.ForEach<FileInfo>(files, (i) =>
             {
@@ -457,7 +585,7 @@ namespace GODVEIN
 
 
                 query = query_dt.Select($"set_data_3_complete='{game_pack_address}'");
-                
+
                 Log.Info($"查找数量结果：{query.Length}");
 
                 if (query.Length > 0)
@@ -475,6 +603,7 @@ namespace GODVEIN
                     Log.Info($"没有在pres.bin找到{i.FullName}");
                 }
             });
+
 
             foreach (var query in query_list)
             {
@@ -547,7 +676,7 @@ namespace GODVEIN
                 }
             }
 
-            PreparingFullPRES(resultTable);
+            //PreparingFullPRES(resultTable);
 
 
         }
@@ -625,6 +754,24 @@ namespace GODVEIN
                 File.WriteAllBytes(path, data);
 
             }
+
+            files = ResRealDirectory.GetFiles("*.*", SearchOption.AllDirectories);
+
+            foreach (var i in files)
+            {
+
+                string name = i.Name;
+
+                byte[] data = BLZ4(i.FullName);
+
+                string path = i.FullName.Replace("_UNPACK_RES_REAL_EXTRA", "_UNPACK_RES_REAL_EXTRA_BLZ4");
+
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                File.WriteAllBytes(path, data);
+
+            }
+
         }
 
 

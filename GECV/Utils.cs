@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 
 namespace GECV
@@ -66,16 +67,56 @@ namespace GECV
 
         }
 
-        public static void WriteListToFile(List<string> list,string path)
+        public static void WriteListToFile(List<string> list, string path)
         {
 
-            if(File.Exists(path))
+            if (File.Exists(path))
             {
                 File.Delete(path);
             }
 
 
-            File.WriteAllLines(path,list.ToArray());
+            File.WriteAllLines(path, list.ToArray());
+
+
+        }
+
+        public static void ReadMagicAndSaveByType(byte[] file,string file_name, string dir)
+        {
+
+            using (MemoryStream memoryStream = new MemoryStream(file))
+            {
+                using (BinaryReader reader = new BinaryReader(memoryStream))
+                {
+
+                    var byte_magic = reader.ReadBytes(4);
+                    Array.Reverse(byte_magic);
+                    var file_magic = BitConverter.ToUInt32(byte_magic,0);
+                    Log.Info($"{file_name}这个文件的魔法码是：{file_magic.ToString("X8")}");
+                    var path = Path.GetDirectoryName(dir  + ".bin\\");
+
+
+                    if (Define.extension_ext.ContainsKey(file_magic))
+                    {
+                        Log.Info($"找到了：{dir +  Define.extension_ext[file_magic]}");
+                        path = Path.GetDirectoryName(dir + Define.extension_ext[file_magic]+"\\");
+
+
+                    }
+                    else
+                    {
+                        Log.Info($"没找到。");
+                    }
+                    Log.Info($"最后的分类：{path}");
+
+                    Directory.CreateDirectory(path);
+
+                    
+
+                    File.WriteAllBytes(path + "\\" + file_name, file);
+
+                }
+            }
 
 
         }

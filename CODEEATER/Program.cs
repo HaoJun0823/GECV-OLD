@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -32,6 +33,7 @@ namespace CODEEATER
         public static DataTable PresTable;
         public static Dictionary<string, DataTable> PresTableMap;
         public static DataTable GlobalPresTable;
+        
 
 
 
@@ -63,9 +65,12 @@ namespace CODEEATER
                     Directory.CreateDirectory(TargetDirectory.FullName + "_BASE\\");
                     Directory.CreateDirectory(TargetDirectory.FullName + "_EXTRA\\");
                     Directory.CreateDirectory(TargetDirectory.FullName + "_UNPACK\\");
+                    Directory.CreateDirectory(TargetDirectory.FullName + "_UNPACK_RES\\");
+                    Directory.CreateDirectory(TargetDirectory.FullName + "_UNPACK_RES_REAL\\");
                     Directory.CreateDirectory(TargetDirectory.FullName + "_UNPACK_PRES_REAL\\");
                     Directory.CreateDirectory(TargetDirectory.FullName + "_UNPACK_QPCK_REAL\\");
-                    //Directory.CreateDirectory(TargetDirectory.FullName + "_UNPACK_GNF_REAL\\");
+                    Directory.CreateDirectory(TargetDirectory.FullName + "_UNPACK_QPCK_REAL_TYPE\\");
+                    Directory.CreateDirectory(TargetDirectory.FullName + "_CUSTOM_GNF\\");
 
                     Console.WriteLine("开始处理文件");
 
@@ -80,6 +85,10 @@ namespace CODEEATER
                         Log.Info($"5.读取PRES的src_voiceevent_text_字符串（测试用，慢，请用6）");
                         Log.Info($"6.多线程读取PRES的src_voiceevent_text_字符串");
                         Log.Info($"7.多线程读取输入的字符串查询PRES");
+                        Log.Info($"8.处理存在_CUSTOM_GNF的自定义GNF");
+                        Log.Info($"9.根据MAGIC给_UNPACK_QPCK_REAL分类到_UNPACK_QPCK_REAL_TYPE");
+                        Log.Info($"10.处理RES");
+                        Log.Info($"11.对_BASE的TR2进行分类");
                         Log.Info($"0.退出");
 
                         try
@@ -121,6 +130,18 @@ namespace CODEEATER
                                 string search = Console.ReadLine();
                                 ProcessPresSRCParallel(Utils.GetStringBytes(search));
                                 break;
+                            case 8:
+                                ProcessCustomGNF();
+                                break;
+                            case 9:
+                                ProcessQPCKRealMagic();
+                                break;
+                            case 10:
+                                ProcessRES();
+                                break;
+                            case 11:
+                                ProcessTR2Type();
+                                break;
                             case 0:
                                 input = 0;
                                 break;
@@ -158,6 +179,82 @@ namespace CODEEATER
 
 
         }
+
+        static void ProcessTR2Type()
+        {
+
+            var files = Directory.GetFiles(TargetDirectory.FullName + "_BASE\\", "*.tr2",SearchOption.AllDirectories);
+
+            DirectoryInfo dir = new DirectoryInfo(TargetDirectory.FullName + "_BASE_TR2\\");
+
+            Log.Info($"有{files.Length}个文件，分类到{dir.FullName}");
+
+
+            Parallel.ForEach<string>(files, (str) => {
+
+                Log.Info($"开始读取{str}");
+                using (FileStream fs = File.OpenRead(str))
+                {
+                    using(BinaryReader br = new BinaryReader(fs))
+                    {
+                        br.BaseStream.Seek(8,SeekOrigin.Begin);
+
+                        Log.Info($"位置定位在{br.BaseStream.Position}");
+                        string result = Utils.readNullterminated(br);
+                        Log.Info($"结果：{result}，指针结束于:{br.BaseStream.Position}");
+                        string target = str.Replace("_BASE", "_BASE_TR2\\" + result + "\\");
+                        Directory.CreateDirectory(Path.GetDirectoryName(target));
+                        File.Copy(str, target,true);
+                    }
+
+                    
+
+
+
+                }
+
+
+            
+            });
+
+
+
+
+        }
+
+        static void ProcessQPCKRealMagic()
+        {
+            //Directory.CreateDirectory(TargetDirectory.FullName + "_UNPACK_QPCK_REAL\\");
+            //Directory.CreateDirectory(TargetDirectory.FullName + "_UNPACK_QPCK_REAL_TYPE\\");
+
+
+            foreach(var kv in Define.extension_ext)
+            {
+                Log.Info($"目前存储的魔法码：{kv.Key.ToString("X8")}={kv.Value}");
+            }
+
+            //Console.ReadLine();
+
+            var files = Directory.GetFiles(TargetDirectory.FullName + "_UNPACK_QPCK_REAL\\", "*.*", SearchOption.AllDirectories);
+
+            Log.Info($"获取到：{files.Length}个文件。");
+
+
+            Parallel.ForEach<string>(files, (str) =>
+            {
+
+                Utils.ReadMagicAndSaveByType(File.ReadAllBytes(str),Path.GetFileName(str), TargetDirectory.FullName + "_UNPACK_QPCK_REAL_TYPE\\");
+
+
+
+
+
+            });
+
+
+
+        }
+
 
         static void ProcessPresSRCParallel(byte[] DEFAULT_STR)
         {
@@ -341,6 +438,55 @@ namespace CODEEATER
             using (var stream = excel.OpenWrite())
             {
                 MiniExcel.SaveAs(stream, table);
+            }
+        }
+
+
+        static void ProcessCustomGNF()
+        {
+            GnfTable = new DataTable();
+
+            GnfTable.Columns.Add("file_name", typeof(string));
+            GnfTable.Columns.Add("file_desc", typeof(string));
+            GnfTable.Columns.Add("file_size", typeof(Int32));
+            GnfTable.Columns.Add("gnf_count", typeof(Int32));
+            GnfTable.Columns.Add("dds_index", typeof(Int32));
+            GnfTable.Columns.Add("dds_size", typeof(Int32));
+            GnfTable.Columns.Add("dds_magic", typeof(Int32));
+            GnfTable.Columns.Add("dds_name", typeof(string));
+            GnfTable.Columns.Add("dds_path", typeof(string));
+
+
+
+            DirectoryInfo qpck_directory = new DirectoryInfo(TargetDirectory.FullName + "_CUSTOM_GNF\\");
+
+
+            var files = qpck_directory.GetFiles("*.gnf", SearchOption.AllDirectories);
+            Log.Info($"处理_CUSTOM_GNF的gnf文件，一共有{files.Length}。");
+
+            for (int i = 0; i < files.Length; i++)
+            {
+
+
+                Log.Info($"正在处理{i}/{files.Length}：");
+                GNF_NEW(files[i]);
+
+
+
+
+
+            }
+
+            FileInfo excel = new FileInfo(TargetDirectory + "gnf_custom.xlsx");
+            if (excel.Exists)
+            {
+
+                excel.Delete();
+            }
+
+            using (var stream = excel.OpenWrite())
+            {
+                MiniExcel.SaveAs(stream, GnfTable);
             }
         }
 
@@ -662,6 +808,177 @@ namespace CODEEATER
 
         }
 
+        static void ProcessRES()
+        {
+
+            PresTableMap = new Dictionary<string, DataTable>();
+
+            PresTable = new DataTable();
+
+
+            PresTable.Columns.Add("file_name", typeof(string));
+            PresTable.Columns.Add("file_path", typeof(string));
+            PresTable.Columns.Add("file_magic", typeof(Int32));
+            PresTable.Columns.Add("file_size", typeof(Int32));
+            PresTable.Columns.Add("magic_1", typeof(Int32));
+            PresTable.Columns.Add("magic_2", typeof(Int32));
+            PresTable.Columns.Add("magic_3", typeof(Int32));
+            PresTable.Columns.Add("offset_data", typeof(Int32));
+            PresTable.Columns.Add("count_set", typeof(Int32));
+
+            PresTable.Columns.Add("set_index", typeof(Int32));
+            PresTable.Columns.Add("set_offset", typeof(Int32));
+            PresTable.Columns.Add("set_length", typeof(Int32));
+
+            PresTable.Columns.Add("set_data_3_start_offset", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_file_count", typeof(Int32));
+
+            PresTable.Columns.Add("set_data_3_file_index", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_file_address", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_file_offset", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_file_offset_real", typeof(string));
+            PresTable.Columns.Add("set_data_3_size", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_size_16", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_name_off_file", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_name_elements_file", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_file_unk1", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_file_unk2", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_file_unk3", typeof(Int32));
+            PresTable.Columns.Add("set_data_3_usize", typeof(Int32));
+
+            PresTable.Columns.Add("set_data_3_name", typeof(string));
+            PresTable.Columns.Add("set_data_3_ext", typeof(string));
+            PresTable.Columns.Add("set_data_3_folder", typeof(string));
+            PresTable.Columns.Add("set_data_3_complete", typeof(string));
+
+            PresTable.Columns.Add("set_data_3_file_magic", typeof(string));
+
+            PresTable.Columns.Add("set_data_3_file_sha", typeof(string));
+
+            GlobalPresTable = PresTable.Clone();
+
+            DirectoryInfo base_directory = new DirectoryInfo(TargetDirectory.FullName + "_UNPACK\\");
+            DirectoryInfo target_directory = new DirectoryInfo(TargetDirectory.FullName + "_UNPACK_RES\\");
+
+
+            var files = base_directory.GetFiles("*.res", SearchOption.AllDirectories);
+            Log.Info($"处理RES文件，一共有{files.Length}。");
+            int count = 0;
+            for (int i = 0; i < files.Length; i++)
+            {
+
+                Log.Info($"正在处理{i}/{files.Length}：");
+                PRES(files[i], target_directory.FullName);
+                count++;
+
+                if (count == 10000)
+                {
+
+                    int file_number = i + 1;
+
+                    FileInfo excelT = new FileInfo(TargetDirectory + "res-" + file_number + ".xlsx");
+                    if (excelT.Exists)
+                    {
+
+                        excelT.Delete();
+                    }
+
+                    using (var stream = excelT.OpenWrite())
+                    {
+                        MiniExcel.SaveAs(stream, PresTable);
+                    }
+
+
+
+                    GlobalPresTable.Merge(PresTable);
+                    PresTable.Rows.Clear();
+
+                    count = 0;
+                }
+
+            }
+
+
+
+            FileInfo excel = new FileInfo(TargetDirectory + "res-" + files.Length + ".xlsx");
+            if (excel.Exists)
+            {
+
+                excel.Delete();
+            }
+
+            using (var stream = excel.OpenWrite())
+            {
+                MiniExcel.SaveAs(stream, PresTable);
+            }
+
+            GlobalPresTable.Merge(PresTable);
+            PresTable.Rows.Clear();
+
+            count = 0;
+
+            foreach (var kv in PresTableMap)
+            {
+                FileInfo excelI = new FileInfo(TargetDirectory + "res_" + kv.Key + "_.xlsx");
+                if (excelI.Exists)
+                {
+
+                    excelI.Delete();
+                }
+
+                using (var stream = excelI.OpenWrite())
+                {
+                    MiniExcel.SaveAs(stream, kv.Value);
+                }
+            }
+
+
+            FileInfo global = new FileInfo(TargetDirectory + "res.bin");
+
+            if (global.Exists)
+            {
+                global.Delete();
+            }
+
+
+
+
+
+
+            using (var stream = global.OpenWrite())
+            {
+
+                using (IDataReader dr = GlobalPresTable.CreateDataReader())
+                {
+                    DataSerializer.Serialize(stream, dr);
+                }
+
+
+
+
+            }
+
+
+            //FileInfo global2 = new FileInfo(TargetDirectory + "pres.xml");
+
+            //if (global2.Exists)
+            //{
+            //    global2.Delete();
+            //}
+
+
+            //using (var stream = global2.OpenWrite())
+            //{
+
+
+            //    GlobalPresTable.WriteXml(stream);
+
+
+
+            //}
+
+
+        }
 
         static void ProcessPRES()
         {
@@ -1189,6 +1506,7 @@ namespace CODEEATER
 
             DirectoryInfo base_directory = new DirectoryInfo(TargetDirectory.FullName + "_BASE\\");
             DirectoryInfo unpack_directory = new DirectoryInfo(TargetDirectory.FullName + "_UNPACK\\");
+            DirectoryInfo unpack_res_directory = new DirectoryInfo(TargetDirectory.FullName + "_UNPACK_RES\\");
 
             var files = unpack_directory.GetFiles("*", SearchOption.AllDirectories);
             Log.Info($"处理解包BLZ4文件，一共有{files.Length}。");
@@ -1197,6 +1515,16 @@ namespace CODEEATER
 
                 Log.Info($"正在处理{i}/{files.Length}：");
                 BLZ4(files[i], files[i].FullName.Replace("_UNPACK", "_UNPACK_PRES_REAL"));
+
+            }
+
+            files = unpack_res_directory.GetFiles("*", SearchOption.AllDirectories);
+            Log.Info($"处理RES解包BLZ4文件，一共有{files.Length}。");
+            for (int i = 0; i < files.Length; i++)
+            {
+
+                Log.Info($"正在处理{i}/{files.Length}：");
+                BLZ4(files[i], files[i].FullName.Replace("_UNPACK_RES", "_UNPACK_RES_REAL"));
 
             }
 
