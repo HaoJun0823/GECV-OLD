@@ -88,7 +88,7 @@ namespace GODVEIN
 
                     Log.Info($"8.从pres.bin建立缓存。");
                     Log.Info($"9.设置：只用缓存的文件类型，目前选项{OnlyUseCacheExt}。");
-                    Log.Info($"10.处理res，打包{ResRealBLZ4Directory.FullName}到{PresRealBLZ4Directory.FullName}。");
+                    Log.Info($"10.处理res，打包{ResRealBLZ4Directory.Name}到{PresRealBLZ4Directory.FName}。");
                     Log.Info($"11.打包GNF，根据gnf_new.bin把_UNPACK_PRES_REAL的dds打包成gnf存在_UNPACK_PRES_REAL_EXTRA");
                     Log.Info($"12.打包自定义GNF，根据gnf_custom.bin把_CUSTOM_GNFL的dds打包成gnf存在_CUSTOM_GNF");
                     Log.Info("0.退出");
