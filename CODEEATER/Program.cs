@@ -89,6 +89,7 @@ namespace CODEEATER
                         Log.Info($"9.根据MAGIC给_UNPACK_QPCK_REAL分类到_UNPACK_QPCK_REAL_TYPE");
                         Log.Info($"10.处理RES");
                         Log.Info($"11.对_BASE的TR2进行分类");
+                        Log.Info($"12.处理PRES第七分区");
                         Log.Info($"0.退出");
 
                         try
@@ -141,6 +142,9 @@ namespace CODEEATER
                                 break;
                             case 11:
                                 ProcessTR2Type();
+                                break;
+                            case 12:
+                                ProcessPRES_7();
                                 break;
                             case 0:
                                 input = 0;
@@ -1444,6 +1448,405 @@ namespace CODEEATER
 
 
                     br.BaseStream.Position = index_set;
+
+                }
+
+
+
+            }
+        }
+
+        static void ProcessPRES_7()
+        {
+
+            PresTableMap = new Dictionary<string, DataTable>();
+
+            PresTable = new DataTable();
+
+
+            PresTable.Columns.Add("file_name", typeof(string));
+            PresTable.Columns.Add("file_path", typeof(string));
+            PresTable.Columns.Add("file_magic", typeof(Int32));
+            PresTable.Columns.Add("file_size", typeof(Int32));
+            PresTable.Columns.Add("magic_1", typeof(Int32));
+            PresTable.Columns.Add("magic_2", typeof(Int32));
+            PresTable.Columns.Add("magic_3", typeof(Int32));
+            PresTable.Columns.Add("offset_data", typeof(Int32));
+            PresTable.Columns.Add("count_set", typeof(Int32));
+
+            PresTable.Columns.Add("set_index", typeof(Int32));
+            PresTable.Columns.Add("set_offset", typeof(Int32));
+            PresTable.Columns.Add("set_length", typeof(Int32));
+
+            PresTable.Columns.Add("set_data_7_A", typeof(Int32));
+            PresTable.Columns.Add("set_data_7_B", typeof(Int32));
+
+            PresTable.Columns.Add("set_data_7_index", typeof(Int32));
+            PresTable.Columns.Add("set_data_7_offset", typeof(Int32));
+
+            PresTable.Columns.Add("set_data_7_data_offset", typeof(Int32));
+            PresTable.Columns.Add("set_data_7_data_offset_real", typeof(Int32));
+            PresTable.Columns.Add("set_data_7_data_length", typeof(Int32));
+            PresTable.Columns.Add("set_data_7_data", typeof(string));
+
+            PresTable.Columns.Add("set_data_7_header_offset", typeof(Int32));
+            PresTable.Columns.Add("set_data_7_header_data", typeof(Int32));
+
+            PresTable.Columns.Add("set_data_7_header_offset_offset", typeof(Int32));
+            PresTable.Columns.Add("set_data_7_header_offset_offset_data", typeof(string));
+
+
+
+            GlobalPresTable = PresTable.Clone();
+
+            DirectoryInfo base_directory = new DirectoryInfo(TargetDirectory.FullName + "_BASE\\");
+            DirectoryInfo target_directory = new DirectoryInfo(TargetDirectory.FullName + "_UNPACK\\");
+
+
+            var files = base_directory.GetFiles("*.pres", SearchOption.AllDirectories);
+            Log.Info($"处理PRES文件，一共有{files.Length}。(7)");
+            int count = 0;
+            for (int i = 0; i < files.Length; i++)
+            {
+
+                Log.Info($"正在处理{i}/{files.Length}：");
+                PRES_7(files[i], target_directory.FullName);
+                count++;
+
+                if (count == 10000)
+                {
+
+                    int file_number = i + 1;
+
+                    FileInfo excelT = new FileInfo(TargetDirectory + "pres_7-" + file_number + ".xlsx");
+                    if (excelT.Exists)
+                    {
+
+                        excelT.Delete();
+                    }
+
+                    using (var stream = excelT.OpenWrite())
+                    {
+                        MiniExcel.SaveAs(stream, PresTable);
+                    }
+
+
+
+                    GlobalPresTable.Merge(PresTable);
+                    PresTable.Rows.Clear();
+
+                    count = 0;
+                }
+
+            }
+
+
+
+            FileInfo excel = new FileInfo(TargetDirectory + "pres_7-" + files.Length + ".xlsx");
+            if (excel.Exists)
+            {
+
+                excel.Delete();
+            }
+
+            using (var stream = excel.OpenWrite())
+            {
+                MiniExcel.SaveAs(stream, PresTable);
+            }
+
+            GlobalPresTable.Merge(PresTable);
+            PresTable.Rows.Clear();
+
+            count = 0;
+
+            foreach (var kv in PresTableMap)
+            {
+                FileInfo excelI = new FileInfo(TargetDirectory + "pres_7-" + kv.Key + "_.xlsx");
+                if (excelI.Exists)
+                {
+
+                    excelI.Delete();
+                }
+
+                using (var stream = excelI.OpenWrite())
+                {
+                    MiniExcel.SaveAs(stream, kv.Value);
+                }
+            }
+
+
+            FileInfo global = new FileInfo(TargetDirectory + "pres_7.bin");
+
+            if (global.Exists)
+            {
+                global.Delete();
+            }
+
+
+
+
+
+
+            using (var stream = global.OpenWrite())
+            {
+
+                using (IDataReader dr = GlobalPresTable.CreateDataReader())
+                {
+                    DataSerializer.Serialize(stream, dr);
+                }
+
+
+
+
+            }
+
+
+            //FileInfo global2 = new FileInfo(TargetDirectory + "pres.xml");
+
+            //if (global2.Exists)
+            //{
+            //    global2.Delete();
+            //}
+
+
+            //using (var stream = global2.OpenWrite())
+            //{
+
+
+            //    GlobalPresTable.WriteXml(stream);
+
+
+
+            //}
+
+
+        }
+
+        // int32 data_offset 4bytes -> (F???????) -> (0???????)
+        // int32 data_length 4bytes
+        // int32 header_offset 4bytes
+        // int32 header_? 4bytes
+
+        // 16 ZERO
+
+        //data_offset
+        //End with data_length
+
+        //header_offset 
+        //int32 real_header_offset 4bytes
+
+        //real_header_offset
+        //End with 0
+
+
+        static void PRES_7(FileInfo file, string workdirectory)
+        {
+
+
+
+            Log.Info($"读取PRES文件：{file.FullName},大小：{file.Length}");
+
+            if (file.Length <= 3)
+            {
+                Log.Info($"跳过无用文件。");
+                return;
+            }
+
+            using (BinaryReader br = new BinaryReader(file.Open(FileMode.Open)))
+            {
+
+                int magic = br.ReadInt32();
+
+                if (magic == Define.PRES_MAGIC)
+                {
+                    Log.Info($" PRES文件：{magic}等于{Define.PRES_MAGIC}");
+                }
+                else
+                {
+                    Log.Expection();
+                    throw new Exception($"错误，{file.Name}不是一个正确的PRES文件，{magic}不等于{Define.PRES_MAGIC},确定这是对的？");
+
+                }
+
+                int magic_1 = br.ReadInt32();
+                int magic_2 = br.ReadInt32();
+                int magic_3 = br.ReadInt32();
+                int offset_data = br.ReadInt32();
+                long zerozero = br.ReadInt64();
+                int count_set = br.ReadInt32();
+
+                long index_root = br.BaseStream.Position;
+                long index_set = 0;
+                long index_file = 0;
+
+                Log.Info($" 数据偏移：{offset_data}，集合数量：{count_set}");
+
+                for (int i = 0; i < count_set; i++)
+                {
+
+                    int set_offset = 0;
+                    int set_length = 0;
+
+                    if (count_set > 1)
+                    {
+                        set_offset = br.ReadInt32();
+                        set_length = br.ReadInt32();
+                        index_set = br.BaseStream.Position;
+                        br.BaseStream.Seek(set_offset, SeekOrigin.Begin);
+                        Log.Info($" 第{i + 1}/{count_set}集合在{set_offset}，集合大小：{set_length}");
+                    }
+                    else
+                    {
+                        Log.Info($" 集合数量是1，所以直接读取。");
+                    }
+
+                    // Read set info
+                    int names_off = br.ReadInt32();
+                    int names_elements = br.ReadInt32();
+
+                    int set_unk1 = br.ReadInt32();
+                    int set_unk2 = br.ReadInt32();
+
+                    //3 real
+                    int info_off = br.ReadInt32();
+                    int count_file = br.ReadInt32();
+
+
+                    int set_unk3 = br.ReadInt32();
+                    int set_unk4 = br.ReadInt32();
+
+                    int set_unk5 = br.ReadInt32();
+                    int set_unk6 = br.ReadInt32();
+
+                    int set_unk7 = br.ReadInt32();
+                    int set_unk8 = br.ReadInt32();
+
+                    //7 src
+                    int set_unk9 = br.ReadInt32();
+                    int set_unk10 = br.ReadInt32();
+
+
+
+                    int set_unk11 = br.ReadInt32();
+                    int set_unk12 = br.ReadInt32();
+
+
+
+
+                    Log.Info($" 集合{i + 1}/{count_set}的文件A区是{set_unk9}，B区是{set_unk10}");
+
+
+
+
+
+                    br.BaseStream.Seek(set_unk9, SeekOrigin.Begin);
+
+
+                    for (int fi = 0; fi < set_unk10; fi++)
+                    {
+
+                        int set_data_7_address = Convert.ToInt32(br.BaseStream.Position);
+
+                        int set_data_7_data_offset = br.ReadInt32();
+                        int set_data_7_data_offset_real = Convert.ToInt32(set_data_7_data_offset.ToString("X8").Substring(1),16);
+                        int set_data_7_data_length = br.ReadInt32();
+                        int set_data_7_header_offset = br.ReadInt32();
+                        int set_data_7_header_data = br.ReadInt32();
+
+                        Log.Info($"     偏移：{set_data_7_data_offset.ToString("X8")}");
+                        Log.Info($"     真实偏移：{set_data_7_data_offset_real}");
+                        Log.Info($"     长度：{set_data_7_data_length}");
+                        Log.Info($"     头偏移：{set_data_7_header_offset}");
+                        Log.Info($"     头数据？：{set_data_7_header_data}");
+
+                        //if (set_data_7_data_offset > file.Length || set_data_7_header_offset > file.Length)
+                        //{
+                        //    Log.Info($"{file.Name}的第七区偏移大于整个文件，这是有效的文件？");
+                        //    continue;
+                        //}
+
+                        index_file = br.BaseStream.Position;
+
+                        br.BaseStream.Seek(set_data_7_header_offset, SeekOrigin.Begin);
+
+                        int set_data_7_header_offset_offset= br.ReadInt32();
+                        br.BaseStream.Seek(set_data_7_header_offset_offset, SeekOrigin.Begin);
+                        string set_data_7_header_offset_offset_data = Utils.readNullterminated(br);
+
+                        br.BaseStream.Seek(set_data_7_data_offset_real, SeekOrigin.Begin);
+
+                        StringBuilder strbuild = new StringBuilder();
+
+                        for (int si = 0; si < set_data_7_data_length; si++)
+                        {
+                            strbuild.Append(Convert.ToChar(br.ReadByte()));
+                        }
+
+                        string set_data_7_data =strbuild.ToString();
+
+                        Log.Info($"     数据{fi + 1}/{count_file}");
+
+
+
+                        Log.Info($"     偏移：{set_data_7_data_offset.ToString("X8")}");
+                        Log.Info($"     真实偏移：{set_data_7_data_offset_real}");
+                        Log.Info($"     长度：{set_data_7_data_length}");
+                        Log.Info($"     数据：{set_data_7_data}");
+
+                        Log.Info($"     头偏移：{set_data_7_header_offset}");
+                        Log.Info($"     头数据？：{set_data_7_header_data}");
+
+                        Log.Info($"     头偏移的偏移：{set_data_7_header_offset_offset}");
+                        Log.Info($"     头偏移的偏移的数据：{set_data_7_header_offset_offset_data}");
+
+
+                        DataRow dr = PresTable.NewRow();
+
+                        dr["file_name"] = file.Name;
+                        dr["file_path"] = file.FullName;
+                        dr["file_magic"] = magic;
+                        dr["file_size"] = file.Length;
+                        dr["magic_1"] = magic_1;
+                        dr["magic_2"] = magic_2;
+                        dr["magic_3"] = magic_3;
+
+                        dr["offset_data"] = offset_data;
+                        dr["count_set"] = count_set;
+
+                        dr["set_index"] = i;
+                        dr["set_offset"] = set_offset;
+                        dr["set_length"] = set_length;
+
+                        dr["set_data_7_A"] = set_unk9;
+                        dr["set_data_7_B"] = set_unk10;
+
+                        dr["set_data_7_index"] = fi;
+                        dr["set_data_7_offset"] = set_data_7_address;
+
+                        dr["set_data_7_data_offset"] = set_data_7_data_offset;
+                        dr["set_data_7_data_offset_real"] = set_data_7_data_offset_real;
+                        dr["set_data_7_data_length"] = set_data_7_address;
+                        dr["set_data_7_data"] = set_data_7_data;
+
+
+                        dr["set_data_7_header_offset"] = set_data_7_header_offset;
+                        
+                        dr["set_data_7_header_data"] = set_data_7_header_data;
+
+
+                        dr["set_data_7_header_offset_offset"] = set_data_7_header_offset_offset;
+                        dr["set_data_7_header_offset_offset_data"] = set_data_7_header_offset_offset_data;
+
+
+                        PresTable.Rows.Add(dr);
+
+                        br.BaseStream.Position = index_file;
+                        br.BaseStream.Seek(16, SeekOrigin.Current);
+                    }
+                    br.BaseStream.Position = index_set;
+
+
+
 
                 }
 
