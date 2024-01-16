@@ -90,6 +90,52 @@ namespace GECV
             AppendNewFile(dr);
         }
 
+        public void AppendPres7Data(DataRow dr)
+        {
+            NewFile new_file;
+
+
+            string data_new = dr["set_data_7_data_new"].ToString();
+
+            byte[] data_new_bytes = Encoding.UTF8.GetBytes(data_new);
+
+            Log.Info($"读取数据{dr["set_data_7_data_new"].ToString()},大小:{data_new_bytes.Length}");
+
+            int origin_size = data_new_bytes.Length;
+            int array_size = data_new_bytes.Length;
+
+            if (array_size % 16 != 0)
+            {
+                array_size = array_size / 16;
+                array_size += 1;
+                array_size *= 16;
+            }
+            else
+            {
+                array_size = array_size / 16;
+                array_size *= 16; //我这写的什么垃圾代码，我看了我都想吐，真累啊，有没有大佬给弟弟做做汉化啊，我不想过年的时候都在做这个东西啊！ 不想动脑子了就这样吧毁灭吧！！！
+            }
+
+
+
+            Array.Resize(ref data_new_bytes, array_size);
+
+            Log.Info($"取16倍整数，新数组大小为：{data_new_bytes.Length}");
+
+            new_file = new NewFile();
+            new_file.new_file_bytes = data_new_bytes;
+            new_file.new_file_offset = GetLastPresOffset() + NewFileOffsetCursor;
+            NewFileOffsetCursor += new_file.new_file_bytes.Length;
+            Log.Info($"这个文件应该在{new_file.new_file_offset},指针推进：{NewFileOffsetCursor}");
+
+
+            int write_offset = CalcOffset(new_file.new_file_offset);
+
+            WritePres7Cursor(Convert.ToInt32(dr["set_data_7_offset"]),write_offset,origin_size);
+
+
+        }
+
         public void AppendNewFile(DataRow dr)
         {
             NewFile new_file;
@@ -212,6 +258,23 @@ namespace GECV
             }
 
             
+        }
+
+        private void WritePres7Cursor(int address,int offset,int length)
+        {
+            using (MemoryStream ms = new MemoryStream(pres))
+            {
+                using (BinaryWriter bw = new BinaryWriter(ms))
+                {
+
+                    bw.Seek(address, SeekOrigin.Begin);
+                    Log.Info($"定位地址在:{bw.BaseStream.Position}，写入offset:{offset}");
+                    bw.Write(offset);
+                    Log.Info($"定位地址在:{bw.BaseStream.Position}，length:{length}");
+                    bw.Write(length);
+
+                }
+            }
         }
 
     }

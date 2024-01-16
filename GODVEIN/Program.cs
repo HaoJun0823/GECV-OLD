@@ -82,7 +82,7 @@ namespace GODVEIN
                     Log.Info($"2.压缩散装BLZ4，压缩{QpckBlz4Directory.Name}，生成文件到{ExtraDirectory.Name}");
                     Log.Info($"3.压缩Pres解压的BLZ4，压缩{PresRealDirectory.Name}，生成文件到{PresRealBLZ4Directory.Name}，压缩压缩Res解压的BLZ4，压缩{ResRealDirectory.Name}，生成文件到{ResRealBLZ4Directory.Name}。");
                     Log.Info($"4.根据{PresRealBLZ4Directory.Name}生成对应的pres操作表。（可以把没有压缩过的文件也放在这里）");
-                    Log.Info($"5.执行4生成的操作表{RootDirectory.Name}\\packer.bin，反打包到pres，存储于{ExtraDirectory.Name},pres拼合模式。");
+                    Log.Info($"5.执行4生成的操作表{RootDirectory.Name}\\packer.bin，反打包到pres，存储于{ExtraDirectory.Name},pres拼合模式。（还会拼合pres_7_builder.xlsx文件的内容）");
                     Log.Info($"6.设置：pres和res反打包时，单set单file抹去末尾文件再拼合，目前设置选项{UseSingleFileAppender}。");
                     //Log.Info($"7.执行操作表{RootDirectory.FullName}\\packer.bin，反打包到pres，存储于{ExtraDirectory.FullName},pres拼合模式。（多线程测试）");
 
@@ -303,6 +303,49 @@ namespace GODVEIN
                 }
 
 
+
+
+
+            }
+
+            using(FileStream fs = File.OpenRead(RootDirectory + "\\pres_7_builder.xlsx"))
+            {
+                DataTable pres7Table = MiniExcel.QueryAsDataTable(fs,true);
+
+
+                foreach(DataRow dr in pres7Table.Rows)
+                {
+
+                    string key = dr["file_name"].ToString();
+
+                    if (file_maps.ContainsKey(key))
+                    {
+                        file_maps[key].AppendPres7Data(dr);
+                        Log.Info($"字典有{key}，启动PDD系统，再次拼合文件。");
+                    }
+                    else
+                    {
+                        Log.Info($"字典无{key}，读取新文件并存进去。");
+                        byte[] read_bytes = File.ReadAllBytes(dr["file_path"].ToString());
+                        Log.Info($"新文件读取到的大小为：{read_bytes.Length}。");
+                        file_maps.Add(key, new PresAppender(read_bytes));
+
+                        int count_set = Convert.ToInt32(dr["count_set"].ToString());
+                        int set_data_3_file_count = Convert.ToInt32(dr["set_data_7_B"].ToString());
+
+                        int pres_count = dt.Select($"file_name='{dr["file_name"].ToString()}'").Length;
+
+                        Log.Info($"{dr["file_name"].ToString()}，有{count_set}个集合，集合{dr["set_index"].ToString()}有:{set_data_3_file_count}个文件。");
+                        Log.Info($"这个Pres应该有多少个文件需要被打包？答案是：{pres_count}");
+
+                            Log.Info($"启动PDD系统，拼合文件。");
+                            file_maps[key].AppendPres7Data(dr);
+
+                    }
+
+
+
+                }
 
 
 

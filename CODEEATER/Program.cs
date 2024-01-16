@@ -1495,7 +1495,7 @@ namespace CODEEATER
             PresTable.Columns.Add("set_data_7_header_offset_offset", typeof(Int32));
             PresTable.Columns.Add("set_data_7_header_offset_offset_data", typeof(string));
 
-
+            PresTable.Columns.Add("set_data_7_data_new", typeof(string));
 
             GlobalPresTable = PresTable.Clone();
 
@@ -1575,30 +1575,45 @@ namespace CODEEATER
             }
 
 
-            FileInfo global = new FileInfo(TargetDirectory + "pres_7.bin");
+            DataTable temp = GlobalPresTable.Clone();
 
-            if (global.Exists)
-            {
-                global.Delete();
-            }
+            excel = new FileInfo(TargetDirectory + "pres_7_builder.xlsx");
 
-
-
-
-
-
-            using (var stream = global.OpenWrite())
+            if (excel.Exists)
             {
 
-                using (IDataReader dr = GlobalPresTable.CreateDataReader())
-                {
-                    DataSerializer.Serialize(stream, dr);
-                }
-
-
-
-
+                excel.Delete();
             }
+
+            using (var stream = excel.OpenWrite())
+            {
+                MiniExcel.SaveAs(stream, temp);
+            }
+
+            //FileInfo global = new FileInfo(TargetDirectory + "pres_7.bin");
+
+            //if (global.Exists)
+            //{
+            //    global.Delete();
+            //}
+
+
+
+
+
+
+            //using (var stream = global.OpenWrite())
+            //{
+
+            //    using (IDataReader dr = GlobalPresTable.CreateDataReader())
+            //    {
+            //        DataSerializer.Serialize(stream, dr);
+            //    }
+
+
+
+
+            //}
 
 
             //FileInfo global2 = new FileInfo(TargetDirectory + "pres.xml");
@@ -1775,14 +1790,24 @@ namespace CODEEATER
 
                         br.BaseStream.Seek(set_data_7_data_offset_real, SeekOrigin.Begin);
 
-                        StringBuilder strbuild = new StringBuilder();
+                        //StringBuilder strbuild = new StringBuilder();
 
-                        for (int si = 0; si < set_data_7_data_length; si++)
+                        //for (int si = 0; si < set_data_7_data_length; si++)
+                        //{
+                        //    strbuild.Append(Convert.ToChar(br.ReadByte()));
+                        //}
+
+                        //string set_data_7_data =strbuild.ToString();
+
+                        byte[] utf_bytes = new byte[set_data_7_data_length];
+
+                        for(int si=0;si < utf_bytes.Length; si++)
                         {
-                            strbuild.Append(Convert.ToChar(br.ReadByte()));
+                            utf_bytes[si] = br.ReadByte();
                         }
 
-                        string set_data_7_data =strbuild.ToString();
+                        string set_data_7_data = new UTF8Encoding().GetString(utf_bytes);
+
 
                         Log.Info($"     数据{fi + 1}/{count_file}");
 
