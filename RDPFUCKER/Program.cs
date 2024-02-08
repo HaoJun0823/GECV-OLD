@@ -38,8 +38,6 @@ namespace RDPFUCKER
         static ReaderStatus global_status = ReaderStatus.BLANK;
         static long global_count = 0;
 
-        static List<int> pres_tier = new List<int>();
-
         static DirectoryInfo target_dir;
 
         static void Main(string[] args)
@@ -129,7 +127,7 @@ namespace RDPFUCKER
                         {
                             //br.BaseStream.Seek(-4, SeekOrigin.Current);
                             GetTier0BLZ4(br);
-
+                            //Console.ReadKey();
 
 
 
@@ -140,7 +138,7 @@ namespace RDPFUCKER
                         if(global_status == ReaderStatus.PRES)
                         {
                             //global_status = ReaderStatus.BLANK;
-                            GetPresFileCount(br);
+                            //GetPresFileCount(br);
                            global_status = ReaderStatus.BLANK;
 
 
@@ -190,155 +188,21 @@ namespace RDPFUCKER
             long index_set = 0;
             long index_file = 0;
 
-            Log.Info($"魔法码1:{magic_1}");
-            Log.Info($"魔法码2:{magic_2}");
-            Log.Info($"魔法码3:{magic_3}");
-            Log.Info($"偏移数据:{offset_data}");
-            Log.Info($"zerozero:{zerozero}");
+            Log.Info($"错误的魔法码1:{magic_1}");
+            Log.Info($"错误的魔法码2:{magic_2}");
+            Log.Info($"错误的魔法码3:{magic_3}");
+            Log.Info($"错误的偏移数据:{offset_data}");
+            Log.Info($"错误的zerozero:{zerozero}");
 
-            Log.Info($"集合数量:{count_set}");
-            //offset_data +=  original_address;
-            //Log.Info($"修正偏移数据:{offset_data}");
+            Log.Info($"错误的集合数量:{count_set}");
+            offset_data =  original_address + 0x20;
+            count_set = 8;
+            Log.Info($"修正偏移数据:{offset_data}，固定为{count_set}个集合");
 
-            for (int i = 0; i < count_set; i++)
-            {
-
-                int set_offset = 0;
-                int set_length = 0;
-
-                if (count_set > 1)
-                {
-                    set_offset = br.ReadInt32();
-                    set_length = br.ReadInt32();
-                    index_set = br.BaseStream.Position;
-                    br.BaseStream.Seek(set_offset, SeekOrigin.Begin);
-                    Log.Info($" 第{i + 1}/{count_set}集合在{set_offset}，集合大小：{set_length}");
-                }
-                else
-                {
-                    Log.Info($" 集合数量是1，所以直接读取。");
-                }
-
-                // Read set info
-                int names_off = br.ReadInt32();
-                int names_elements = br.ReadInt32();
-
-                int set_unk1 = br.ReadInt32();
-                int set_unk2 = br.ReadInt32();
-
-                //3 real
-                int info_off = br.ReadInt32();
-                int count_file = br.ReadInt32();
-
-
-                int set_unk3 = br.ReadInt32();
-                int set_unk4 = br.ReadInt32();
-
-                int set_unk5 = br.ReadInt32();
-                int set_unk6 = br.ReadInt32();
-
-                int set_unk7 = br.ReadInt32();
-                int set_unk8 = br.ReadInt32();
-
-                //7 src
-                int set_unk9 = br.ReadInt32();
-                int set_unk10 = br.ReadInt32();
+            
 
 
 
-                int set_unk11 = br.ReadInt32();
-                int set_unk12 = br.ReadInt32();
-
-
-
-
-                Log.Info($" 集合{i + 1}/{count_set}的文件A区是{set_unk9}，B区是{set_unk10}");
-
-
-
-
-
-                br.BaseStream.Seek(set_unk9, SeekOrigin.Begin);
-
-
-                for (int fi = 0; fi < set_unk10; fi++)
-                {
-
-                    int set_data_7_address = Convert.ToInt32(br.BaseStream.Position);
-
-                    int set_data_7_data_offset = br.ReadInt32();
-                    int set_data_7_data_offset_real = Convert.ToInt32(set_data_7_data_offset.ToString("X8").Substring(1), 16);
-                    int set_data_7_data_length = br.ReadInt32();
-                    int set_data_7_header_offset = br.ReadInt32();
-                    int set_data_7_header_data = br.ReadInt32();
-
-                    Log.Info($"     偏移：{set_data_7_data_offset.ToString("X8")}");
-                    Log.Info($"     真实偏移：{set_data_7_data_offset_real}");
-                    Log.Info($"     长度：{set_data_7_data_length}");
-                    Log.Info($"     头偏移：{set_data_7_header_offset}");
-                    Log.Info($"     头数据？：{set_data_7_header_data}");
-
-                    //if (set_data_7_data_offset > file.Length || set_data_7_header_offset > file.Length)
-                    //{
-                    //    Log.Info($"{file.Name}的第七区偏移大于整个文件，这是有效的文件？");
-                    //    continue;
-                    //}
-
-                    index_file = br.BaseStream.Position;
-
-                    br.BaseStream.Seek(set_data_7_header_offset, SeekOrigin.Begin);
-
-                    int set_data_7_header_offset_offset = br.ReadInt32();
-                    br.BaseStream.Seek(set_data_7_header_offset_offset, SeekOrigin.Begin);
-                    string set_data_7_header_offset_offset_data = Utils.readNullterminated(br);
-
-                    br.BaseStream.Seek(set_data_7_data_offset_real, SeekOrigin.Begin);
-
-                    //StringBuilder strbuild = new StringBuilder();
-
-                    //for (int si = 0; si < set_data_7_data_length; si++)
-                    //{
-                    //    strbuild.Append(Convert.ToChar(br.ReadByte()));
-                    //}
-
-                    //string set_data_7_data =strbuild.ToString();
-
-                    byte[] utf_bytes = new byte[set_data_7_data_length];
-
-                    for (int si = 0; si < utf_bytes.Length; si++)
-                    {
-                        utf_bytes[si] = br.ReadByte();
-                    }
-
-                    string set_data_7_data = new UTF8Encoding().GetString(utf_bytes);
-
-
-                    Log.Info($"     数据{fi + 1}/{count_file}");
-
-
-
-                    Log.Info($"     偏移：{set_data_7_data_offset.ToString("X8")}");
-                    Log.Info($"     真实偏移：{set_data_7_data_offset_real}");
-                    Log.Info($"     长度：{set_data_7_data_length}");
-                    Log.Info($"     数据：{set_data_7_data}");
-
-                    Log.Info($"     头偏移：{set_data_7_header_offset}");
-                    Log.Info($"     头数据？：{set_data_7_header_data}");
-
-                    Log.Info($"     头偏移的偏移：{set_data_7_header_offset_offset}");
-                    Log.Info($"     头偏移的偏移的数据：{set_data_7_header_offset_offset_data}");
-
-
-
-                    br.BaseStream.Position = index_file;
-                    br.BaseStream.Seek(16, SeekOrigin.Current);
-                }
-                br.BaseStream.Position = index_set;
-
-
-
-
-            }
 
             return 0;
 
