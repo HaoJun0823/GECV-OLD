@@ -26,6 +26,8 @@ namespace RETAEDOG
 
         static DirectoryInfo DataDirectory = new DirectoryInfo(ContentDirectory.FullName + "\\" + "project");
 
+        static DirectoryInfo ExtractDirectory = new DirectoryInfo(ContentDirectory.FullName + "\\" + "extract");
+
         static string TitleFile = ContentDirectory + "\\title.bin";
 
         static string GameFile;
@@ -62,7 +64,8 @@ namespace RETAEDOG
         static void Main(string[] args)
         {
             Info($"RETAEDOG By:HaoJun0823 https://www.haojun0823.xyz/ Version:{Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
-            Log.tw = File.CreateText(RootDirectory.FullName + "\\retaedog_info.log");
+            Info("If you encounter problems, please contact email@haojun0823.xyz and upload your error log.");
+            Log.tw = File.CreateText(ContentDirectory.FullName + "\\retaedog_info.log");
 
             
 
@@ -74,7 +77,7 @@ namespace RETAEDOG
             if (!ContentDirectory.Exists)
             {
                 var error = $"Cannot Found {ContentDirectory}, Please Copy Retaedog To Game Direcotry.";
-                Info(error);
+                Error(error);
                 Info($"Press Any Key To Continue!(Cost:{sw.ElapsedMilliseconds})");
                 Console.ReadKey();
                 throw new FileNotFoundException(error);
@@ -84,7 +87,7 @@ namespace RETAEDOG
             if (!SetGodEaterVersion())
             {
                 var error = "Cannot Found GE2RB.exe Or GER.exe, Please Copy Retaedog To Game Direcotry.";
-                Info(error);
+                Error(error);
                 Info($"Press Any Key To Continue!(Cost:{sw.ElapsedMilliseconds})");
                 Console.ReadKey();
                 throw new FileNotFoundException(error);
@@ -102,12 +105,15 @@ namespace RETAEDOG
             if (args.Length != 0 && args[0].ToLower().Equals("install"))
             {
                 Info($"Install Patch.");
-                Log.tw = File.CreateText(RootDirectory.FullName+ "\\retaedog_install.log");
+                Log.tw = File.CreateText(ContentDirectory.FullName+ "\\retaedog_install.log");
                 Install();
                 Info("Install Done!");
                 sw.Stop();
                 Info($"Press Any Key To Continue!(Cost:{sw.ElapsedMilliseconds})");
                 Console.ReadKey();
+            }if(args.Length!= 0 && args[0].ToLower().Equals("extract"))
+            {
+
             }
             else
             {
@@ -125,12 +131,13 @@ namespace RETAEDOG
         static void Install()
         {
             WorkDirectory.Delete(true);
+            
             Parallel.Invoke(() => { CreateProjectIndex(); }, () => { InitGameQpck(); });
-
+            
             BuildGameQpck();
+            File.WriteAllText(WorkDirectory.FullName + "\\retaedog.bin", RootDirectory.FullName);
 
-            File.WriteAllText(RootDirectory.FullName,WorkDirectory.FullName+"\\retaedog.bin");
-
+            
 
 
         }
@@ -169,7 +176,7 @@ namespace RETAEDOG
         {
             CopyGodEater();
             SteamBuild();
-
+            CopyDll();
             List<string> list = new List<string>();
 
 
@@ -178,6 +185,8 @@ namespace RETAEDOG
             list.Add(WorkDirectory + "\\bin_patch.qpck");
             list.Add(WorkDirectory + "\\conf.qpck");
             list.Add(WorkDirectory + "\\data.qpck");
+            list.Add(WorkDirectory + "\\xinput1_3.dll");
+            list.Add(WorkDirectory + "\\steam_api.dll");
             list.Add(WorkDirectory + "\\retaedog.bin");
 
 
@@ -190,7 +199,7 @@ namespace RETAEDOG
                 else
                 {
                     var error = $"Cannot Vaild {i}, Please \"retaedog.exe install\" To Install Mod Game.";
-                    Info(error);
+                    Error(error);
                     Info($"Press Any Key To Continue!(Cost:{sw.ElapsedMilliseconds})");
                     Console.ReadKey();
                     throw new FileNotFoundException(error);
@@ -252,6 +261,32 @@ namespace RETAEDOG
             
         }
 
+        static void Extract()
+        {
+            ExtractDirectory.Delete();
+            ExtractDirectory.Create();
+
+
+
+            
+
+        }
+
+        static void ExtractNewFile(Qpck origin,Qpck target)
+        {
+
+            if(origin.ContentIndexMap.Count != target.ContentIndexMap.Count)
+            {
+                Error($"Origin {origin.ContentIndexMap.Count} != target {target.ContentIndexMap.Count} (Index Count Error)");
+                return;
+            }
+
+            
+
+
+
+        }
+
         static string GetTitle()
         {
             StringBuilder stringBuilder = new StringBuilder();
@@ -311,7 +346,20 @@ namespace RETAEDOG
 
         static void CopyGodEater()
         {
-            var new_gec = RootDirectory + "\\" + "GE.dat";
+            //var new_gec = RootDirectory + "\\" + "GE.dat;
+
+            var new_gec = WorkDirectory.FullName;
+
+            if (IsGodEater2)
+            {
+                new_gec += "\\GE2RB.exe";
+            }
+            else
+            {
+                new_gec += "\\GER.exe";
+            }
+
+
 
             File.Copy(GameFile, new_gec, true );
             Info($"Copy GameFile {GameFile} => {new_gec}");
@@ -325,8 +373,13 @@ namespace RETAEDOG
 
         static void CopyDll()
         {
-            return;
+            //return;
             var files = RootDirectory.GetFiles("*.dll",SearchOption.TopDirectoryOnly);
+
+            //FileInfo steam_file = new FileInfo(RootDirectory.FullName+"\\steam_api.dll");
+            //FileInfo xinput_file = new FileInfo(RootDirectory.FullName + "\\xinput1_3.dll");
+
+            //FileInfo[] files = { steam_file, xinput_file };
 
             foreach(var i in files)
             {
@@ -642,12 +695,16 @@ namespace RETAEDOG
 
             if(read_header != Magic)
             {
-                throw new FileLoadException($"[QPCK]{this.Name} Header error:{read_header}!={Magic}");
+                var error = $"[QPCK]{this.Name} Header error:{read_header}!={Magic}";
+                Error(error);
+                throw new FileLoadException(error);
             }
 
             if(read_count <= 0)
             {
-                throw new FileLoadException($"[QPCK]{this.Name} Count error:{read_header}");
+                var error = $"[QPCK]{this.Name} Count error:{read_header}";
+                Error(error);
+                throw new FileLoadException(error);
             }
 
             this.Count = read_count;
@@ -798,6 +855,21 @@ namespace RETAEDOG
             
 
         }
+
+
+        public static void Error(string str)
+        {
+            string log = $"[Thead:{Thread.CurrentThread.ManagedThreadId}/ERROR]{str}\nPlease contact email@haojun0823.xyz and upload your error log.";
+
+            Console.WriteLine(log);
+
+            if (tw != null)
+            {
+                tw.WriteLine(str);
+                tw.Flush();
+            }
+        }
+
 
     }
 

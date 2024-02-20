@@ -9,6 +9,12 @@ namespace GECV
 {
     public static class BLZ4Utils
     {
+
+
+
+
+
+
         // partially from http://stackoverflow.com/a/6627194/5343630
         public static void CompressData(byte[] inData, out byte[] outData)
         {

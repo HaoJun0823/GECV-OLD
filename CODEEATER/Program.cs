@@ -467,7 +467,7 @@ namespace CODEEATER
             DirectoryInfo qpck_directory = new DirectoryInfo(TargetDirectory.FullName + "_CUSTOM_GNF\\");
 
 
-            var files = qpck_directory.GetFiles("*.gnf", SearchOption.AllDirectories);
+            var files = qpck_directory.GetFiles("*.gnf", SearchOption.TopDirectoryOnly);
             Log.Info($"处理_CUSTOM_GNF的gnf文件，一共有{files.Length}。");
 
             for (int i = 0; i < files.Length; i++)
@@ -650,6 +650,14 @@ namespace CODEEATER
                     else
                     {
                         byte[] bytes = br.ReadBytes(size[i]);
+
+                        if (!Directory.Exists(file.DirectoryName))
+                        {
+                            Directory.CreateDirectory(file.DirectoryName);
+                            Log.Info($"创建需要的目录{file.DirectoryName}");
+                        }
+
+
                         File.WriteAllBytes(file.FullName + "_" + i + "_.dds", bytes);
                         Log.Info($"     GDDS存储大小：{size[i]}，DDS魔术码：{dds_magic}，保存在:{file.FullName}_{i}_.dds。");
                         dr["file_desc"] = $"GDDS存储大小：{size[i]}，DDS魔术码：{dds_magic}，保存在:{file.FullName}_{i}_.dds。";
@@ -1142,6 +1150,22 @@ namespace CODEEATER
          * 
          * 集合数据开始：
          * 
+         *      第一集合和第三集合数量一致：
+         *      第三集合：
+         *          4字节 文件偏移
+         *          4字节 文件大小
+         *          4字节 文件名字地址
+         *          4字节 文件名字数量
+         *          4字节 未知1
+         *          4字节 未知2
+         *          4字节 未知3
+         *          4字节 实际文件大小
+         *    从第三集合 文件名字地址 跳转 第一集合：
+         *          4字节 文件名
+         *          4字节 扩展名
+         *          4字节 文件路径
+         *          4字节 最终路径
+         *      
          * 
          * 
          */

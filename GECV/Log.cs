@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace GECV
 {
@@ -10,12 +11,16 @@ namespace GECV
 
         public static List<string> LogRecord = new List<string>();
 
-        public static void Info(string str)
+        public static string Info(string str)
         {
-            Console.WriteLine(str);
-            LogRecord.Add(str);
-        }
+            string str2 = $"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][线程：{Thread.CurrentThread.ManagedThreadId}]{str}";
+            Console.WriteLine(str2);
+            LogRecord.Add(str2);
+            return str2;
 
+            
+
+        }
 
 
         public static void Error(string str)
@@ -37,6 +42,8 @@ namespace GECV
             Console.WriteLine("【异常】");
             Console.ResetColor();
         }
+
+        
 
 
     }

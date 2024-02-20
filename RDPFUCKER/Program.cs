@@ -5,8 +5,10 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace RDPFUCKER
 {
@@ -42,6 +44,15 @@ namespace RDPFUCKER
 
         static void Main(string[] args)
         {
+            Log.Info("CODE EATER 噬神者 RDP 解包器 BY 兰德里奥（HaoJun0823）");
+            Log.Info("https://blog.haojun0823.xyz/");
+            Log.Info("https://github.com/HaoJun0823/GECV");
+            Programs_Extend.Virtual_MainAsync(args);
+
+            Log.Info("程序已经结束，按任意键继续。");
+            Console.ReadKey();
+
+            return;
 
             if (args.Length != 2)
             {

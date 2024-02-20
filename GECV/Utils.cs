@@ -11,7 +11,11 @@ namespace GECV
     {
 
 
-
+        public static BinaryReader GetBinaryReader(byte[] input_data)
+        {
+            MemoryStream stream = new MemoryStream(input_data, false);
+            return new BinaryReader(stream);
+        }
 
         public static string readNullterminated(BinaryReader reader)
         {
@@ -49,6 +53,23 @@ namespace GECV
             }
             Log.Info(sb.ToString());
             return sb2.ToString();
+
+        }
+
+        public static string GetListStringPrintData<T>(List<T> list)
+        {
+
+            StringBuilder sb = new StringBuilder();
+            int number = 0;
+            foreach(var i in list)
+            {
+                sb.Append(number++);
+                sb.Append(":");
+                sb.Append(i.ToString());
+                sb.Append('\n');
+            }
+
+            return sb.ToString();
 
         }
 
