@@ -8,11 +8,14 @@ using System.Xml;
 using System.Diagnostics;
 using DotNetGraph.Core;
 using DotNetGraph.Extensions;
-
+using static GECV.Log;
 namespace GERDP
 {
     public class DGMLWriter
     {
+
+        public static Dictionary<string,DotGraph> dotGraphMap = new Dictionary<string,DotGraph>();
+
         public struct Graph
         {
             public Node[] Nodes;
@@ -121,10 +124,21 @@ namespace GERDP
 
             //}
 
+            
+            
+            
+
             foreach (var n in this.Links)
             {
-                var nodeA = new DotNode().WithIdentifier(n.Source).WithShape(DotNodeShape.Box).WithLabel(n.Source).WithFillColor(DotColor.Pink).WithFontColor(DotColor.Black).WithStyle(DotNodeStyle.Bold);
-                var nodeB = new DotNode().WithIdentifier(n.Target).WithShape(DotNodeShape.Box).WithLabel(n.Target).WithFillColor(DotColor.Aqua).WithFontColor(DotColor.Black).WithStyle(DotNodeStyle.Solid);
+                var nodeA = new DotNode().WithIdentifier(n.Source).WithShape(DotNodeShape.Box).WithLabel(n.Source).WithFillColor(DotColor.Pink).WithFontColor(DotColor.Black).WithStyle(DotNodeStyle.Bold).WithWidth(2.5)
+    .WithHeight(0.5)
+    .WithPenWidth(1.5); ;
+                var nodeB = new DotNode().WithIdentifier(n.Target).WithShape(DotNodeShape.Circle).WithLabel(n.Target).WithFillColor(DotColor.Aqua).WithFontColor(DotColor.Black).WithStyle(DotNodeStyle.Solid).WithWidth(3.5)
+    .WithHeight(0.5)
+    .WithPenWidth(1.5); ;
+
+
+                
 
                 var edge = new DotEdge()
     .From(nodeA)
@@ -133,17 +147,23 @@ namespace GERDP
     .WithArrowTail(DotEdgeArrowType.Diamond)
     .WithColor(DotColor.Red)
     .WithFontColor(DotColor.Black)
-    .WithLabel(n.Category)
-    .WithStyle(DotEdgeStyle.Dashed);
+    .WithLabel(n.Label)
+    .WithStyle(DotEdgeStyle.Dashed).WithPenWidth(1);
 
 
                 dot.Add(nodeA);
                 dot.Add(nodeB);
                 dot.Add(edge);
+                Info($"对全局DOT集合添加:{nodeA.Identifier.ToString()}与{nodeB.Identifier.ToString()}，他们的联系方式是{edge.Label.ToString()}。");
+                if (!dotGraphMap.ContainsKey(n.Label))
+                {
+                    dotGraphMap[n.Label] = new DotGraph().WithIdentifier(dot.Label +"_"+  n.Label);
+                }
+                dotGraphMap[n.Label].Add(nodeA);
+                dotGraphMap[n.Label].Add(nodeB);
+                dotGraphMap[n.Label].Add(edge);
 
-
-
-
+                Info($"对{n.Label}DOT集合添加:{nodeA.Identifier.ToString()}与{nodeB.Identifier.ToString()}，他们的联系方式是{edge.Label.ToString()}。");
 
             }
 

@@ -35,9 +35,17 @@ namespace GERDP
 
         static async Task Main(string[] args)
         {
+
+            
+
             Info("CODE EATER 噬神者 RDP 解包器 BY 兰德里奥（HaoJun0823）");
             Info("https://blog.haojun0823.xyz/");
             Info("https://github.com/HaoJun0823/GECV");
+
+
+
+            byte[] data = new byte[Int64.MaxValue - 1];
+
             if (args.Length < 3)
             {
                 Info($"你输入的参数数量不对：第一个参数：原始数据文件夹，第二个参数：解包文件夹，第三个参数：ps4/psv");
@@ -46,7 +54,7 @@ namespace GERDP
 
             SourceDirectiory = new DirectoryInfo(args[0]);
             TargetDirectiory = new DirectoryInfo(args[1]);
-
+            GECV.Log.SetLogFolder(TargetDirectiory);
             if (args[2].ToLower().Equals("ps4"))
             {
                 IsPS4 = true;
@@ -81,7 +89,7 @@ namespace GERDP
             Info("请核实这些数据，以免发生意外，按任意键开始解包！");
             Console.ReadKey();
             Parallel.Invoke(() => { System = ReadAllBytes(SystemRES); }, () => { SystemUpdate = ReadAllBytes(SystemUpdateRES); }, () => { Data = ReadAllBytes(DataRDP); }, () => { Package = ReadAllBytes(PackageRDP); }, () => { Patch = ReadAllBytes(PatchRDP); });
-            Info($"关联文件读取完毕！解包需要清空，所以再次输入任意按键删除{TargetDirectiory.FullName}。");
+            Info($"关联文件读取完毕！再次输入任意按键删除{TargetDirectiory.FullName}。");
             Console.ReadKey();
             TargetDirectiory.Delete(true);
 
@@ -114,8 +122,24 @@ namespace GERDP
 
             //});
 
+
+
+
+            DecodeRes();
+            Info($"完成！日志系统关闭！输入任意键生成图表，不想生成可以直接关闭。");
+            flush();
+            Console.ReadKey();
+            BuildDotAsync();
+            flush();
+            Console.WriteLine("处理完毕！");
+            Console.ReadKey();
+
             
 
+        }
+
+        static void DecodeRes()
+        {
             Info($"请输入选项，输入1处理system.res，输入2处理system_update.res，如果输入错误程序会退出请重新打开再进行。\n注意新的解包会覆盖日志和原始文件，你需要注意这一点！");
             var input = Console.ReadLine();
             switch (input)
@@ -128,41 +152,60 @@ namespace GERDP
                     break;
                 default:
                     Info($"你还真就输错了！{input}是什么？");
-                    break;
+                    Console.WriteLine("处理完毕！");
+                    Console.ReadKey();
+                    return;
             }
 
 
-            Info($"完成！日志系统关闭！");
-
-
-            GECV.Utils.WriteListToFile(GECV.Log.LogRecord, TargetDirectiory.FullName + "\\GERDP.log");
-            GECV.Utils.WriteListToFile(ExperimentalDecoder.LogList, TargetDirectiory.FullName + "\\GERDP.ExperimentalDecoder.error.log");
-            GECV.Utils.WriteListToFile(ExperimentalDecoder.warningLogList, TargetDirectiory.FullName + "\\GERDP.ExperimentalDecoder.warning.log");
-
-
-            ExperimentalDecoder.LogList.Clear();
-            ExperimentalDecoder.warningLogList.Clear();
-
             
 
-            DGML.Serialize(TargetDirectiory.FullName+"\\graph.dgml");
+            //GECV.Utils.WriteListToFile(GECV.Log.LogRecord, TargetDirectiory.FullName + "\\GERDP.log");
+            //GECV.Utils.WriteListToFile(ExperimentalDecoder.LogList, TargetDirectiory.FullName + "\\GERDP.ExperimentalDecoder.error.log");
+            //GECV.Utils.WriteListToFile(ExperimentalDecoder.warningLogList, TargetDirectiory.FullName + "\\GERDP.ExperimentalDecoder.warning.log");
+
+
+            //ExperimentalDecoder.LogList.Clear();
+            //ExperimentalDecoder.warningLogList.Clear();
+
+
+
+            DGML.Serialize(TargetDirectiory.FullName + "\\graph.dgml");
+        }
+
+        static async Task BuildDotAsync()
+        {
+            Info($"构造DOT。");
+
+            DGML.BuildDotGraph(dot_graph);
 
             await using var writer = new StringWriter();
             var context = new CompilationContext(writer, new CompilationOptions());
-            DGML.BuildDotGraph(dot_graph);
+
+
             await dot_graph.CompileAsync(context);
 
             var result = writer.GetStringBuilder().ToString();
 
             // Save it to a file
-            File.WriteAllText(TargetDirectiory.FullName+"\\graph.dot", result);
+            File.WriteAllText(TargetDirectiory.FullName + "\\graph.dot", result);
+            Info($"完成全局DOT。");
 
-            Console.WriteLine("处理完毕！");
-            Console.ReadKey();
+            foreach (var kv in DGMLWriter.dotGraphMap)
+            {
 
+                using var x_writer = new StringWriter();
+                var x_context = new CompilationContext(writer, new CompilationOptions());
 
+                
+                await kv.Value.CompileAsync(x_context);
 
+                var x_result = writer.GetStringBuilder().ToString();
+                File.WriteAllText(TargetDirectiory.FullName + "\\" + kv.Key + "_graph.dot", x_result);
+                Info($"$完成{kv.Key}DOT。");
+            }
         }
+
         static byte[] ReadAllBytes(FileInfo file)
         {
 

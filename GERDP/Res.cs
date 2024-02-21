@@ -70,14 +70,14 @@ namespace GERDP
                 br.BaseStream.Seek(0x20, SeekOrigin.Begin);
             }
 
-            DS1 = ResDataSet.BuildResDataSet(br,"Set_1_res",isPS4);
-            DS2 = ResDataSet.BuildResDataSet(br, "Set_2_prx", isPS4);
-            DS3 = ResDataSet.BuildResDataSet(br, "Set_3_asset", isPS4);
-            DS4 = ResDataSet.BuildResDataSet(br, "Set_4_unk", isPS4);
-            DS5 = ResDataSet.BuildResDataSet(br, "Set_5_conf", isPS4);
-            DS6 = ResDataSet.BuildResDataSet(br, "Set_6_tbl", isPS4);
-            DS7 = ResDataSet.BuildResDataSet(br, "Set_7_text", isPS4);
-            DS8 = ResDataSet.BuildResDataSet(br, "Set_8_restbl", isPS4);
+            DS1 = ResDataSet.BuildResDataSet(br,"set_1_res",isPS4);
+            DS2 = ResDataSet.BuildResDataSet(br, "set_2_prx", isPS4);
+            DS3 = ResDataSet.BuildResDataSet(br, "set_3_asset", isPS4);
+            DS4 = ResDataSet.BuildResDataSet(br, "set_4_unk", isPS4);
+            DS5 = ResDataSet.BuildResDataSet(br, "set_5_conf", isPS4);
+            DS6 = ResDataSet.BuildResDataSet(br, "set_6_tbl", isPS4);
+            DS7 = ResDataSet.BuildResDataSet(br, "set_7_text", isPS4);
+            DS8 = ResDataSet.BuildResDataSet(br, "set_8_restbl", isPS4);
 
 
 
@@ -103,7 +103,8 @@ namespace GERDP
 
         }
 
-        public void DecodeAll() {
+        public void DecodeAll()
+        {
 
 
             //foreach(var i in DSList)
@@ -111,11 +112,12 @@ namespace GERDP
             //    i.decoder.Decode(i, this.res_data);
             //}
 
-            Parallel.ForEach<ResDataSet>(DSList, i => {
-                i.decoder.Decode(i,this.res_data);
+            Parallel.ForEach<ResDataSet>(DSList, i =>
+            {
+                i.decoder.Decode(i, this.res_data);
             });
-        
-        
+
+
         }
 
 

@@ -38,6 +38,7 @@ namespace GODVEIN
 
         static void Main(string[] args)
         {
+            
 
             Log.Info("GOD VEIN 噬神者资源映射 打包器 BY 兰德里奥（HaoJun0823）");
             Log.Info("https://blog.haojun0823.xyz/");
@@ -49,6 +50,7 @@ namespace GODVEIN
             {
 
                 RootDirectory = new DirectoryInfo(args[0]);
+                GECV.Log.SetLogFolder(RootDirectory);
                 BaseDirectory = new DirectoryInfo(RootDirectory.FullName + "\\_BASE");
                 ExtraDirectory = new DirectoryInfo(RootDirectory.FullName + "\\_EXTRA");
                 QpckBlz4Directory = new DirectoryInfo(RootDirectory.FullName + "\\_UNPACK_QPCK_REAL_EXTRA");
@@ -165,7 +167,8 @@ namespace GODVEIN
                 throw new Exception("请带一个文件夹参数。");
             }
 
-            Utils.WriteListToFile(Log.LogRecord, RootDirectory.FullName + "\\GODVEIN.log");
+            //Utils.WriteListToFile(Log.LogRecord, RootDirectory.FullName + "\\GODVEIN.log");
+            Log.flush();
             Log.Info("按任意键退出……");
             Console.ReadKey();
 

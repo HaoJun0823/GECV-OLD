@@ -39,6 +39,8 @@ namespace CODEEATER
 
         static void Main(string[] args)
         {
+            
+
             Log.Info("CODE EATER 噬神者资源映射 解包器 BY 兰德里奥（HaoJun0823）");
             Log.Info("https://blog.haojun0823.xyz/");
             Log.Info("https://github.com/HaoJun0823/GECV");
@@ -58,7 +60,7 @@ namespace CODEEATER
 
                     TargetDirectory = new DirectoryInfo(args[1]);
 
-
+                    GECV.Log.SetLogFolder(TargetDirectory);
 
 
                     TargetDirectory.Create();
@@ -176,8 +178,8 @@ namespace CODEEATER
                 Log.Error("错误，你需要两个输入：1.原始qpck文件，2.解包后目标文件夹地址。");
             }
 
-            Utils.WriteListToFile(Log.LogRecord,TargetDirectory.FullName+"\\CODEEATER.log");
-
+            //Utils.WriteListToFile(Log.LogRecord,TargetDirectory.FullName+"\\CODEEATER.log");
+            Log.flush();
             Log.Info("按任意键退出……");
             Console.ReadKey();
 

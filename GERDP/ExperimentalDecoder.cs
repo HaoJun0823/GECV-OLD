@@ -17,9 +17,9 @@ namespace GERDP
     internal class ExperimentalDecoder : IDecoder
     {
 
-        public static List<string> LogList = new List<string>();
+        //public static List<string> LogList = new List<string>();
 
-        public static List<string> warningLogList = new List<string>();
+        //public static List<string> warningLogList = new List<string>();
 
         public long size_mul = 1;
 
@@ -29,6 +29,9 @@ namespace GERDP
 
         public ResDataSet set;
 
+        private static object FileWriterLocker = new object();
+
+
         public void Decode(ResDataSet set, byte[] res_data) //这个level不想改了，就这么摆烂
         {
             this.set = set;
@@ -37,8 +40,8 @@ namespace GERDP
 
             string res_relative_path = Path.GetRelativePath(Program.TargetDirectiory.FullName, this.folder_name);
 
-            Program.DGML.AddNode(new DGMLWriter.Node(res_relative_path,res_relative_path));
-            
+            Program.DGML.AddNode(new DGMLWriter.Node(res_relative_path, res_relative_path));
+
 
 
             br.BaseStream.Seek(set.address, SeekOrigin.Begin);
@@ -53,18 +56,18 @@ namespace GERDP
                 if (location.status == DataLocationStatus.UNK)
                 {
 
-                    LogList.Add(Info($"[意外错误][{res_relative_path}][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.{location.hex_origin}是一个意外的地址！放弃处理这个对象。"));
+                    Error($"[意外错误][{res_relative_path}][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.{location.hex_origin}是一个意外的地址！放弃处理这个对象。");
                     continue;
 
                 }
 
                 if (location.status == DataLocationStatus.NoSet_3)
                 {
-                    warningLogList.Add(Info($"[警告][{res_relative_path}][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.{location.hex_origin}是包外对象，不处理。"));
+                    Warning($"[警告][{res_relative_path}][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.{location.hex_origin}是包外对象，不处理。");
                     continue;
                 }
 
-                
+
 
                 long file_size = set.isPS4 ? br.ReadInt64() : br.ReadInt32();
                 long file_name_offset = set.isPS4 ? br.ReadInt64() : br.ReadInt32();
@@ -93,146 +96,162 @@ namespace GERDP
                  未知5(PS4)：{unk_5.ToString("X")}
                  最终文件大小：{file_real_size}");
 
-                
-                if(location.status == DataLocationStatus.Package_4 && location.data.Length <= 0)
+
+                if (location.status == DataLocationStatus.Package_4 && location.data.Length <= 0)
                 {
-                    warningLogList.Add(Info($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.也许来自package.rdp但是文件不存在。"));
+                    Warning($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.也许来自package.rdp但是文件不存在。");
                     continue;
-                }else
+                }
+                else
 
                 if (location.status == DataLocationStatus.Data_5 && location.data.Length <= 0)
                 {
-                    warningLogList.Add(Info($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.也许来自data.rdp但是文件不存在。"));
+                    Warning($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.也许来自data.rdp但是文件不存在。");
                     continue;
-                }else
+                }
+                else
 
                 if (location.status == DataLocationStatus.Patch_6 && location.data.Length <= 0)
                 {
-                    warningLogList.Add(Info($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.也许来自patch.rdp但是文件不存在。"));
+                    Warning($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.也许来自patch.rdp但是文件不存在。");
                     continue;
                 }
 
-                if(file_name_count >= 6)
+                if (file_name_count >= 6)
                 {
-                    warningLogList.Add(Info($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.的数量也许不正确，读到的数量：{file_name_count}，跳过。"));
+                    Warning($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.的数量也许不正确，读到的数量：{file_name_count}，跳过。");
                     continue;
                 }
 
-                br.BaseStream.Seek(file_name_offset,SeekOrigin.Begin);
+                br.BaseStream.Seek(file_name_offset, SeekOrigin.Begin);
 
                 FileInformationData fid = GetOriginData(br, file_name_count);
                 Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]读取到的内容：\n{GECV.Utils.GetListStringPrintData(fid.ORIGIN_DATA)}");
-                br.BaseStream.Seek(header_p,SeekOrigin.Begin);
+                br.BaseStream.Seek(header_p, SeekOrigin.Begin);
 
-
-                BinaryReader remote_br = GetBinaryReader(location.data);
-
-                remote_br.BaseStream.Seek(location.CalcRealOffset(),SeekOrigin.Begin);
-
-                Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.远端读取器的地址是{remote_br.BaseStream.Position.ToString("X")}，原始地址是{location.real_offset.ToString("X")}，这个文件在:{location.GetDataLocationName()}。");
-
-                List<byte> fun_data = new List<byte>();
-                int fun_i = 0;
-                try
+                Task.Run(() =>
                 {
 
-                    for (; fun_i < file_size; fun_i++)
+                    BinaryReader remote_br = GetBinaryReader(location.data);
+
+                    remote_br.BaseStream.Seek(location.CalcRealOffset(), SeekOrigin.Begin);
+
+                    Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.远端读取器的地址是{remote_br.BaseStream.Position.ToString("X")}，原始地址是{location.real_offset.ToString("X")}，这个文件在:{location.GetDataLocationName()}。");
+
+                    List<byte> fun_data = new List<byte>();
+                    int fun_i = 0;
+                    try
                     {
 
-                        fun_data.Add(remote_br.ReadByte());
-                        
+                        for (; fun_i < file_size; fun_i++)
+                        {
+
+                            fun_data.Add(remote_br.ReadByte());
+
+                        }
                     }
-                }
-                catch (Exception e)
-                {
-                    LogList.Add(Info($"[错误][{set.name}][{res_relative_path}][{remote_br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.指针位置{remote_br.BaseStream.Position.ToString("X")}，应该读取的长度:{file_size.ToString("X")}，实际读取的长度:{fun_i.ToString("X")}，原始数据长度:{remote_br.BaseStream.Length.ToString("X")}，上游指针位置:{br.BaseStream.Position.ToString("X")}，错误信息：{e.Message}"));
-                }
-
-
-                
-
-                byte[] read_data = fun_data.ToArray();
-
-                byte[] save_data;
-
-                if (BLZ4FileDecompresser.IsBLZ4(read_data))
-                {
-                    BLZ4FileDecompresser blz4 = new BLZ4FileDecompresser(read_data);
-                    Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.是BLZ4文件，解压缩！");
-                    save_data = blz4.GetByteResult();
-                }
-                else
-                {
-                    Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.不是BLZ4文件。");
-                    save_data = read_data;
-                }
-
-                //if (ByteHashSet.Contains(save_data))
-                //{
-                //    continue;
-                //}
-                //else
-                //{
-                //    ByteHashSet.Add(save_data);
-                //}
-
-                if (!String.IsNullOrEmpty(folder_name))
-                {
-                    var file_folder = folder_name + "\\";
-                    var file_name = "";
-                    if (!String.IsNullOrEmpty(fid.name_1))
+                    catch (Exception e)
                     {
-                        file_name += fid.name_1;
+                        Error($"[错误][{set.name}][{res_relative_path}][{remote_br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.指针位置{remote_br.BaseStream.Position.ToString("X")}，应该读取的长度:{file_size.ToString("X")}，实际读取的长度:{fun_i.ToString("X")}，原始数据长度:{remote_br.BaseStream.Length.ToString("X")}，上游指针位置:{br.BaseStream.Position.ToString("X")}，错误信息：{e.Message}");
+                    }
+
+
+
+
+                    byte[] read_data = fun_data.ToArray();
+
+                    byte[] save_data;
+
+                    if (BLZ4FileDecompresser.IsBLZ4(read_data))
+                    {
+                        BLZ4FileDecompresser blz4 = new BLZ4FileDecompresser(read_data);
+                        Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.是BLZ4文件，解压缩！");
+                        save_data = blz4.GetByteResult();
                     }
                     else
                     {
-                        file_name += $"GERDP_{res_relative_path}_{set.name}_{i}.gerdp";
+                        Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.不是BLZ4文件。");
+                        save_data = read_data;
                     }
 
-                    if (!String.IsNullOrEmpty(fid.ext_2))
+                    //if (ByteHashSet.Contains(save_data))
+                    //{
+                    //    continue;
+                    //}
+                    //else
+                    //{
+                    //    ByteHashSet.Add(save_data);
+                    //}
+
+                    if (!String.IsNullOrEmpty(folder_name))
                     {
-                        file_name += '.' + fid.ext_2;
+                        var file_folder = folder_name + "\\";
+                        var file_name = "";
+                        if (!String.IsNullOrEmpty(fid.name_1))
+                        {
+                            file_name += fid.name_1;
+                        }
+                        else
+                        {
+                            file_name += $"GERDP_{res_relative_path}_{set.name}_{i}.gerdp";
+                        }
+
+                        if (!String.IsNullOrEmpty(fid.ext_2))
+                        {
+                            file_name += '.' + fid.ext_2;
+                        }
+
+
+
+                        Program.DGML.AddNode(new DGMLWriter.Node(res_relative_path + '\\' + file_name, res_relative_path + '\\' + file_name));
+                        Program.DGML.AddLink(new DGMLWriter.Link(res_relative_path, res_relative_path + '\\' + file_name, set.name, res_relative_path + '.' + set.name));
+
+                        file_name = file_folder + file_name;
+
+                        lock (FileWriterLocker)
+                        {
+
+                            if (File.Exists(file_name))
+                            {
+                                Warning($"[小型提示][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.因为旧的文件所以没有存储存储{file_name}，新文件大小:{save_data.LongLength}");
+                            }
+                            else
+                            {
+
+                                    File.WriteAllBytes(file_name, save_data);
+                                    Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.已存储{file_name}，文件大小:{save_data.LongLength}");
+                                
+
+
+                            }
+
+
+                                if (fid.ORIGIN_DATA.Count > 2)
+                                {
+                                    try
+                                    {
+                                        File.WriteAllLines(file_name + ".gerdp.ini", fid.ORIGIN_DATA);
+                                    }
+                                    catch (Exception ex)
+                                    {
+
+                                    }
+                                }
+
+                            
+
+                        }
                     }
 
 
 
-                    Program.DGML.AddNode(new DGMLWriter.Node(res_relative_path + '\\' + file_name, res_relative_path + '\\' + file_name));
-                    Program.DGML.AddLink(new DGMLWriter.Link(res_relative_path, res_relative_path + '\\' + file_name,set.name, res_relative_path +'.'+ set.name));
-
-                    file_name = file_folder + file_name;
-
-                    if (File.Exists(file_name))
+                    if (!ByteHashSet.Contains(save_data) && IsRES(save_data))
                     {
-                        warningLogList.Add(Info($"[小型提示][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.因为旧的文件所以没有存储存储{file_name}，新文件大小:{save_data.LongLength}"));
-                    }
-                    else
-                    {
-                        File.WriteAllBytes(file_name, save_data);
-                        Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]{i + 1}/{set.count}.已存储{file_name}，文件大小:{save_data.LongLength}");
+                        ByteHashSet.Add(save_data);
+                        NextRes(fid.name_1, save_data, set.isPS4);
                     }
 
-                    
-
-                    if(fid.ORIGIN_DATA.Count > 2)
-                    {
-                        File.WriteAllLines(file_name + ".gerdp.ini", fid.ORIGIN_DATA);
-                    }
-
-                    
-
-
-                    
-                }
-
-                
-
-                if ( !ByteHashSet.Contains(save_data) && IsRES(save_data))
-                {
-                    ByteHashSet.Add(save_data);
-                    NextRes(fid.name_1,save_data,set.isPS4);
-                }
-
-
+                });
 
 
             }
@@ -256,14 +275,14 @@ namespace GERDP
 */
 
 
-        private void NextRes(string title, byte[] data,bool isPS4)
+        private void NextRes(string title, byte[] data, bool isPS4)
         {
 
-            Res res = new Res(title,data,isPS4);
+            Res res = new Res(title, data, isPS4);
 
             res.SetDecoderSaveFolder(this.folder_name);
 
-            
+
 
             res.DecodeAll();
 
@@ -316,10 +335,10 @@ namespace GERDP
                 p = br.BaseStream.Position;
 
                 //Info($"{i}/{fid.ORIGIN_COUNT}文件名称地址:{address.ToString("X")}");
-                br.BaseStream.Seek(address,SeekOrigin.Begin);
+                br.BaseStream.Seek(address, SeekOrigin.Begin);
 
                 fid.ORIGIN_DATA.Add(ReadStringData(br));
-                br.BaseStream.Seek(p,SeekOrigin.Begin);
+                br.BaseStream.Seek(p, SeekOrigin.Begin);
             }
 
             if (fid.ORIGIN_DATA.Count >= 1)
@@ -356,11 +375,11 @@ namespace GERDP
 
         public string ReadStringData(BinaryReader br)
         {
-            
+
 
             List<byte> list = new List<byte>();
             byte b;
-            while((b = br.ReadByte()) != 0x00 && br.BaseStream.Position < br.BaseStream.Length)
+            while ((b = br.ReadByte()) != 0x00 && br.BaseStream.Position < br.BaseStream.Length)
             {
                 list.Add(b);
             }
