@@ -4,12 +4,21 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace GECV
 {
     public static class Utils
     {
 
+        public static bool IsVaildRegex(string str,string regex)
+        {
+
+            Regex reg = new Regex(regex);
+            Match result = reg.Match(str);
+            return result.Success;
+
+        }
         public static FileStream GetShareFileStream(String path)
         {
             return new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.Read);

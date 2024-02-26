@@ -9,6 +9,8 @@ using System.Net.Http.Headers;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.IO;
+using System.Security.Cryptography;
+using GECV;
 
 namespace GERDP_RE
 {
@@ -33,6 +35,18 @@ namespace GERDP_RE
             this.isPS4 = isPS4;
             Init();
             SetDecoderSaveFolder(folder);
+           
+        }
+
+
+        private void RegisterRes() //保险！
+        {
+            byte[] data = File.ReadAllBytes(res_file.FullName);
+
+            var md5 = CryptUtils.GetMD5HashFromBytes(data);
+
+
+            ResFileManager.Add(res_file.FullName, md5);
 
         }
         
@@ -85,7 +99,7 @@ namespace GERDP_RE
             DSList.Add(DS7);
             DSList.Add(DS8);
 
-            DS7.decoder.size_mul = 16;
+            DS6.decoder.size_mul = 4;
 
 
             Parallel.ForEach<ResDataSet>(DSList,i => {
@@ -106,10 +120,24 @@ namespace GERDP_RE
             //    i.decoder.Decode(i, this.res_data);
             //}
 
-            return Parallel.ForEach<ResDataSet>(DSList, i =>
+            byte[] data = File.ReadAllBytes(res_file.FullName);
+
+            var md5 = CryptUtils.GetMD5HashFromBytes(data);
+
+            if (ResFileManager.IsUnique(res_file.FullName, md5))
             {
-                i.decoder.Decode(i, this.res_file);
-            });
+                ResFileManager.Add(res_file.FullName,md5);
+                return Parallel.ForEach<ResDataSet>(DSList, i =>
+                {
+                    i.decoder.Decode(i, this.res_file);
+                });
+            }
+            else
+            {
+                return new ParallelLoopResult();
+            }
+
+
 
 
         }

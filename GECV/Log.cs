@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GECV
 {
@@ -16,7 +17,7 @@ namespace GECV
 
         public enum LogLevel
         {
-            info, warning, error, fatal
+            info, warning, error, fatal,debug
         }
 
         public static Dictionary<LogLevel, Stack<String>> LogRecord = new Dictionary<LogLevel, Stack<String>>();
@@ -41,8 +42,9 @@ namespace GECV
             LogRecord.Add(LogLevel.info, new Stack<string>());
             LogRecord.Add(LogLevel.warning, new Stack<string>());
             LogRecord.Add(LogLevel.error, new Stack<string>());
+            LogRecord.Add(LogLevel.debug, new Stack<string>());
 
-            
+
 
         }
 
@@ -121,23 +123,27 @@ namespace GECV
         {
 
 
-
-
             string str2 = $"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}][线程：{Thread.CurrentThread.ManagedThreadId}]{str}";
             Console.WriteLine(str2);
-            LogRecord[LogLevel.info].Push(str2);
 
-
-            if (LogDir != null && LogRecord[LogLevel.info].Count >= 1000)
+            lock (LogRecord[LogLevel.info])
             {
+                LogRecord[LogLevel.info].Push(str2);
+            }
+
+            
+
+
+            //if (LogDir != null && LogRecord[LogLevel.info].Count >= 100000)
+            //{
                 
 
-                WriteLog(LogLevel.info);
-                WriteLog(LogLevel.warning);
-                WriteLog(LogLevel.error);
+            //    WriteLog(LogLevel.info);
+            //    WriteLog(LogLevel.warning);
+            //    WriteLog(LogLevel.error);
 
 
-            }
+            //}
 
             return str2;
 
@@ -154,6 +160,7 @@ namespace GECV
                 WriteLog(LogLevel.info);
                 WriteLog(LogLevel.warning);
                 WriteLog(LogLevel.error);
+                WriteLog(LogLevel.debug);
 
 
             }
@@ -161,13 +168,31 @@ namespace GECV
 
         public static void Error(string str)
         {
+
+            lock (LogRecord[LogLevel.error])
+            {
+                LogRecord[LogLevel.error].Push(Info("\x1b[91m" + str));
+            }
+
             
-            LogRecord[LogLevel.error].Push(Info(str));
         }
 
         public static void Warning(string str)
         {
-            LogRecord[LogLevel.warning].Push(Info(str));
+            lock (LogRecord[LogLevel.warning])
+            {
+                LogRecord[LogLevel.warning].Push(Info("\x1b[93m"+str));
+            }
+
+            
+        }
+
+        public static void Debug(string str)
+        {
+            lock (LogRecord[LogLevel.debug])
+            {
+                LogRecord[LogLevel.debug].Push(Info("\x1b[96m"+str));
+            }
         }
 
         public static void Pass()
@@ -189,4 +214,5 @@ namespace GECV
 
     }
 }
+
 

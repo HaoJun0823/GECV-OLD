@@ -21,6 +21,8 @@ namespace GERDP_RE
 
         public ExperimentalDecoder decoder { get; set; }
 
+        public string extend_name { get; private set; }
+
         private ResDataSet() { }
 
 

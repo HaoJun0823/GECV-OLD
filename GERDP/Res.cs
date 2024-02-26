@@ -21,6 +21,8 @@ namespace GERDP
         long level;
         ResDataSet DS1, DS2, DS3, DS4, DS5, DS6, DS7, DS8;
 
+        public string extend_title;
+
         public List<ResDataSet> DSList;
 
         private Res() { }

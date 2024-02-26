@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GECV;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -84,13 +85,16 @@ namespace GERDP_RE
 
             Info($"请输入选项，输入1处理system.res，输入2处理system_update.res，如果输入错误程序会退出请重新打开再进行。\n注意新的解包会覆盖日志和原始文件，你需要注意这一点！");
             var input = Console.ReadLine();
+
+            Res SR;
+
             switch (input)
             {
                 case "1":
-                    Res SR = new Res("system", SystemRES, IsPS4, TargetDirectiory.FullName); SR.DecodeAll();
+                    SR = new Res("system", SystemRES, IsPS4, TargetDirectiory.FullName);
                     break;
                 case "2":
-                    Res SUR = new Res("system_update", SystemUpdateRES, IsPS4,TargetDirectiory.FullName);  SUR.DecodeAll();
+                    SR = new Res("system_update", SystemUpdateRES, IsPS4,TargetDirectiory.FullName);
                     break;
                 default:
                     Info($"你还真就输错了！{input}是什么？");
@@ -103,10 +107,18 @@ namespace GERDP_RE
 
             }
 
-            
+            while (SR.DecodeAll().IsCompleted) ;
+
 
             Info($"完成！");
-            Console.ReadKey ();
+
+            Log.flush();
+
+            Console.ReadKey();
+
+
+
+
 
 
         }

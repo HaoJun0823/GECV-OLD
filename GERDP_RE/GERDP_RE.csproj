@@ -52,6 +52,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Res.cs" />
     <Compile Include="ResDataSet.cs" />
+    <Compile Include="ResFileManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
