@@ -270,6 +270,12 @@ namespace GERDP_RE
                         {
                             Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]{i}/{set.count}.是存在的BLZ4文件，优化为复制任务。");
 
+                            var file_dir = Path.GetDirectoryName(file_name);
+                            var file_temp_name = Path.GetFileNameWithoutExtension(file_name);
+                            var file_temp_ext = Path.GetExtension(file_temp_name);
+
+                            file_name = $"{file_dir}\\{file_temp_name}_{blz4_md5}{file_temp_ext}";
+
                             var ini_file = file_name + ".gerdp.ini";
 
                             if (!File.Exists(file_name))
@@ -363,8 +369,8 @@ namespace GERDP_RE
 
 
                             }
-
-                            NextRes(fid.name_1, new FileInfo(real_res_path), set.isPS4);
+                            Task.Run(() => { NextRes(fid.name_1, new FileInfo(real_res_path), set.isPS4); });
+                            
                             return;
                         }
                         else
@@ -379,6 +385,12 @@ namespace GERDP_RE
 
                     lock (FileWriterLocker)
                     {
+
+                        var file_dir = Path.GetDirectoryName(file_name);
+                        var file_temp_name = Path.GetFileNameWithoutExtension(file_name);
+                        var file_temp_ext = Path.GetExtension(file_temp_name);
+
+                        file_name = $"{file_dir}\\{file_temp_name}_{blz4_md5}{file_temp_ext}";
 
                         if (File.Exists(file_name))
                         {

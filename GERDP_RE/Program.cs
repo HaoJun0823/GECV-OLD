@@ -107,14 +107,20 @@ namespace GERDP_RE
 
             }
 
-            while (SR.DecodeAll().IsCompleted) ;
+            var main_task = Task.Run(() => { 
+            
+            SR.DecodeAll();
+            
+            
+            });
 
 
-            Info($"完成！");
-
-            Log.flush();
 
             Console.ReadKey();
+            Log.flush();
+            Info($"完成！");
+            Console.ReadKey();
+
 
 
 

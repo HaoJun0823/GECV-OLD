@@ -37,6 +37,8 @@ namespace GERDP
             this.set = set;
             BinaryReader br = GetBinaryReader(res_data);
 
+            
+
 
             string res_relative_path = Path.GetRelativePath(Program.TargetDirectiory.FullName, this.folder_name);
 

@@ -111,7 +111,7 @@ namespace GERDP_RE
 
         }
 
-        public ParallelLoopResult DecodeAll()
+        public void DecodeAll()
         {
 
 
@@ -127,16 +127,22 @@ namespace GERDP_RE
             if (ResFileManager.IsUnique(res_file.FullName, md5))
             {
                 ResFileManager.Add(res_file.FullName,md5);
-                return Parallel.ForEach<ResDataSet>(DSList, i =>
+                var run_Result =  Parallel.ForEach<ResDataSet>(DSList, i =>
                 {
                     i.decoder.Decode(i, this.res_file);
                 });
+
+                while (!run_Result.IsCompleted) ;
+                return;
+
+
             }
             else
             {
-                return new ParallelLoopResult();
+                return;
             }
 
+            
 
 
 
