@@ -10,6 +10,20 @@ namespace GECV
     public static class Utils
     {
 
+        public static FileStream GetShareFileStream(String path)
+        {
+            return new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.Read);
+        }
+
+        public static FileStream GetShareFileStream(FileInfo file)
+        {
+            return GetShareFileStream(file.FullName);
+        }
+
+        public static BinaryReader GetBinaryReader(FileStream fs)
+        {
+            return new BinaryReader(fs);
+        }
 
         public static BinaryReader GetBinaryReader(byte[] input_data)
         {
