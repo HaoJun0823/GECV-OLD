@@ -24,6 +24,8 @@ namespace GERDP_RE
 
         static bool IsPS4;
 
+        private static Res SR;
+
         static void Main(string[] args)
         {
 
@@ -86,7 +88,7 @@ namespace GERDP_RE
             Info($"请输入选项，输入1处理system.res，输入2处理system_update.res，如果输入错误程序会退出请重新打开再进行。\n注意新的解包会覆盖日志和原始文件，你需要注意这一点！");
             var input = Console.ReadLine();
 
-            Res SR;
+            
 
             switch (input)
             {
@@ -107,12 +109,20 @@ namespace GERDP_RE
 
             }
 
-            var main_task = Task.Run(() => { 
-            
-            SR.DecodeAll();
-            
-            
-            });
+            var main_task = Task.Run(() => {
+
+                if (args.Length<=4 && args[3].ToLower().Equals("nosr"))
+                {
+                    return;
+                }
+
+                SR.DecodeAll() ;
+
+
+
+
+
+            }).ContinueWith(t => { Parallel.Invoke(() => { DoRtblSet(SR.res_file); }, () => { DoRtblSet(DataRDP); }, () => { DoRtblSet(PackageRDP); }, () => { DoRtblSet(PatchRDP); }); });
 
 
 
@@ -165,6 +175,25 @@ namespace GERDP_RE
 
 
         }
+
+        public static void DoRtblSet(FileInfo file)
+        {
+
+            if(file.Exists)
+            {
+                Rtbl r = new Rtbl(file, IsPS4);
+
+                r.folder_name = TargetDirectiory.FullName + "\\" + SR.title;
+
+                r.Decode();
+            }
+            
+            
+            
+
+
+        }
+
     }
         
 }

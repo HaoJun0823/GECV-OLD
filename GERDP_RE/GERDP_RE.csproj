@@ -56,6 +56,7 @@
     <Compile Include="Res.cs" />
     <Compile Include="ResDataSet.cs" />
     <Compile Include="ResFileManager.cs" />
+    <Compile Include="Rtbl.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

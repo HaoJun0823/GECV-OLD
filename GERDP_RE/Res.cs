@@ -18,7 +18,7 @@ namespace GERDP_RE
     {
 
 
-        FileInfo res_file;
+        public FileInfo res_file;
         public string title;
         bool isPS4;
         

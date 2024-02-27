@@ -34,7 +34,7 @@ namespace GERDP_RE
 
         public ResDataSet set;
 
-        private static object FileWriterLocker = new object();
+        public static object FileWriterLocker = new object();
 
 
         public void Decode(ResDataSet set, FileInfo res_file) //这个level不想改了，就这么摆烂
@@ -108,21 +108,21 @@ namespace GERDP_RE
                  最终文件大小：{file_real_size}");
 
 
-                if (location.status == DataLocationStatus.Package_4 && location.res_file.Length <= 0)
+                if (location.status == DataLocationStatus.Package_4 && !location.res_file.Exists)
                 {
                     Warning($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i}/{set.count}.也许来自package.rdp但是文件不存在。");
                     continue;
                 }
                 else
 
-                if (location.status == DataLocationStatus.Data_5 && location.res_file.Length <= 0)
+                if (location.status == DataLocationStatus.Data_5 && !location.res_file.Exists)
                 {
                     Warning($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i}/{set.count}.也许来自data.rdp但是文件不存在。");
                     continue;
                 }
                 else
 
-                if (location.status == DataLocationStatus.Patch_6 && location.res_file.Length <= 0)
+                if (location.status == DataLocationStatus.Patch_6 && !location.res_file.Exists)
                 {
                     Warning($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i}/{set.count}.也许来自patch.rdp但是文件不存在。");
                     continue;
@@ -131,6 +131,12 @@ namespace GERDP_RE
                 if (file_name_count >= 6)
                 {
                     Warning($"[警告][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i}/{set.count}.的数量也许不正确，读到的数量：{file_name_count}，跳过。");
+                    continue;
+                }
+
+                if (file_name_offset < 0 || file_name_offset > br.BaseStream.Length)
+                {
+                    Error($"[错误][{set.name}][{res_relative_path}][{br.BaseStream.Position.ToString("X")}]{i}/{set.count}.的文件名偏移{file_name_offset}不正确，小于了文件长度或者超过了文件长度{br.BaseStream.Length}。");
                     continue;
                 }
 
@@ -228,7 +234,15 @@ namespace GERDP_RE
 
                     BinaryReader remote_br = GetBinaryReader(GetShareFileStream(location.res_file));
 
-                    remote_br.BaseStream.Seek(location.CalcRealOffset(), SeekOrigin.Begin);
+                    var calc_real_offset = location.CalcRealOffset();
+                    if (calc_real_offset < 0 || calc_real_offset > remote_br.BaseStream.Length)
+                    {
+                        Error($"[错误][{set.name}][{res_relative_path}][{remote_br.BaseStream.Position.ToString("X")}]{i}/{set.count}.有一个正确的文件信息，但有一个错误的指针：{calc_real_offset.ToString("X")}，它的虚拟指针是{location.hex_origin}，它的错误是因为小于或者大于文件流{remote_br.BaseStream.Position.ToString("X")}。");
+                        return;
+                    }
+
+
+                    remote_br.BaseStream.Seek(calc_real_offset, SeekOrigin.Begin);
 
                     Info($"[信息][{set.name}][{br.BaseStream.Position.ToString("X")}]{i}/{set.count}.远端读取器的地址是{remote_br.BaseStream.Position.ToString("X")}，原始地址是{location.real_offset.ToString("X")}，这个文件在:{location.GetDataLocationName()}。");
 
@@ -247,6 +261,10 @@ namespace GERDP_RE
                     catch (Exception e)
                     {
                         Error($"[错误][{set.name}][{res_relative_path}][{remote_br.BaseStream.Position.ToString("X")}]{i}/{set.count}.指针位置{remote_br.BaseStream.Position.ToString("X")}，应该读取的长度:{file_size.ToString("X")}，实际读取的长度:{fun_i.ToString("X")}，原始数据长度:{remote_br.BaseStream.Length.ToString("X")}，上游指针位置:{br.BaseStream.Position.ToString("X")}，错误信息：{e.Message}");
+
+                        File.WriteAllBytes(Program.TargetDirectiory + "\\error." + Path.GetFileName(file_name), fun_data.ToArray());
+                        return;
+
                     }
 
 

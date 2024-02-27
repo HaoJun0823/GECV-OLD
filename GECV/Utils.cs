@@ -7,6 +7,7 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Text.RegularExpressions;
 
+
 namespace GECV
 {
     public static class Utils
@@ -15,9 +16,18 @@ namespace GECV
         public static bool IsVaildRegex(string str,string regex)
         {
 
+            try { 
+            
             Regex reg = new Regex(regex);
             Match result = reg.Match(str);
-            return result.Success;
+                return result.Success;
+            }
+            catch(Exception e) {
+
+                Log.Error($"{str}无法被{regex}处理！");
+
+            }
+            return false;
 
         }
         public static FileStream GetShareFileStream(String path)
