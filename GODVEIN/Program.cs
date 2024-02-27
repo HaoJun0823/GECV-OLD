@@ -1054,7 +1054,7 @@ namespace GODVEIN
                     bw.Write(retVal);
                     bw.Flush();
                     Log.Info($"当前指针位置：{bw.BaseStream.Position}");
-                    var split_data = BLZ4Utils.SplitBytes(file_data, 65536);
+                    var split_data = BLZ4Utils.SplitBytes(file_data, 32768);
                     Log.Info($"即将写入压缩数据：总块数：{split_data.Count}");
 
 
