@@ -947,26 +947,57 @@ namespace GODVEIN
             }
 
 
-            foreach (var i in base_files)
-            {
+
+
+            //foreach (var i in base_files)
+            //{
+            //    map.Add(i.Name, i.FullName);
+            //    Log.Info($"原文件:{i.Name},地址：{i.FullName}");
+            //}
+
+            Parallel.ForEach<FileInfo>(base_files, i => {
+
+                lock (map) { 
                 map.Add(i.Name, i.FullName);
+                }
                 Log.Info($"原文件:{i.Name},地址：{i.FullName}");
-            }
 
-            foreach (var i in extra_files)
-            {
-                if (map.ContainsKey(i.Name))
+            });
+
+            //foreach (var i in extra_files)
+            //{
+            //    if (map.ContainsKey(i.Name))
+            //    {
+            //        map[i.Name] = i.FullName;
+            //        Log.Info($"新文件:{i.Name},地址：{i.FullName}，劫持！");
+            //    }
+            //    else
+            //    {
+            //        throw new FileNotFoundException($"没找到{i.FullName}，你确定这个东西是游戏的一部分吗？");
+            //    }
+
+
+            //}
+
+            Parallel.ForEach<FileInfo>(extra_files, i => {
+
+
+                lock (map)
                 {
-                    map[i.Name] = i.FullName;
-                    Log.Info($"新文件:{i.Name},地址：{i.FullName}，劫持！");
-                }
-                else
-                {
-                    throw new FileNotFoundException($"没找到{i.FullName}，你确定这个东西是游戏的一部分吗？");
+                    if (map.ContainsKey(i.Name))
+                    {
+                        map[i.Name] = i.FullName;
+                        Log.Info($"新文件:{i.Name},地址：{i.FullName}，劫持！");
+                    }
+                    else
+                    {
+                        throw new FileNotFoundException($"没找到{i.FullName}，你确定这个东西是游戏的一部分吗？");
+                    }
                 }
 
 
-            }
+            
+            });
 
             //long offset = br.ReadInt64();
             //long hash = br.ReadInt64();
