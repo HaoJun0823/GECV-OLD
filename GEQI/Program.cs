@@ -470,7 +470,7 @@ namespace RETAEDOG
             {
 
                 var path_key = file.FullName.Substring(dir.FullName.Length);
-                Info($"[ProjectGameDataBuilder] FilePath:{path_key}.");
+                Info($"[ProjectGameDataBuilder]FilePath:{path_key}.");
 
                 if (GameDataMap.ContainsKey(path_key))
                 {
