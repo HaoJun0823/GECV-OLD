@@ -7,7 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="zlib.net" Version="1.0.4" />
+    <None Remove="zlib_net_license.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="zlib_net_license.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="zlib.net-mutliplatform" Version="1.0.6" />
   </ItemGroup>
 
 </Project>

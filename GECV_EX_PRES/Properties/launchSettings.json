@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "GECV_EX_PRES": {
+      "commandName": "Project",
+      "commandLineArgs": "pack .\\test2.pres  .\\unpack\\test",
+      "workingDirectory": "E:\\PRES"
+    }
+  }
+}

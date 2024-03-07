@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GECV
+namespace GECV_EX.Utils
 {
     public static class CryptUtils
     {

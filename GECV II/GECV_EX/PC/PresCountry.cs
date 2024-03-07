@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GECV_EX.Shared
+namespace GECV_EX.PC
 {
+
     internal struct PresCountry
     {
 
@@ -13,9 +14,9 @@ namespace GECV_EX.Shared
         public int length { get; set; }
 
 
-        
-        
-        
+
+
+
         public PresSet[] resources { get; set; }
 
 

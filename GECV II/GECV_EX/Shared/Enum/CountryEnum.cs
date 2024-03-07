@@ -9,7 +9,7 @@ namespace GECV_EX.Shared.Enum
     public enum CountryEnum
     {
 
-        NULL, EN, FR, IT, DE, ES, RU
+         EN, FR, IT, DE, ES, RU
 
 
 
