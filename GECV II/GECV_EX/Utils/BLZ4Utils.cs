@@ -165,6 +165,9 @@ namespace GECV_EX.Utils
         }
 
 
+
+
+
         public static byte[] PackBLZ4Data(byte[] origin_file)
         {
 
@@ -224,6 +227,8 @@ namespace GECV_EX.Utils
 
                             BLZ4Utils.CompressData(split_data[i], out compress);
 
+                            Console.WriteLine($"Compress Data;{split_data[i].Length} To {compress.Length}. ({i+1}/{split_data.Count})");
+
                             bw.Write(Convert.ToUInt16(compress.Length));
                             bw.Write(compress);
 
@@ -235,15 +240,25 @@ namespace GECV_EX.Utils
 
 
 
-                    long limit = bw.BaseStream.Position;
-                    ms.Seek(0, SeekOrigin.Begin);
+                    //long limit = bw.BaseStream.Position;
+                    //ms.Seek(0, SeekOrigin.Begin);
 
-                    byte[] result = new byte[limit];
-                    ms.Read(result, 0, result.Length);
+                    //byte[] result = new byte[limit];
+                    //ms.Read(result, 0, result.Length);
+
+                    Console.WriteLine($"BLZ4:Header:{BLZ4_HEADER},Original Length:{file_data.Length},MD5:{FileUtils.GetByteArrayString(retVal)},Block Count:{split_data.Count}.");
+
+                    byte[] result = ms.ToArray();
+
+
+                    if (!IsBLZ4(result))
+                    {
+                        throw new InvalidDataException($"BLZ4 Build Error!");  
+                    }
+
+                    //File.WriteAllBytes("E:\\PRES\\TEST\\"+FileUtils.GetByteArrayString(retVal),result);
 
                     return result;
-
-
                 }
             }
 

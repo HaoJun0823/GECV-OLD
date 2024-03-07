@@ -42,21 +42,26 @@ namespace GECV_EX.PC
         [XmlIgnore]
         public byte[] file_data;
 
+        [XmlAttribute]
+        public string VirtualFileName;
 
         [XmlAttribute]
         public bool IsVirtualFile;
         [XmlAttribute]
         public bool IsCompressed;
-        [XmlAttribute]
-        public int file_size_mul = 1;
 
         [XmlAttribute]
         public bool IsBlankFile;
 
         [XmlAttribute]
+        public int file_size_mul = 1;
+
+        [XmlAttribute]
         public string OriginalOffsetHex;
         [XmlAttribute]
         public string OriginalCSizeHex;
+
+        
 
         private PresFileData()
         {
@@ -148,6 +153,15 @@ namespace GECV_EX.PC
             IsVirtualFile = hex_temp[0].Equals('B') ? true : false;
 
             br.BaseStream.Seek(real_offset_file, SeekOrigin.Begin);
+
+
+            if(IsVirtualFile )
+            {
+                VirtualFileName = StreamUtils.readNullterminated(br);
+
+
+            }
+
 
             if (!IsVirtualFile)
             {

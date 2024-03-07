@@ -72,6 +72,12 @@ namespace GECV_EX.PC.Packer
                 //}
                 
                 cache_data = BLZ4Utils.PackBLZ4Data(read_data);
+
+                if (!BLZ4Utils.IsBLZ4(cache_data))
+                {
+                    throw new InvalidDataException($"BLZ4 Build Error!");
+                }
+
             }
             else
             {
@@ -80,13 +86,14 @@ namespace GECV_EX.PC.Packer
 
             presDataInf.csize_file = cache_data.Length / presDataInf.file_size_mul;
 
-            md5 = CryptUtils.GetMD5HashFromBytes(read_data);
+            md5 = CryptUtils.GetMD5HashFromBytes(cache_data);
 
             presDataInf.file_data = cache_data;
+            
 
             if(!FileCacheMap.ContainsKey(md5))
             {
-                FileCacheMap.Add(md5, read_data);
+                FileCacheMap.Add(md5, cache_data);
                 Console.WriteLine($"Cache {GetId()}.");
             }
             else

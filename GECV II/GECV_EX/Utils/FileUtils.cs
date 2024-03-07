@@ -18,8 +18,23 @@ namespace GECV_EX.Utils
 
         }
 
+        public static string GetByteArrayString(byte[] bytes)
+        {
+            StringBuilder sb = new StringBuilder();
+            
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                sb.Append(bytes[i].ToString("X2"));
+                
+                if (i < bytes.Length - 1)
+                {
+                    sb.Append(" ");
+                }
+            }
+            return sb.ToString();
 
-        
+        }
+
 
         public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
         {

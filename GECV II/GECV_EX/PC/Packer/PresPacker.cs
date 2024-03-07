@@ -28,6 +28,8 @@ namespace GECV_EX.PC.Packer
 
         private Dictionary<string,string> FileBookMarkMap = new Dictionary<string,string>();    
 
+
+
         public PresPacker(string dir)
         {
 
@@ -175,8 +177,12 @@ namespace GECV_EX.PC.Packer
                     booker.WriteData($"country_offset_{i}", offset);
                 }
 
+                int origin_offset = offset;
+
                 for (int si = 0; si < country_node.GetNodeCount(); si++)
                 {
+
+                    
 
                     var set_node = country_node.GetNode(si);
 
@@ -200,8 +206,15 @@ namespace GECV_EX.PC.Packer
                 //booker.SetBookMark("dataset_zero16_"+i, offset);
                 //booker.WriteData("dataset_zero16_"+i, new byte[16]);
                 //offset += 16;
-                offset = SetDataSetInformation(country_node,offset, IsSingle);
-                
+                offset = SetDataSetInformation(country_node,offset);
+
+                if (!IsSingle)
+                {
+                    Console.WriteLine($"Country Length:Start:{offset.ToString("X")},End:{origin_offset.ToString("X")},Length:{(offset - origin_offset).ToString("X")}");
+                    booker.WriteData("country_length_" + country_node.id, offset - origin_offset);
+                }
+
+
             }
 
 
@@ -213,10 +226,10 @@ namespace GECV_EX.PC.Packer
 
         }
 
-        private int SetDataSetInformation(PresPackCountryNode node,int offset,bool isSingle)
+        private int SetDataSetInformation(PresPackCountryNode node,int offset)
         {
 
-            int origin_offset = offset;
+            
 
             List<PresPackDataSetNode> list = new List<PresPackDataSetNode>();
 
@@ -232,6 +245,8 @@ namespace GECV_EX.PC.Packer
 
             foreach(var n in list)
             {
+
+                
 
                 if (n.IsBlankSet())
                 {
@@ -288,7 +303,8 @@ namespace GECV_EX.PC.Packer
 
                     int conf_offset = 0;
 
-                    int name_4_offset = -1;
+                    //int name_4_offset = -1;
+                    string virutal_name = item.presDataInf.VirtualFileName;
 
                     int conf_cursor_length = 0;
 
@@ -353,10 +369,10 @@ namespace GECV_EX.PC.Packer
                         booker.SetBookMark($"data_{node.id}_{n.id}_{i}_name_elements_{si}", result_offset);
                         booker.WriteData($"data_{node.id}_{n.id}_{i}_name_elements_{si}",data);
                         booker.WriteData($"data_{node.id}_{n.id}_{i}_name_elements_offset_{si}", result_offset) ;
-                        if (si == 3)
-                        {
-                            name_4_offset = result_offset;
-                        }
+                        //if (si == 3)
+                        //{
+                        //    name_4_offset = result_offset;
+                        //}
                         Console.WriteLine($"Conf List({si+1}/{item.presDataInf.name_list.Length}):{str}");
                         conf_offset += data.Length;
 
@@ -368,17 +384,40 @@ namespace GECV_EX.PC.Packer
 
                     offset += conf_offset;
 
-                    Console.WriteLine($"Name 4 Status:{name_4_offset}");
+                    Console.WriteLine($"Name 4 Status:{virutal_name}");
 
 
-                    if (item.presDataInf.IsVirtualFile && name_4_offset != -1)
+                    if (item.presDataInf.IsVirtualFile && !string.IsNullOrEmpty(virutal_name))
                     {
 
-                        string name_4_offset_hex = 'B' + name_4_offset.ToString("X7");
+                        byte[] data = Encoding.UTF8.GetBytes(virutal_name);
+
+                        int resize_length_end =  offset + data.Length;
+
+                        int resize_length = resize_length_end % 16;
+
+                        if (resize_length == 0)
+                        {
+                            resize_length += 16;
+                        }
+                        else
+                        {
+                            resize_length_end = resize_length_end + (16 - resize_length);
+                        }
+
+                        Array.Resize(ref data, resize_length_end - offset);
+
+                        string name_4_offset_hex = 'B' + offset.ToString("X7");
 
                         int virtual_address =  Convert.ToInt32(name_4_offset_hex,16);
 
                         booker.WriteData($"data_{node.id}_{n.id}_{i}_offset", virtual_address);
+
+                        booker.SetBookMark($"data_{node.id}_{n.id}_{i}_virtual_name",offset);
+                        booker.WriteData($"data_{node.id}_{n.id}_{i}_virtual_name", data);
+
+                        offset += data.Length;
+
 
                         continue;
 
@@ -464,10 +503,7 @@ namespace GECV_EX.PC.Packer
             }
 
 
-            if (!isSingle)
-            {
-                booker.WriteData("country_length_" + node.id, offset - origin_offset);
-            }
+
 
 
             return offset;
@@ -488,6 +524,7 @@ namespace GECV_EX.PC.Packer
 
                 byte[] data = PresPackDataManager.GetCacheByMD5(kv.Value);
 
+               
                 Console.WriteLine($"Write End File {kv.Key} Data:{kv.Value}, Length:{data.Length}");
 
                 string file_id = "end_file_data_" + kv.Value;
@@ -524,6 +561,7 @@ namespace GECV_EX.PC.Packer
 
                     FileWriteBookMap.Add(file_id,offset);
 
+                    offset += data.Length;
 
                     int start_align_offset = offset;
                     int end_align_offset = offset % 16;
@@ -537,6 +575,8 @@ namespace GECV_EX.PC.Packer
                         end_align_offset = start_align_offset + (16 - end_align_offset);
                     }
 
+                    
+
                     booker.SetBookMark(file_id+"_align", offset);
 
                     booker.WriteData(file_id+"_align", new byte[end_align_offset - start_align_offset]);
@@ -544,7 +584,7 @@ namespace GECV_EX.PC.Packer
                     Console.WriteLine ($"Align:Start:{start_align_offset},End:{end_align_offset},Length:{end_align_offset - start_align_offset}");
                     
 
-                    offset += data.Length +  (end_align_offset - start_align_offset);
+                    offset +=   (end_align_offset - start_align_offset);
                 }
 
 
@@ -555,6 +595,14 @@ namespace GECV_EX.PC.Packer
             return offset;
 
         }
+
+
+        public List<string> GetBookInformation()
+        {
+            return booker.GetBookInformation();
+        }
+
+      
 
     }
 }

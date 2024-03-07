@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GECV_EX.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +20,26 @@ namespace GECV_EX.Shared
 
         private Dictionary<string, int> bookmark = new Dictionary<string, int>();
 
+        private Dictionary<string, byte[]> bookmark_debug = new Dictionary<string, byte[]>();
 
+
+        public List<string> GetBookInformation()
+        {
+
+            List<string> book = new List<string>();
+
+            foreach(var kv in bookmark)
+            {
+
+                book.Add(kv.Key + "," + kv.Value.ToString("X") + "," + FileUtils.GetByteArrayString(bookmark_debug[kv.Key]));
+
+
+
+            }
+
+            return book;
+
+        }
 
 
         public BinaryBooker()
@@ -116,7 +136,14 @@ namespace GECV_EX.Shared
             datawriter.Flush();
             Console.WriteLine($"Write {name} At {bookmark[name].ToString("X")}.");
 
-
+            if (!bookmark_debug.ContainsKey(name))
+            {
+                bookmark_debug.Add(name,b);
+            }
+            else
+            {
+                bookmark_debug[name] = b;
+            }
 
 
         }

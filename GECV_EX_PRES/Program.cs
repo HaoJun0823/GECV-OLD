@@ -60,6 +60,8 @@ namespace GECV_EX_PRES
 
                 File.WriteAllLines(RootDir.FullName+"\\gecv_pres_vaild.log", list);
 
+                
+
                 Console.WriteLine("Press Any Key To Exit.");
                 Console.ReadKey();
             }
@@ -124,9 +126,14 @@ namespace GECV_EX_PRES
 
                         byte[] result = pk.GetPresFileBytes();
 
+
+                        
                         File.WriteAllBytes(args[1], result);
 
                         File.WriteAllLines(RootDir.FullName + "\\register_list.log", pk.GetRegisterText() );
+                        File.WriteAllLines(RootDir.FullName + "\\gecv_book_list.log", pk.GetBookInformation());
+
+                        PresPC pres = new PresPC(result);
 
                     }
 
