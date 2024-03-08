@@ -18,7 +18,7 @@ namespace GECV_EX_PRES
         {
 
 
-            Console.WriteLine("GECV EX VERSION BY RANDERION(HAOJUN0823)");
+            Console.WriteLine("GECV EX PRES BY RANDERION(HAOJUN0823)");
             Console.WriteLine("https://blog.haojun0823.xyz/");
             Console.WriteLine("https://github.com/HaoJun0823/GECV");
 
