@@ -45,7 +45,7 @@ namespace GECV_EX_TR2
 
 
 
-                if (args[0].ToLower().Equals("unpack"))
+                if (args[0].ToLower().Equals("unpack")&& args.Length>2)
                 {
 
                     if (Directory.Exists(args[2]))
@@ -79,8 +79,8 @@ namespace GECV_EX_TR2
                         Console.WriteLine($"Unpack {file.FullName} To {save_path}.");
                         GECV_EX.Shared.TR2File tr2;
 
-                        try
-                        {
+                        //try
+                        //{
 
 
 
@@ -95,19 +95,20 @@ namespace GECV_EX_TR2
                                 File.WriteAllBytes(ToDir.FullName+"\\"+r_path+"\\"+data.id.ToString().PadLeft(8,'0')+"_"+data.name+".bin",data.bin_data);
                             }
 
-                            File.Create(ToDir.FullName + "\\" + r_path + "\\"+tr2.header_inf+".ini");
+                            File.Create(ToDir.FullName + "\\" + r_path + "\\"+tr2.header_inf+".cfg");
 
                             File.WriteAllBytes(ToDir.FullName + "\\" + r_path + "\\conf.dat",tr2.conf_data);
 
 
 
-                        }
-                        catch (Exception e)
-                        {
+                        //}
+                        //catch (Exception e)
+                        //{
 
-                            Console.WriteLine($"Pass Invaild File:{file.FullName}.Beacause:{e.Message}");
+                        //    Console.WriteLine($"Pass Invaild File:{file.FullName}.Beacause:{e.Message}");
+                            
 
-                        }
+                        //}
 
 
 

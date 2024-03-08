@@ -2,7 +2,7 @@
   "profiles": {
     "GECV_EX_TR2": {
       "commandName": "Project",
-      "commandLineArgs": "pack .\\target ",
+      "commandLineArgs": "unpack .\\test .\\test2",
       "workingDirectory": "E:\\PRES\\TR2"
     }
   }

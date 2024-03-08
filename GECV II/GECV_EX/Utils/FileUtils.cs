@@ -36,6 +36,89 @@ namespace GECV_EX.Utils
         }
 
 
+        public static string[] GetHexEditorStyleString(byte[] bytes) { 
+        
+            List<string> list = new List<string>();
+
+
+            int offset;
+
+
+            list.Add($"OFFSET  || 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F || 0123456789ABCDEF");
+
+            int count = 0;
+
+            int byte_count = 0;
+
+            StringBuilder sb = new StringBuilder();
+
+
+            sb.Append(count.ToString("X8"));
+            sb.Append("|| ");
+
+            StringBuilder sb_str = new StringBuilder();
+
+            for (int i = 0; i < bytes.Length; i++)
+            {
+
+                sb.Append(bytes[i].ToString("X2"));
+                byte_count++;
+                sb.Append(' ');
+
+                //sb_str.Append((char)bytes[i]);
+                //sb_str.Append(GetHexEditoryStyleChar(bytes[i]));
+
+                if(byte_count == 16)
+                {
+
+                    count += 0xf + 0x1;
+
+                    sb.Append("|| ");
+                    sb.Append(sb_str.ToString());
+
+                    sb_str = new StringBuilder();
+
+                    list.Add(sb.ToString());
+
+                    sb = new StringBuilder(count);
+
+                    sb.Append(count.ToString("X8"));
+                    sb.Append("|| ");
+                    byte_count = 0;
+                }
+
+            }
+
+
+
+
+            return list.ToArray();
+        
+        
+        }
+
+
+        public static char GetHexEditoryStyleChar(byte b)
+        {
+
+            switch ((char)b)
+            {
+                case '0':
+                    return '.';
+                case '\r':
+                    return '.';
+                case '\n':
+                    return '.';
+
+
+                default:
+                    return (char)b;
+            }
+
+
+        }
+
+
         public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
         {
             // Get information about the source directory
