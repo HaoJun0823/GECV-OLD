@@ -25,4 +25,10 @@
     <PackageReference Include="zlib.net-mutliplatform" Version="1.0.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="噬神者PC版本文件结构1.1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
