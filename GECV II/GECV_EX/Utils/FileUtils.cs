@@ -37,6 +37,10 @@ namespace GECV_EX.Utils
 
         public static byte[] GetBytesByHexString(string hex_str)
         {
+            if (string.IsNullOrEmpty(hex_str))
+            {
+                return new byte[0];
+            }
 
             var hex_str_arr = hex_str.Split(' ');
 

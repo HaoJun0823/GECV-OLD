@@ -7,10 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="MiniExcel_license.txt" />
     <None Remove="zlib_net_license.txt" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="MiniExcel_license.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="zlib_net_license.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

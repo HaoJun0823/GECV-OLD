@@ -488,7 +488,10 @@ namespace GECV_EX_TR2_Editor_GUI
                     if (type.Equals("ASCII") || type.Equals("UTF-8") || type.Equals("UTF-16") || type.Equals("UTF-16LE")) // So I Can Do This At  string type = row["Type"].ToString();
                     {
 
+                        try { 
+
                         byte[] input_byte = FileUtils.GetBytesByHexString(kv.Value);
+
 
                         if (!System_TR2.SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(id, name, type, arr_index, kv.Key, input_byte))
                         {
@@ -497,6 +500,13 @@ namespace GECV_EX_TR2_Editor_GUI
                                 break;
                             }
                         }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"String Converter:Set {id}-{name}-{type}-{arr_index}-{kv.Key}-{kv.Value} Error!\nData:{kv.Value}", "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Stop);
+                        }
+
+
                     }
 
 
