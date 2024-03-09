@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace GECV_EX.Utils
@@ -18,7 +19,14 @@ namespace GECV_EX.Utils
 
                 XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
 
-                xmlSerializer.Serialize(sw,obj);
+                XmlWriterSettings xmlWriterSettings = new XmlWriterSettings() { Encoding = Encoding.Unicode, CheckCharacters = false };
+
+
+
+                var writer = XmlWriter.Create(sw,xmlWriterSettings);
+                
+
+                xmlSerializer.Serialize(writer,obj);
                 return sw.ToString();
             }
 
@@ -29,7 +37,11 @@ namespace GECV_EX.Utils
 
             XmlSerializer xmlSerializer = new XmlSerializer (typeof(T));
 
-             return (T)xmlSerializer.Deserialize(sr);
+            XmlReaderSettings xmlReaderSettings = new XmlReaderSettings() { CheckCharacters = false };
+
+            var reader = XmlReader.Create(sr, xmlReaderSettings);
+
+             return (T)xmlSerializer.Deserialize(reader);
 
 
         }

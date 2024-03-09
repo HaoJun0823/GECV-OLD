@@ -35,6 +35,28 @@ namespace GECV_EX.Utils
 
         }
 
+        public static byte[] GetBytesByHexString(string hex_str)
+        {
+
+            var hex_str_arr = hex_str.Split(' ');
+
+
+            byte[] result = new byte[hex_str_arr.Length];
+
+
+            for(int i = 0; i < result.Length; i++)
+            {
+
+
+                result[i] = Convert.ToByte(hex_str_arr[i],16);
+
+
+            }
+
+            return result;
+
+        }
+
 
         public static string[] GetHexEditorStyleString(byte[] bytes) { 
         
@@ -96,6 +118,9 @@ namespace GECV_EX.Utils
         
         
         }
+
+
+
 
 
         public static char GetHexEditoryStyleChar(byte b)

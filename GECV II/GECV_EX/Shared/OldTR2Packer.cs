@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 
 namespace GECV_EX.Shared
 {
-    public class TR2Packer
+    public class OldTR2Packer
     {
 
 
         BinaryBooker booker = new BinaryBooker();
 
 
-        private TR2File tr2_file_info;
+        private OldTR2File tr2_file_info;
 
         private DirectoryInfo data_folder;
 
 
-        public TR2Packer(string xml_path)
+        public OldTR2Packer(string xml_path)
         {
 
-            this.tr2_file_info =  XmlUtils.Load<TR2File>(xml_path);
+            this.tr2_file_info =  XmlUtils.Load<OldTR2File>(xml_path);
 
             
             data_folder = new DirectoryInfo(Path.GetDirectoryName(xml_path));
