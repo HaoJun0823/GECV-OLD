@@ -635,7 +635,7 @@ namespace GECV_EX_TR2_Editor_GUI
             }
 
             BuildDataTable(System_TR2);
-
+            RefreshDataTable();
             MessageBox.Show($"Updated {count} data.", "Done!");
 
 

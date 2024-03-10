@@ -50,9 +50,11 @@ namespace GECV_EX.TR2
 
             booker.WriteData("table_name", table_name_data);
 
-            booker.WriteData("table_column_infromation_offset", tr2data.table_column_infromation_offset);
 
-            booker.WriteData("table_column_infromation_count", tr2data.table_column_infromation_count);
+
+            booker.WriteData("table_column_infromation_offset", 0x40);
+
+            booker.WriteData("table_column_infromation_count", tr2data.table_column_infromation.Length);
 
             offset = 64;
 
@@ -186,10 +188,11 @@ namespace GECV_EX.TR2
                 }
 
                 booker.SetBookMark($"table_column_information_{i}_column_data_list_lastmark", task_offset);
-                booker.WriteData($"table_column_information_{i}_column_data_list_lastmark", tr2data.table_column_infromation[i].column_data.last_mark);
-                task_offset += 8;
-                
-
+                //booker.WriteData($"table_column_information_{i}_column_data_list_lastmark", tr2data.table_column_infromation[i].column_data.last_mark);
+                task_offset += 4;
+                booker.SetBookMark($"table_column_information_{i}_column_data_list_lastmark_zero4", task_offset);
+                booker.WriteData($"table_column_information_{i}_column_data_list_lastmark_zero4", new byte[4]);
+                task_offset += 4;
                 //booker.SetBookMark($"table_column_information_{i}_column_data_list_zero16", task_offset);
 
                 //int zero_offset = task_offset % 16;
@@ -241,10 +244,10 @@ namespace GECV_EX.TR2
 
 
                 }
+                booker.WriteData($"table_column_information_{i}_column_data_list_lastmark", task_offset- offset);
 
-                
 
-                
+
 
                 booker.SetBookMark($"table_column_information_{i}_end_zero16", task_offset);
                 int zero_offset = task_offset % 16;

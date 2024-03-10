@@ -130,8 +130,8 @@ namespace GECV_EX.TR2
             [XmlArray]
             public TR2ColumnDataList[] column_data_list;
 
-            [XmlAttribute]
-            public long last_mark;
+            [XmlIgnore]
+            public int last_mark;
 
         }
         //ZERO16
@@ -631,7 +631,7 @@ namespace GECV_EX.TR2
 
 
                         }
-                        column_data.last_mark = br.ReadInt64();
+                        column_data.last_mark = br.ReadInt32();
 
 
 
