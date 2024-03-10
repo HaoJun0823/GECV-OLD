@@ -488,18 +488,19 @@ namespace GECV_EX_TR2_Editor_GUI
                     if (type.Equals("ASCII") || type.Equals("UTF-8") || type.Equals("UTF-16") || type.Equals("UTF-16LE")) // So I Can Do This At  string type = row["Type"].ToString();
                     {
 
-                        try { 
-
-                        byte[] input_byte = FileUtils.GetBytesByHexString(kv.Value);
-
-
-                        if (!System_TR2.SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(id, name, type, arr_index, kv.Key, input_byte))
+                        try
                         {
-                            if (MessageBox.Show($"Byte Converter:Set {id}-{name}-{type}-{arr_index}-{kv.Key}-{kv.Value} Error!\nContinue?", "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Stop) == DialogResult.Cancel)
+
+                            byte[] input_byte = FileUtils.GetBytesByHexString(kv.Value);
+
+
+                            if (!System_TR2.SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(id, name, type, arr_index, kv.Key, input_byte))
                             {
-                                break;
+                                if (MessageBox.Show($"Byte Converter:Set {id}-{name}-{type}-{arr_index}-{kv.Key}-{kv.Value} Error!\nContinue?", "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Stop) == DialogResult.Cancel)
+                                {
+                                    break;
+                                }
                             }
-                        }
                         }
                         catch (Exception ex)
                         {
@@ -563,7 +564,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
         private void MenuItem_Import_Click(object sender, EventArgs e)
         {
-            if(MessageBox.Show($"When your import, you must know all not save data will be lost and update, so if you don't need some data just delete that txt file.", "Attention!", MessageBoxButtons.OKCancel, MessageBoxIcon.Information) == DialogResult.OK)
+            if (MessageBox.Show($"When your import, you must know all not save data will be lost and update, so if you don't need some data just delete that txt file.", "Attention!", MessageBoxButtons.OKCancel, MessageBoxIcon.Information) == DialogResult.OK)
             {
                 UpdateTR2Reader();
 
@@ -579,13 +580,13 @@ namespace GECV_EX_TR2_Editor_GUI
         private void MenuItem_Export_Click(object sender, EventArgs e)
         {
 
-            MessageBox.Show($"When your export all text, you need open this by right encoding, beacause this editor will write all binary data just file extension is .txt!", "Attention!", MessageBoxButtons.OK,MessageBoxIcon.Information);
+            MessageBox.Show($"When your export all text, you need open this by right encoding, beacause this editor will write all binary data just file extension is .txt!", "Attention!", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             UpdateTR2Reader();
 
             FolderBrowserDialog fbd = new FolderBrowserDialog();
 
-            if(fbd.ShowDialog() == DialogResult.OK)
+            if (fbd.ShowDialog() == DialogResult.OK)
             {
                 ExportHexDataTable(fbd.SelectedPath);
             }
@@ -599,7 +600,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
             DirectoryInfo dir = new DirectoryInfo(folderpath);
 
-            FileInfo[] files = dir.GetFiles("*.txt",SearchOption.TopDirectoryOnly);
+            FileInfo[] files = dir.GetFiles("*.txt", SearchOption.TopDirectoryOnly);
 
             int count = 0;
 
@@ -609,7 +610,7 @@ namespace GECV_EX_TR2_Editor_GUI
                 string[] name_arr = Path.GetFileNameWithoutExtension(file.FullName).Split('+');
 
 
-                if (name_arr.Length!=5 )
+                if (name_arr.Length != 5)
                 {
                     MessageBox.Show($"Load {file.FullName} Error:\nText name must be id+name+type+arr_index+data_id", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -624,7 +625,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
                     byte[] input_data = File.ReadAllBytes(file.FullName);
 
-                    System_TR2.SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(id,name,type,arr_index,data_id,input_data);
+                    System_TR2.SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(id, name, type, arr_index, data_id, input_data);
 
                     count++;
 
@@ -633,7 +634,9 @@ namespace GECV_EX_TR2_Editor_GUI
 
             }
 
-            MessageBox.Show($"Updated {count} data.","Done!");
+            BuildDataTable(System_TR2);
+
+            MessageBox.Show($"Updated {count} data.", "Done!");
 
 
         }
@@ -662,15 +665,17 @@ namespace GECV_EX_TR2_Editor_GUI
                     {
                         string output_name = $"{id}+{name}+{type}+{index}+{System_DataTable_Hex.Columns[i].ToString()}.txt";
                         string string_data = System_DataTable_Hex.Rows[row_number][i].ToString();
-                        try { 
+                        try
+                        {
 
-                        byte[] data = FileUtils.GetBytesByHexString(string_data);
+                            byte[] data = FileUtils.GetBytesByHexString(string_data);
 
-                        
 
-                        File.WriteAllBytes(folderpath + "\\" + output_name, data);
+
+                            File.WriteAllBytes(folderpath + "\\" + output_name, data);
                             count++;
-                        }catch (Exception e)
+                        }
+                        catch (Exception e)
                         {
 
                             MessageBox.Show($"Save {output_name} Error:\nData:{string_data}\n{e.Message}\n{e.StackTrace}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -693,7 +698,7 @@ namespace GECV_EX_TR2_Editor_GUI
         private void MenuItem_Help_Click(object sender, EventArgs e)
         {
 
-            MessageBox.Show($"GECV EX PROJECT BY HAOJUN0823\nhttps://www.haojun0823.xyz/\nemail@haojun0823.xyz\nhttps://www.github.com/haojun0823/gecv", "About");
+            MessageBox.Show($"GECV EX PROJECT BY HAOJUN0823\nhttps://www.haojun0823.xyz/\nemail@haojun0823.xyz\nhttps://www.github.com/haojun0823/gecv\nIf you edit xml file by other editor you need know this editor maybe work wrong!", "About");
 
         }
 
@@ -734,8 +739,8 @@ namespace GECV_EX_TR2_Editor_GUI
 
 
 
-                    MiniExcel.SaveAs(sfd.FileName,System_DataTable);
-                    MiniExcel.SaveAs(sfd.FileName+".shadow.xlsx", System_DataTable_Hex);
+                    MiniExcel.SaveAs(sfd.FileName, System_DataTable);
+                    MiniExcel.SaveAs(sfd.FileName + ".shadow.xlsx", System_DataTable_Hex);
 
 
 
@@ -745,6 +750,37 @@ namespace GECV_EX_TR2_Editor_GUI
             }
 
 
+        }
+
+        private void MenuItem_SaveTr2_Click(object sender, EventArgs e)
+        {
+            UpdateTR2Reader();
+
+
+
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "tr2 file(*.tr2)|*.tr2";
+                sfd.RestoreDirectory = true;
+                sfd.Title = "Export File:";
+                sfd.FileName = input_file_name;
+
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+
+
+
+
+                    TR2Writer writer = new TR2Writer(System_TR2);
+
+                    File.WriteAllBytes(sfd.FileName,writer.GetTr2Data());
+
+                    File.WriteAllLines(sfd.FileName+".log", writer.GetBookInformation());
+
+
+                }
+
+            }
         }
     }
 }

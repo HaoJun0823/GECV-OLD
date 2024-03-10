@@ -131,7 +131,7 @@ namespace GECV_EX.TR2
             public TR2ColumnDataList[] column_data_list;
 
             [XmlAttribute]
-            public int last_mark;
+            public long last_mark;
 
         }
         //ZERO16
@@ -506,6 +506,8 @@ namespace GECV_EX.TR2
                         column_data.data_78_7B = br.ReadInt32();
                         column_data.data_7C_7F_column_data_count = br.ReadInt32();
 
+                        
+
                         Console.WriteLine($"TS2 DATA COLUMN INFORMATION:\nname:{column_data.column_name}\nserial_left:{column_data.column_serial_left}\nserial_right:{column_data.column_serial_right}\n70-73:{column_data.data_70_73}\n74:{column_data.data_74}\n75:{column_data.data_75}\n76:{column_data.data_76_array_size}\n77:{column_data.data_77}\n78-7B:{column_data.data_78_7B}\n7C-7F:{column_data.data_7C_7F_column_data_count}");
 
                         column_data.column_data_list = new TR2ColumnDataList[column_data.data_7C_7F_column_data_count];
@@ -524,7 +526,7 @@ namespace GECV_EX.TR2
                             {
                                 var data_arr_list = new TR2ColumnDataList();
                                 data_arr_list.IsInVaildOffset = true;
-                                Console.WriteLine("IS Invaild Offset");
+                                Console.WriteLine("Is Invaild Offset");
                                 column_data.column_data_list[si] = data_arr_list;
                                 continue;
                             }
@@ -532,10 +534,11 @@ namespace GECV_EX.TR2
                             {
                                 column_data.column_data_list[si].column_data = new TR2ColumnDataArray[column_data.data_76_array_size];
                                 Console.WriteLine($"Every Cell Have {column_data.column_data_list[si].column_data.Length} Object.");
+                                br.BaseStream.Seek(data_arr_offset, SeekOrigin.Begin);
                                 for (int ssi = 0; ssi < column_data.column_data_list[si].column_data.Length; ssi++)
                                 {
                                     var data_arr_list_arr = new TR2ColumnDataArray();
-                                    br.BaseStream.Seek(data_arr_offset, SeekOrigin.Begin);
+                                    
 
                                     dynamic xdata;
 
@@ -613,14 +616,14 @@ namespace GECV_EX.TR2
 
 
 
-                                    br.BaseStream.Seek(br_position, SeekOrigin.Begin);
+                                    
 
                                     column_data.column_data_list[si].column_data[ssi] = data_arr_list_arr;
 
 
                                 }
 
-
+                                br.BaseStream.Seek(br_position, SeekOrigin.Begin);
                             }
 
 
@@ -628,7 +631,7 @@ namespace GECV_EX.TR2
 
 
                         }
-
+                        column_data.last_mark = br.ReadInt64();
 
 
 

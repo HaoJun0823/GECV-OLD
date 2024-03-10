@@ -4,7 +4,7 @@ email@haojun0823.xyz
 汉化群：461217810 
 https://github.com/HaoJun0823/GECV 参见GECV_II
 
-版本1.1，日期2024/03/10
+版本1.2，日期2024/03/10
 
 PRES PC结构：
 	Pres固定开头
@@ -177,7 +177,7 @@ tr2:
 		row_data_count:0x7C-0x7F:数据的数量
 
 		根据0x7C-0x7F的数量，循环读取接下来的内容：
-			row_data[row_data_count].offset:int32,这些都是挨着的地址，如果哪一个超出了当前数据的最大长度，那么这个指针是无效的，做记号。
+			row_data[row_data_count].offset:int32,这些都是挨着的地址，如果哪一个超出了当前数据的最大长度，那么这个指针是无效的，要写成文件的末尾，做记号。
 
 		lastmark:int32，结束的数据记号，原封不动写回去。
 		从这里开始对齐16的整数倍，不足用00补齐，如果正好是16倍则不做任何变化。

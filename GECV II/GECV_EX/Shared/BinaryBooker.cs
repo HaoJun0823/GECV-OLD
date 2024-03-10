@@ -31,7 +31,15 @@ namespace GECV_EX.Shared
             foreach(var kv in bookmark)
             {
 
-                book.Add(kv.Key + "," + kv.Value.ToString("X") + "," + FileUtils.GetByteArrayString(bookmark_debug[kv.Key]));
+                if (!bookmark_debug.ContainsKey(kv.Key))
+                {
+                    book.Add(kv.Key + ",[GECV-NULL],00");
+                }
+                else {
+                    book.Add(kv.Key + "," + kv.Value.ToString("X") + "," + FileUtils.GetByteArrayString(bookmark_debug[kv.Key]));
+                }
+
+                
 
 
 
@@ -169,6 +177,19 @@ namespace GECV_EX.Shared
         {
 
             byte[] b = BitConverter.GetBytes(data);
+
+            //Array.Reverse(b);
+
+            this.WriteData(name, b);
+
+            return b.Length;
+        }
+
+        public int WriteData(string name,byte data)
+        {
+            byte[] b = new byte[1];
+
+                b[0] = data;
 
             //Array.Reverse(b);
 

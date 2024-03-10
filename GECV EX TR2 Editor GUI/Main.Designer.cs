@@ -37,13 +37,14 @@
             MenuItem_Help = new ToolStripMenuItem();
             MenuStatus_Main = new StatusStrip();
             DataGridView_Main = new DataGridView();
+            MenuItem_SaveTr2 = new ToolStripMenuItem();
             MenuSet_Main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DataGridView_Main).BeginInit();
             SuspendLayout();
             // 
             // MenuSet_Main
             // 
-            MenuSet_Main.Items.AddRange(new ToolStripItem[] { MenuItem_Open, MenuItem_Save, MenuItem_Import, MenuItem_Export, MenuItem_Excel_Export, MenuItem_Help });
+            MenuSet_Main.Items.AddRange(new ToolStripItem[] { MenuItem_Open, MenuItem_Save, MenuItem_SaveTr2, MenuItem_Import, MenuItem_Export, MenuItem_Excel_Export, MenuItem_Help });
             MenuSet_Main.Location = new Point(0, 0);
             MenuSet_Main.Name = "MenuSet_Main";
             MenuSet_Main.Size = new Size(800, 25);
@@ -114,6 +115,13 @@
             DataGridView_Main.CellDoubleClick += DataGridView_Main_CellDoubleClick;
             DataGridView_Main.ColumnAdded += DataGridView_Main_ColumnAdded;
             // 
+            // MenuItem_SaveTr2
+            // 
+            MenuItem_SaveTr2.Name = "MenuItem_SaveTr2";
+            MenuItem_SaveTr2.Size = new Size(70, 21);
+            MenuItem_SaveTr2.Text = "Save Tr2";
+            MenuItem_SaveTr2.Click += MenuItem_SaveTr2_Click;
+            // 
             // Main
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
@@ -144,5 +152,6 @@
         private ToolStripMenuItem MenuItem_Export;
         private ToolStripMenuItem MenuItem_Help;
         private ToolStripMenuItem MenuItem_Excel_Export;
+        private ToolStripMenuItem MenuItem_SaveTr2;
     }
 }

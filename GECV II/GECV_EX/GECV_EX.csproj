@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="噬神者PC版本文件结构1.1.txt">
+    <None Update="噬神者PC版本文件结构1.2.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

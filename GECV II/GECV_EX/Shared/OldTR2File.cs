@@ -360,7 +360,7 @@ namespace GECV_EX.Shared
 
 
                                     }
-
+                                    Console.WriteLine($"Last Mark Poistion:{br2.BaseStream.Position.ToString("X")}");
                                     data_info_set[i].LastMark = br2.ReadInt32();
 
                                 }
