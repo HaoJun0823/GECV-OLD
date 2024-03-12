@@ -2,6 +2,7 @@ using GECV_EX.TR2;
 using GECV_EX.Utils;
 using MiniExcelLibs;
 using System.Data;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace GECV_EX_TR2_Editor_GUI
@@ -33,7 +34,7 @@ namespace GECV_EX_TR2_Editor_GUI
                 ofd.RestoreDirectory = true;
                 ofd.Multiselect = false;
                 ofd.Title = "Open Tr2 Or Xml File:";
-                ofd.Filter = "xml (*.xml)|*.xml|tr2 (*.tr2)|*.tr2";
+                ofd.Filter = "(TR2 Editor Supported File)|*.tr2;*.xml";
                 ofd.RestoreDirectory = false;
 
 
@@ -59,7 +60,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
                             System_TR2 = XmlUtils.Load<TR2Reader>(select_file);
                             this.Text = original_title + $" Building {System_TR2.table_name} Table, Please Wait...";
-                            BuildDataTable(System_TR2);
+                            BuildDataTable(System_TR2,true);
                             RefreshDataTable();
 
                             this.Text = original_title + " " + select_file;
@@ -73,7 +74,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
                             System_TR2 = new TR2Reader(File.ReadAllBytes(select_file));
                             this.Text = original_title + $" Building {System_TR2.table_name} Table, Please Wait...";
-                            BuildDataTable(System_TR2);
+                            BuildDataTable(System_TR2,true);
                             RefreshDataTable();
                             this.Text = original_title + " " + select_file;
                             SetMenuStatus(true);
@@ -116,7 +117,7 @@ namespace GECV_EX_TR2_Editor_GUI
         }
 
 
-        private void BuildDataTable(TR2Reader tr2data)
+        private void BuildDataTable(TR2Reader tr2data,bool check = false)
         {
             DataTable dt = new DataTable();
 
@@ -125,7 +126,8 @@ namespace GECV_EX_TR2_Editor_GUI
             dt.Columns.Add("Id", typeof(int));
             dt.Columns.Add("Name", typeof(string));
             dt.Columns.Add("Type", typeof(string));
-            dt.Columns.Add("Index", typeof(byte));
+            dt.Columns.Add("Index", typeof(int));
+            //dt.Columns.Add("Array", typeof(byte));
             //dt.Columns.Add("Editor Mode", typeof(EditorDataModeEnum));
 
 
@@ -158,6 +160,8 @@ namespace GECV_EX_TR2_Editor_GUI
 
 
             //}
+
+            List<string> Dulpicate_list = new List<string>();
 
             foreach (DataColumn dc in dt.Columns)
             {
@@ -197,36 +201,54 @@ namespace GECV_EX_TR2_Editor_GUI
                 var tr2data_inf = tr2data.table_column_infromation[i];
 
 
-                for (int si = 0; si < tr2data_inf.column_data.data_76_array_size; si++)
+                for (int si = 0; si < tr2data.column_counter.id.Length; si++)
                 {
+                    Console.WriteLine($"Debug Build Table 76:{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{si}(Array Length:{tr2data_inf.column_data.column_data_list.Length})");
 
-                    var data_arr = tr2data_inf.column_data.column_data_list[si];
-                    DataRow dr = dt.NewRow();
-                    dr["Id"] = tr2data_inf.id;
-                    dr["Name"] = tr2data_inf.column_data.column_name;
-                    dr["Type"] = tr2data_inf.column_data.column_type;
-                    dr["Index"] = si;
+                    var data_arr = tr2data_inf.column_data;
 
-                    DataRow dr_hex = dt_hex.NewRow();
-                    dr_hex["Id"] = tr2data_inf.id;
-                    dr_hex["Name"] = tr2data_inf.column_data.column_name;
-                    dr_hex["Type"] = tr2data_inf.column_data.column_type;
-                    dr_hex["Index"] = si;
+
+                    //DataRow dr = dt.NewRow();
+                    //dr["Id"] = tr2data_inf.id;
+                    //dr["Name"] = tr2data_inf.column_data.column_name;
+                    //dr["Type"] = tr2data_inf.column_data.column_type;
+                    ////dr["Index"] = ssi;
+
+                    //DataRow dr_hex = dt_hex.NewRow();
+                    //dr_hex["Id"] = tr2data_inf.id;
+                    //dr_hex["Name"] = tr2data_inf.column_data.column_name;
+                    //dr_hex["Type"] = tr2data_inf.column_data.column_type;
+                    ////dr_hex["Index"] = ssi;
+
+                    //dt.Rows.Add(dr);
+                    //dt_hex.Rows.Add(dr_hex);
 
                     //StringBuilder sb = new StringBuilder();
-                    for (int ssi = 0; ssi < tr2data.column_counter.id.Length; ssi++)
-                    {
 
-                        if (tr2data_inf.column_data.column_data_list[ssi].IsInVaildOffset || tr2data_inf.column_data.column_data_list[ssi].column_data[si].IsInVaildArrayOffset)
+                    if (tr2data_inf.column_data.column_data_list[si].DulpicatedObjectOffset != 0)
+                    {
+                        Dulpicate_list.Add($"{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{tr2data_inf.column_data.column_type}-{tr2data.column_counter.id[si].ToString()}.");
+                    }
+
+                    for (byte ssi = 0; ssi < data_arr.data_76_array_size; ssi++)
+                    {
+                        Console.WriteLine($"Debug Build Table 76 Data:{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{si}-{ssi}(Array Length:{data_arr.data_76_array_size})");
+
+                        DataRow dr = GetDatRowFromTable(ref dt,tr2data_inf.id,tr2data_inf.column_data.column_name,tr2data_inf.column_data.column_type,ssi);
+                        DataRow dr_hex = GetDatRowFromTable(ref dt_hex, tr2data_inf.id, tr2data_inf.column_data.column_name, tr2data_inf.column_data.column_type, ssi);
+
+                        if (tr2data_inf.column_data.column_data_list[si].IsInVaildOffset || tr2data_inf.column_data.column_data_list[si].column_data[ssi].IsInVaildArrayOffset)
                         {
-                            dr[tr2data.column_counter.id[ssi].ToString()] = "[[GECV-EDITOR::NULL]]";
-                            dr_hex[tr2data.column_counter.id[ssi].ToString()] = "[[GECV-EDITOR::NULL]]";
+                            dr[tr2data.column_counter.id[si].ToString()] = "[[GECV-EDITOR::NULL]]";
+                            dr_hex[tr2data.column_counter.id[si].ToString()] = "[[GECV-EDITOR::NULL]]";
                         }
                         else
                         {
 
 
-                            var data_arr_data = tr2data_inf.column_data.column_data_list[ssi].column_data[si];
+
+
+                            var data_arr_data = tr2data_inf.column_data.column_data_list[si].column_data[ssi];
 
                             //sb.Append(ssi);
                             //sb.Append(":{{");
@@ -238,8 +260,8 @@ namespace GECV_EX_TR2_Editor_GUI
 
 
 
-                            dr[tr2data.column_counter.id[ssi].ToString()] = data_arr_data.value_string_view.ToString();
-                            dr_hex[tr2data.column_counter.id[ssi].ToString()] = data_arr_data.value_hex_view.ToString();
+                            dr[tr2data.column_counter.id[si].ToString()] = data_arr_data.value_string_view.ToString();
+                            dr_hex[tr2data.column_counter.id[si].ToString()] = data_arr_data.value_hex_view.ToString();
 
 
 
@@ -248,10 +270,10 @@ namespace GECV_EX_TR2_Editor_GUI
                         }
 
 
+
                     }
 
-                    dt.Rows.Add(dr);
-                    dt_hex.Rows.Add(dr_hex);
+
 
 
                 }
@@ -263,7 +285,16 @@ namespace GECV_EX_TR2_Editor_GUI
 
             }
 
+            StringBuilder sb = new StringBuilder();
 
+            foreach(var str in Dulpicate_list) { sb.Append(str);sb.Append('\n'); };
+
+            if(check && Dulpicate_list.Count !=0)
+            {
+
+                MessageBox.Show($"There are {Dulpicate_list.Count} data is dulpicate object:\n\n{sb.ToString()}\nThe source project will merge the same data to the same address (For optimization and publishing, since the data does not need to be modified again.), which is not possible to edit in the table.\nThe editor will allocate new pointers for each data, even though they all have the same data.\nYou need to know this. ","Warning!",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+
+            }
 
 
 
@@ -271,6 +302,58 @@ namespace GECV_EX_TR2_Editor_GUI
 
             System_DataTable = dt;
             System_DataTable_Hex = dt_hex;
+        }
+
+
+        private DataRow GetDatRowFromTable(ref DataTable dt,int id,string column_name,string column_type,byte index)
+        {
+
+            //DataRow dr = dt.NewRow();
+            //dr["Id"] = tr2data_inf.id;
+            //dr["Name"] = tr2data_inf.column_data.column_name;
+            //dr["Type"] = tr2data_inf.column_data.column_type;
+            ////dr["Index"] = ssi;
+
+            //DataRow dr_hex = dt_hex.NewRow();
+            //dr_hex["Id"] = tr2data_inf.id;
+            //dr_hex["Name"] = tr2data_inf.column_data.column_name;
+            //dr_hex["Type"] = tr2data_inf.column_data.column_type;
+            ////dr_hex["Index"] = ssi;
+
+            //dt.Rows.Add(dr);
+            //dt_hex.Rows.Add(dr_hex);
+
+
+            if(dt.Rows != null && dt.Rows.Count != 0) { 
+
+            foreach(DataRow dr in dt.Rows)
+            {
+
+                if (dr["Id"].ToString() == id.ToString() && dr["Name"].ToString() == column_name.ToString() && dr["Type"].ToString() == column_type.ToString() && dr["Index"].ToString() == index.ToString())
+                {
+
+                    return dr;
+
+                }
+
+
+            }
+            }
+
+            DataRow dr2 = dt.NewRow();
+
+            dr2["Id"] = id;
+            dr2["Name"] = column_name;
+            dr2["Type"] = column_type;
+            dr2["Index"] = index;
+
+            dt.Rows.Add(dr2);
+
+            return dr2;
+
+
+
+
         }
 
         //private static EditorDataModeEnum GetModeByDataType(string type)

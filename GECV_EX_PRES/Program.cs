@@ -2,16 +2,12 @@
 using GECV_EX.PC.Packer;
 using GECV_EX.Utils;
 using System.Collections.Generic;
+using System.IO;
 
 namespace GECV_EX_PRES
 {
     internal class Program
     {
-
-
-        static DirectoryInfo ToDir;
-        static DirectoryInfo RootDir;
-        
 
 
         static void Main(string[] args)
@@ -31,10 +27,8 @@ namespace GECV_EX_PRES
             if(args.Length == 1)
             {
 
-                if (Path.Exists(args[0]))
-                {
-                    RootDir = new DirectoryInfo(args[0]);
-                }
+                var RootDir = new DirectoryInfo(args[0]);
+                
 
                 var files = RootDir.GetFiles("*.pres",SearchOption.TopDirectoryOnly);
 
@@ -69,80 +63,73 @@ namespace GECV_EX_PRES
 
             if (args.Length <3) {
 
-                Console.WriteLine("You Need 3 Args:\n0.{pack}Or{unpack}\n1.{Pres File}\n2.{Target Directory}");
+                Console.WriteLine("Pack:You Need 3 Args:\n0.pack\n1.{Pres Xml Folder}\n2.{Target Directory}");
+                Console.WriteLine("Unpack:You Need 3 Args:\n0.unpack\n1.{Pres Folder}\n2.{Target Directory}");
                 Console.WriteLine("VAILD MODE:You Need 1 Args:\n1.{Target Directory}");
-
+                Console.WriteLine("Press Any Key To Exit.");
+                Console.ReadKey();
+                return;
 
 
             }
-            else
+
+
+
+            if (args[0].ToLower().Equals("unpack"))
             {
 
-                //FromDir = new DirectoryInfo(args[1]);
-                //ToDir = new DirectoryInfo(args[2]);
                 
+                DirectoryInfo from_dir = new DirectoryInfo(args[1]);
+                DirectoryInfo to_dir = new DirectoryInfo(args[2]);
 
-                if (args[0].Equals("unpack"))
+
+                var files = from_dir.GetFiles("*.pres",SearchOption.TopDirectoryOnly);
+
+
+                foreach(var f in files)
                 {
+                    Console.WriteLine(f.FullName);
+                    string to_path = to_dir.FullName+"\\"+Path.GetFileNameWithoutExtension(f.Name);
 
-                    if (Path.Exists(args[1]))
-                    {
-                        string path = args[1];
-
-                        RootDir = new DirectoryInfo(Path.GetFullPath(args[2]) + '\\' + Path.GetFileNameWithoutExtension(path));
-
-                        if(RootDir.Exists) { 
-                        
-                        RootDir.Delete(true);
-                        }
-
-                        RootDir.Create();
-
-                        ToDir =  new DirectoryInfo(RootDir.FullName + "\\Data");
-                        ToDir.Create();
-
-
-                        Decode(new FileInfo(path));
-
-                        
-
-
-                    }
+                    Decode(f,to_path);
 
 
                 }
 
-                if (args[0].Equals("pack"))
-                {
-
-                    if (Path.Exists(args[2]))
-                    {
-
-                        string path = args[2];
-
-                        RootDir = new DirectoryInfo(path);
-
-                        PresPacker pk = new PresPacker(RootDir.FullName);
-
-                        byte[] result = pk.GetPresFileBytes();
-
-
-                        
-                        File.WriteAllBytes(args[1], result);
-
-                        File.WriteAllLines(RootDir.FullName + "\\register_list.log", pk.GetRegisterText() );
-                        File.WriteAllLines(RootDir.FullName + "\\gecv_book_list.log", pk.GetBookInformation());
-
-                        PresPC pres = new PresPC(result);
-
-                    }
-
-
-
-                }
 
 
             }
+            else if (args[0].ToLower().Equals("pack")){
+
+
+
+                DirectoryInfo from_dir = new DirectoryInfo(args[1]);
+                DirectoryInfo to_dir = new DirectoryInfo(args[2]);
+
+
+                var dirs = from_dir.GetDirectories("*", SearchOption.TopDirectoryOnly);
+
+
+                foreach(var d in dirs)
+                {
+
+                    Console.WriteLine(d.FullName);
+                    Encode(d.FullName, to_dir + "\\" + d.Name + ".pres");
+
+
+
+                }
+
+
+
+
+
+            }
+
+
+
+
+
             
             Console.WriteLine("Press Any Key To Exit.");
             Console.ReadKey();
@@ -150,19 +137,45 @@ namespace GECV_EX_PRES
         }
 
 
-        static void Decode(FileInfo file)
+        static void Encode(string root_path,string target_path)
         {
+
+            
+            PresPacker pk = new PresPacker(root_path);
+
+            byte[] result = pk.GetPresFileBytes();
+
+
+            File.WriteAllBytes(target_path, result);
+
+            File.WriteAllLines(result+".register_list.log", pk.GetRegisterText());
+            File.WriteAllLines(result+ ".gecv_book_list.log", pk.GetBookInformation());
+
+
+            PresPC p = new PresPC(result);
+
+
+        }
+
+
+        static void Decode(FileInfo file,string root_path)
+        {
+
+
+            DirectoryInfo root = new DirectoryInfo(root_path);
+
+
             byte[] b = File.ReadAllBytes(file.FullName);
 
             Console.WriteLine($"Read{file.FullName}.Length:{b.Length}");
 
             PresPC pres = new PresPC(b);
 
-            pres.Unpack(ToDir.FullName);
+            pres.Unpack(root.FullName+"\\Data");
 
             //FileUtils.CreateSymbolLinkDosCommandFile(pres.symbol_map,RootDir.FullName);
 
-            string mod_path = RootDir.FullName + "\\Mod\\";
+            string mod_path = root.FullName + "\\Mod\\";
 
             if (Path.Exists(mod_path))
             {
@@ -193,7 +206,7 @@ namespace GECV_EX_PRES
                 }
 
 
-                string r_o_p = Path.GetRelativePath(ToDir.FullName,kv.Key);
+                string r_o_p = Path.GetRelativePath(root.FullName+"\\Data",kv.Key);
                 string r_t_p = Path.GetRelativePath (mod_path,target);
 
                 File.AppendAllText(target + ".ini", $"{r_o_p}={r_t_p}\n");

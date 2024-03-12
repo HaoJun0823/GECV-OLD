@@ -177,9 +177,10 @@ tr2:
 		row_data_count:0x7C-0x7F:数据的数量
 
 		根据0x7C-0x7F的数量，循环读取接下来的内容：
-			row_data[row_data_count].offset:int32,这些都是挨着的地址，如果哪一个超出了当前数据的最大长度，那么这个指针是无效的，要写成文件的末尾，做记号。
+			row_data[row_data_count].offset:int32,这些都是挨着的地址，如果哪一个超出了当前数据的最大长度，那么这个指针是无效的，要写成数据结束的位置，做记号。这些指针也许会重复同一个地址，猜测是在游戏编译的时候，因为数据不需要再次修改，因此合并了相同数据用于优化。
 
-		lastmark:int32，结束的数据记号，是所有*row_data_data结束时候的指针。（告诉游戏）。
+		lastmark:int32，结束的数据记号，是所有*row_data_data结束时候的指针。
+		lastmark_zero4:这里有4个0，用于分割接下来的数据。
 		从这里开始对齐16的整数倍，不足用00补齐，如果正好是16倍则不做任何变化。
 
 		*row_data_data:跳转到每个row_data[row_data_count].offset的位置，开始读取：
