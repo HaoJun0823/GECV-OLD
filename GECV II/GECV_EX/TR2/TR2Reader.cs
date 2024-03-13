@@ -1,4 +1,4 @@
-﻿using GECV_EX.Shared;
+﻿using GECV_EX.Shared.Old;
 using GECV_EX.Utils;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using static GECV_EX.Shared.OldTR2File;
+using static GECV_EX.Shared.Old.OldTR2File;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GECV_EX.TR2

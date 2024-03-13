@@ -11,6 +11,36 @@ namespace GECV_EX.Utils
     {
 
 
+        
+
+
+        public static Dictionary<uint, string> extension_ext = new Dictionary<uint, string>
+            {
+                { 0x46534e42, ".bnsf" },
+                { 0x6c566d47, ".gmvl" },
+                { 0x3272742e, ".tr2" },
+                { 0x6B737431, ".kst" },
+                { 0xffd8ffe1, ".jpg" },
+                { 0x52494646, ".riff" },
+                { 0x89504E47, ".png" },
+                { 0x646F7466, ".dotf" },
+                { 0x73657250, ".pres" },
+                { 0x347a6c62, ".blz4" },
+                { 0x69780300, ".ixo" },
+                { 0x2E6C6F62, ".lob" },
+            };
+
+
+
+        public static string GetExtension(uint magic)
+        {
+
+            string extension_str;
+            if (!extension_ext.TryGetValue(magic, out extension_str)) { extension_str = ".bin"; }
+
+            return extension_str;
+        }
+
         public static string GetOrderName(int order,string name)
         {
 

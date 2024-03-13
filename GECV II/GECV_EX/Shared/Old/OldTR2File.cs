@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace GECV_EX.Shared
+namespace GECV_EX.Shared.Old
 {
 
     [XmlRoot]
@@ -316,7 +316,8 @@ namespace GECV_EX.Shared
                                             byte[] arr_data;
 
                                             Console.WriteLine($"Deep Current Cursor Read Arr Arr:{br2.BaseStream.Position.ToString("X")}");
-                                            if(readbyte_count == -2 ) {
+                                            if (readbyte_count == -2)
+                                            {
                                                 arr_data = StreamUtils.readWideDataterminated(br2);
                                                 Console.WriteLine($"UTF-16 Get Length:{arr_data.Length}");
                                             }
@@ -417,7 +418,7 @@ namespace GECV_EX.Shared
 
                 case "UINT8":
                     //return Convert.ToByte(data).ToString();
-                    return (data[0]).ToString();
+                    return data[0].ToString();
                 case "INT16":
                     //return Convert.ToInt16(data).ToString();
                     return BitConverter.ToInt16(data).ToString();
@@ -475,7 +476,7 @@ namespace GECV_EX.Shared
         public string SaveAsXml()
         {
 
-            return XmlUtils.Save<OldTR2File>(this);
+            return XmlUtils.Save(this);
 
         }
 
