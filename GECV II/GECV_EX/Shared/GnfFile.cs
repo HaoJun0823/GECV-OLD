@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GECV_EX.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,10 +19,17 @@ namespace GECV_EX.Shared
         public List<byte[]> dds_data;
 
 
+        public string filename;
 
-        public GnfFile(byte[] data)
+
+
+
+        public GnfFile(byte[] data) 
         {
+
+
             
+            this.filename = CryptUtils.GetMD5HashFromBytes(data);
 
             using(MemoryStream ms = new MemoryStream())
             {
@@ -36,9 +44,6 @@ namespace GECV_EX.Shared
                     {
 
                         file_size_group[i] = br.ReadInt32();
-                        
-
-
 
 
                     }
@@ -76,6 +81,18 @@ namespace GECV_EX.Shared
                 }
             }
 
+
+
+        }
+
+
+        public void WriteDDS(string path)
+        {
+
+            for(int i=0;i<this.dds_data.Count;i++)
+            {
+                File.WriteAllBytes(path+"\\"+this.filename+"_"+i+".dds", dds_data[i]);
+            }
 
 
         }
