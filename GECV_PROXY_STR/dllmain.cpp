@@ -44,6 +44,19 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 				string data = line.substr(9);
 				log << "Split Data:(16)Address:" << address << "&Data:" << data << '\n';
 
+				
+				string br = "<br>";
+				string replace_br = "\n";
+
+				size_t pos = 0;
+
+				while ((pos = data.find(br, pos)) != string::npos) {
+
+					data.replace(pos, br.length(), replace_br);
+
+				}
+
+
 				uint32_t int_addr = stoi(address, 0, 16);
 
 				SIZE_T char_length = data.length() + 1;
