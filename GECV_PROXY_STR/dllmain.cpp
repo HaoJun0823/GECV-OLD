@@ -25,8 +25,14 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		log.open(".\\CE_DATA\\GECV_STR.log", std::ios::trunc | std::ios::out);
 
 		log << "Start!\n";
+
+		
+
 		HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId());
 
+		DWORD base_address = (DWORD)GetModuleHandle(NULL);
+
+		log << "Base Address:" << std::hex << base_address << "\n";
 
 		if (str_bin.is_open()) {
 			log << "Load GECV_STR.bin\n";
@@ -38,54 +44,84 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 				string data = line.substr(9);
 				log << "Split Data:(16)Address:" << address << "&Data:" << data << '\n';
 
-				int int_addr = stoi(address, 0, 16);
+				uint32_t int_addr = stoi(address, 0, 16);
 
 				SIZE_T char_length = data.length() + 1;
 
 				char* char_arr = new char[char_length];
 
-				memcpy(char_arr, data.c_str(), char_length ); //Can mem to game.
+				memcpy(char_arr, data.c_str(), char_length); //Can mem to game.
 
 				//WideCharToMultiByte(CP_UTF8,0,data,)
 
-				log << "Parse Data:(10)Address:" << int_addr << "&Data:" << char_arr;
+				log << "Parse Data:(16)Address:" << std::hex << int_addr << ",Data:" << char_arr;
+
+				int_addr += base_address;
+				log << "+Base Address:" << int_addr;
+
 				/*log << '\n';
 				for (int i = 0; i < char_length; i++) {
 
 					log << char_arr[i] << ' ';
 				}*/
 
-				DWORD ret;
+				DWORD ret = 0;
 
-				VirtualProtect((LPVOID)int_addr, sizeof(int), PAGE_EXECUTE_READWRITE, &ret);
+				if (VirtualProtectEx(process, (LPVOID)int_addr, sizeof(uint32_t), PAGE_EXECUTE_READWRITE, &ret)) {
 
-				log << ",Alloc Size:" << ret;
-
-				int read_addr = 0;
-				ReadProcessMemory(process,(LPVOID)int_addr,&read_addr,4,NULL);
-
-				log << ",Read Addr:" << read_addr;
-				VirtualProtect((LPVOID)read_addr, char_length, PAGE_EXECUTE_READWRITE, &ret);
-				SIZE_T written;
-
-				if (WriteProcessMemory(process, (LPVOID)read_addr, char_arr, char_length, &written)) {
-					log << ",Success!\n";
-					char* test_char_arr = new char[char_length];
-					ReadProcessMemory(process, (LPVOID)read_addr, test_char_arr, char_length, &written);
-
-					log << "Debug Read:" << test_char_arr << '\n';
-					
-					//delete[] char_arr;
-					//delete[] test_char_arr;
-					//delete& address;
-					//delete& data;
-					//delete& line;
+					log << ",Protect Success!";
 
 				}
 				else {
-					log << ",Faild!\n";
+					log << ",Protect Faild!";
 				}
 
+
+				log << ",Alloc Cursor Size:" << ret;
+
+				uint32_t read_addr = 0;
+				ReadProcessMemory(process, (LPVOID)int_addr, &read_addr, sizeof(uint32_t), NULL);
+
+				log << ",Read Address:" << std::hex << read_addr;
+
+
+				void* alloc_addr = VirtualAllocEx(process, NULL, char_length, MEM_COMMIT, PAGE_READWRITE);
+				log << ",Alloc Address:" << std::hex << &alloc_addr;
+				SIZE_T written;
+
+				if (WriteProcessMemory(process, alloc_addr, (void*)char_arr, char_length, &written)) {
+					log << ",Success!";
+					//VirtualProtect((LPVOID)int_addr, char_length, PAGE_EXECUTE_READWRITE, &ret);
+					log << ",Written Size:" << std::dec <<written;
+					if (WriteProcessMemory(process, (LPVOID)int_addr, &alloc_addr, sizeof(uint32_t), &written)) {
+						log << ",Success!" << "Written:" << written << '\n';
+						
+						
+
+						uint32_t debug_read_addr = 0;
+
+						ReadProcessMemory(process, (LPVOID)int_addr, &debug_read_addr, sizeof(uint32_t), &written);
+
+
+						log << "Debug:Written Address Read:" << std::hex << debug_read_addr << ",Read Size:" << std::dec << written << '\n';
+
+						char* test_char_arr = new char[char_length];
+
+						ReadProcessMemory(process, alloc_addr, test_char_arr, char_length, &written);
+
+						log << "Debug:Alloc Data Read:" << test_char_arr << ",Read Size:" <<std::dec << written << '\n';
+
+						//delete[] char_arr;
+						//delete[] test_char_arr;
+						//delete& address;
+						//delete& data;
+						//delete& line;
+
+					}
+					else {
+						log << ",Faild!\n";
+					}
+				}
 
 
 			}
@@ -95,10 +131,12 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		}
 
 
-
-
+		log.flush();
+		log.close();
 
 	}
+
+
 
 	return TRUE;
 }
