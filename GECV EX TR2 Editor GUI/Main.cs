@@ -3,6 +3,7 @@ using GECV_EX.Utils;
 using MiniExcelLibs;
 using System.Data;
 using System.Runtime.Intrinsics.X86;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace GECV_EX_TR2_Editor_GUI
@@ -41,59 +42,7 @@ namespace GECV_EX_TR2_Editor_GUI
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
 
-
-                    string select_file = ofd.FileName;
-
-
-                    string ext = Path.GetExtension(select_file);
-
-                    input_file_name = Path.GetFileNameWithoutExtension(select_file);
-
-                    try
-                    {
-
-
-                        if (ext.ToLower() == ".xml")
-                        {
-
-
-
-                            System_TR2 = XmlUtils.Load<TR2Reader>(select_file);
-                            this.Text = original_title + $" Building {System_TR2.table_name} Table, Please Wait...";
-                            BuildDataTable(System_TR2,true);
-                            RefreshDataTable();
-
-                            this.Text = original_title + " " + select_file;
-                            SetMenuStatus(true);
-                            return;
-                        }
-                        else
-
-                        if (ext.ToLower() == ".tr2")
-                        {
-
-                            System_TR2 = new TR2Reader(File.ReadAllBytes(select_file));
-                            this.Text = original_title + $" Building {System_TR2.table_name} Table, Please Wait...";
-                            BuildDataTable(System_TR2,true);
-                            RefreshDataTable();
-                            this.Text = original_title + " " + select_file;
-                            SetMenuStatus(true);
-                            return;
-                        }
-
-
-
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"{select_file} Open Error:\n{ex.Message}\n{ex.StackTrace}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        input_file_name = "";
-                        this.Text = original_title;
-                        SetMenuStatus(false);
-                        return;
-                    }
-                    MessageBox.Show($"{select_file} Is not supported file!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
+                    OpenFile(ofd.FileName);
 
                 }
 
@@ -101,6 +50,64 @@ namespace GECV_EX_TR2_Editor_GUI
 
             }
 
+
+        }
+
+
+        private void OpenFile(string filename)
+        {
+
+            string select_file = filename;
+
+
+            string ext = Path.GetExtension(select_file);
+
+            input_file_name = Path.GetFileNameWithoutExtension(select_file);
+
+            try
+            {
+
+
+                if (ext.ToLower() == ".xml")
+                {
+
+
+
+                    System_TR2 = XmlUtils.Load<TR2Reader>(select_file);
+                    this.Text = original_title + $" Building {System_TR2.table_name} Table, Please Wait...";
+                    BuildDataTable(System_TR2, true);
+                    RefreshDataTable();
+
+                    this.Text = original_title + " " + select_file;
+                    SetMenuStatus(true);
+                    return;
+                }
+                else
+
+                if (ext.ToLower() == ".tr2")
+                {
+
+                    System_TR2 = new TR2Reader(File.ReadAllBytes(select_file));
+                    this.Text = original_title + $" Building {System_TR2.table_name} Table, Please Wait...";
+                    BuildDataTable(System_TR2, true);
+                    RefreshDataTable();
+                    this.Text = original_title + " " + select_file;
+                    SetMenuStatus(true);
+                    return;
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{select_file} Open Error:\n{ex.Message}\n{ex.StackTrace}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                input_file_name = "";
+                this.Text = original_title;
+                SetMenuStatus(false);
+                return;
+            }
+            MessageBox.Show($"{select_file} Is not supported file!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
         }
 
@@ -117,7 +124,7 @@ namespace GECV_EX_TR2_Editor_GUI
         }
 
 
-        private void BuildDataTable(TR2Reader tr2data,bool check = false)
+        private void BuildDataTable(TR2Reader tr2data, bool check = false)
         {
             DataTable dt = new DataTable();
 
@@ -234,7 +241,7 @@ namespace GECV_EX_TR2_Editor_GUI
                     {
                         Console.WriteLine($"Debug Build Table 76 Data:{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{si}-{ssi}(Array Length:{data_arr.data_76_array_size})");
 
-                        DataRow dr = GetDatRowFromTable(ref dt,tr2data_inf.id,tr2data_inf.column_data.column_name,tr2data_inf.column_data.column_type,ssi);
+                        DataRow dr = GetDatRowFromTable(ref dt, tr2data_inf.id, tr2data_inf.column_data.column_name, tr2data_inf.column_data.column_type, ssi);
                         DataRow dr_hex = GetDatRowFromTable(ref dt_hex, tr2data_inf.id, tr2data_inf.column_data.column_name, tr2data_inf.column_data.column_type, ssi);
 
                         if (tr2data_inf.column_data.column_data_list[si].IsInVaildOffset || tr2data_inf.column_data.column_data_list[si].column_data[ssi].IsInVaildArrayOffset)
@@ -287,12 +294,12 @@ namespace GECV_EX_TR2_Editor_GUI
 
             StringBuilder sb = new StringBuilder();
 
-            foreach(var str in Dulpicate_list) { sb.Append(str);sb.Append('\n'); };
+            foreach (var str in Dulpicate_list) { sb.Append(str); sb.Append('\n'); };
 
-            if(check && Dulpicate_list.Count !=0)
+            if (check && Dulpicate_list.Count != 0)
             {
 
-                MessageBox.Show($"There are {Dulpicate_list.Count} data is dulpicate object:\n\n{sb.ToString()}\nThe source project will merge the same data to the same address (For optimization and publishing, since the data does not need to be modified again.), which is not possible to edit in the table.\nThe editor will allocate new pointers for each data, even though they all have the same data.\nYou need to know this. ","Warning!",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                MessageBox.Show($"There are {Dulpicate_list.Count} data is dulpicate object:\n\n{sb.ToString()}\nThe source project will merge the same data to the same address (For optimization and publishing, since the data does not need to be modified again.), which is not possible to edit in the table.\nThe editor will allocate new pointers for each data, even though they all have the same data.\nYou need to know this. ", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             }
 
@@ -305,7 +312,7 @@ namespace GECV_EX_TR2_Editor_GUI
         }
 
 
-        private DataRow GetDatRowFromTable(ref DataTable dt,int id,string column_name,string column_type,byte index)
+        private DataRow GetDatRowFromTable(ref DataTable dt, int id, string column_name, string column_type, byte index)
         {
 
             //DataRow dr = dt.NewRow();
@@ -324,20 +331,21 @@ namespace GECV_EX_TR2_Editor_GUI
             //dt_hex.Rows.Add(dr_hex);
 
 
-            if(dt.Rows != null && dt.Rows.Count != 0) { 
-
-            foreach(DataRow dr in dt.Rows)
+            if (dt.Rows != null && dt.Rows.Count != 0)
             {
 
-                if (dr["Id"].ToString() == id.ToString() && dr["Name"].ToString() == column_name.ToString() && dr["Type"].ToString() == column_type.ToString() && dr["Index"].ToString() == index.ToString())
+                foreach (DataRow dr in dt.Rows)
                 {
 
-                    return dr;
+                    if (dr["Id"].ToString() == id.ToString() && dr["Name"].ToString() == column_name.ToString() && dr["Type"].ToString() == column_type.ToString() && dr["Index"].ToString() == index.ToString())
+                    {
+
+                        return dr;
+
+                    }
+
 
                 }
-
-
-            }
             }
 
             DataRow dr2 = dt.NewRow();
@@ -856,13 +864,53 @@ namespace GECV_EX_TR2_Editor_GUI
 
                     TR2Writer writer = new TR2Writer(System_TR2);
 
-                    File.WriteAllBytes(sfd.FileName,writer.GetTr2Data());
+                    File.WriteAllBytes(sfd.FileName, writer.GetTr2Data());
 
-                    File.WriteAllLines(sfd.FileName+".log", writer.GetBookInformation());
+                    File.WriteAllLines(sfd.FileName + ".log", writer.GetBookInformation());
 
 
                 }
 
+            }
+        }
+
+        private void Main_DragEnter(object sender, DragEventArgs e)
+        {
+
+            if(e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+
+
+
+        }
+
+        private void Main_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+
+
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+
+                if (files.Length > 1)
+                {
+
+                    MessageBox.Show($"You drop {files.Length} files!\nOnly open {files[0]}.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                }
+
+
+
+                OpenFile(files[0]);
+
+
+            }
+            else
+            {
+                MessageBox.Show($"You drop invaild data.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }

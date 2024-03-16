@@ -31,13 +31,13 @@
             MenuSet_Main = new MenuStrip();
             MenuItem_Open = new ToolStripMenuItem();
             MenuItem_Save = new ToolStripMenuItem();
+            MenuItem_SaveTr2 = new ToolStripMenuItem();
             MenuItem_Import = new ToolStripMenuItem();
             MenuItem_Export = new ToolStripMenuItem();
             MenuItem_Excel_Export = new ToolStripMenuItem();
             MenuItem_Help = new ToolStripMenuItem();
             MenuStatus_Main = new StatusStrip();
             DataGridView_Main = new DataGridView();
-            MenuItem_SaveTr2 = new ToolStripMenuItem();
             MenuSet_Main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DataGridView_Main).BeginInit();
             SuspendLayout();
@@ -64,6 +64,13 @@
             MenuItem_Save.Size = new Size(47, 21);
             MenuItem_Save.Text = "Save";
             MenuItem_Save.Click += MenuItem_Save_Click;
+            // 
+            // MenuItem_SaveTr2
+            // 
+            MenuItem_SaveTr2.Name = "MenuItem_SaveTr2";
+            MenuItem_SaveTr2.Size = new Size(70, 21);
+            MenuItem_SaveTr2.Text = "Save Tr2";
+            MenuItem_SaveTr2.Click += MenuItem_SaveTr2_Click;
             // 
             // MenuItem_Import
             // 
@@ -115,15 +122,9 @@
             DataGridView_Main.CellDoubleClick += DataGridView_Main_CellDoubleClick;
             DataGridView_Main.ColumnAdded += DataGridView_Main_ColumnAdded;
             // 
-            // MenuItem_SaveTr2
-            // 
-            MenuItem_SaveTr2.Name = "MenuItem_SaveTr2";
-            MenuItem_SaveTr2.Size = new Size(70, 21);
-            MenuItem_SaveTr2.Text = "Save Tr2";
-            MenuItem_SaveTr2.Click += MenuItem_SaveTr2_Click;
-            // 
             // Main
             // 
+            AllowDrop = true;
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
@@ -134,6 +135,8 @@
             Name = "Main";
             Text = "GECV EX TR2 Editor GUI";
             FormClosing += Main_FormClosing;
+            DragDrop += Main_DragDrop;
+            DragEnter += Main_DragEnter;
             MenuSet_Main.ResumeLayout(false);
             MenuSet_Main.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)DataGridView_Main).EndInit();
