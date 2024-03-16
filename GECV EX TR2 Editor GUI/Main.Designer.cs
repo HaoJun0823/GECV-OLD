@@ -34,6 +34,7 @@
             MenuItem_SaveTr2 = new ToolStripMenuItem();
             MenuItem_Import = new ToolStripMenuItem();
             MenuItem_Export = new ToolStripMenuItem();
+            importExcelToolStripMenuItem = new ToolStripMenuItem();
             MenuItem_Excel_Export = new ToolStripMenuItem();
             MenuItem_Help = new ToolStripMenuItem();
             MenuStatus_Main = new StatusStrip();
@@ -44,7 +45,7 @@
             // 
             // MenuSet_Main
             // 
-            MenuSet_Main.Items.AddRange(new ToolStripItem[] { MenuItem_Open, MenuItem_Save, MenuItem_SaveTr2, MenuItem_Import, MenuItem_Export, MenuItem_Excel_Export, MenuItem_Help });
+            MenuSet_Main.Items.AddRange(new ToolStripItem[] { MenuItem_Open, MenuItem_Save, MenuItem_SaveTr2, MenuItem_Import, MenuItem_Export, importExcelToolStripMenuItem, MenuItem_Excel_Export, MenuItem_Help });
             MenuSet_Main.Location = new Point(0, 0);
             MenuSet_Main.Name = "MenuSet_Main";
             MenuSet_Main.Size = new Size(800, 25);
@@ -85,6 +86,14 @@
             MenuItem_Export.Size = new Size(86, 21);
             MenuItem_Export.Text = "Export Text";
             MenuItem_Export.Click += MenuItem_Export_Click;
+            // 
+            // importExcelToolStripMenuItem
+            // 
+            importExcelToolStripMenuItem.Enabled = false;
+            importExcelToolStripMenuItem.Name = "importExcelToolStripMenuItem";
+            importExcelToolStripMenuItem.Size = new Size(93, 21);
+            importExcelToolStripMenuItem.Text = "Import Excel";
+            importExcelToolStripMenuItem.Click += importExcelToolStripMenuItem_Click;
             // 
             // MenuItem_Excel_Export
             // 
@@ -156,5 +165,6 @@
         private ToolStripMenuItem MenuItem_Help;
         private ToolStripMenuItem MenuItem_Excel_Export;
         private ToolStripMenuItem MenuItem_SaveTr2;
+        private ToolStripMenuItem importExcelToolStripMenuItem;
     }
 }

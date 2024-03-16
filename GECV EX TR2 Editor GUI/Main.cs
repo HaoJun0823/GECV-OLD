@@ -716,7 +716,13 @@ namespace GECV_EX_TR2_Editor_GUI
 
                     byte[] input_data = File.ReadAllBytes(file.FullName);
 
-                    System_TR2.SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(id, name, type, arr_index, data_id, input_data);
+                    if (!System_TR2.SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(id, name, type, arr_index, data_id, input_data))
+                    {
+
+
+                        MessageBox.Show($"Id:{id},Name:{name},type:{type},arr_index:{arr_index},data_id:{data_id},input_data:{input_data}\nUpdate Error!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    }
 
                     count++;
 
@@ -877,7 +883,7 @@ namespace GECV_EX_TR2_Editor_GUI
         private void Main_DragEnter(object sender, DragEventArgs e)
         {
 
-            if(e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 e.Effect = DragDropEffects.Copy;
             }
@@ -911,6 +917,39 @@ namespace GECV_EX_TR2_Editor_GUI
             else
             {
                 MessageBox.Show($"You drop invaild data.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void importExcelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("This function is not working beacause you can use Excel or other tools to do that.", "Attention!",MessageBoxButtons.OK,MessageBoxIcon.Stop);
+            return;
+
+
+            UpdateTR2Reader();
+
+            using (OpenFileDialog sfd = new OpenFileDialog())
+            {
+                sfd.Filter = "xlsx file(*.xlsx)|*.xlsx";
+                sfd.RestoreDirectory = true;
+                sfd.Title = "Import Excel File:";
+                sfd.FileName = input_file_name;
+
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+
+
+                    DataTable dt = MiniExcel.QueryAsDataTable(sfd.FileName, useHeaderRow: true);
+
+
+                    MessageBox.Show($"You are import {sfd.FileName} now.\nUTF-16 data cannot import because some data is special font.","Warning!",MessageBoxButtons.OKCancel,MessageBoxIcon.Warning);
+
+
+
+
+
+                }
+
             }
         }
     }
