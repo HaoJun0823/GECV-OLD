@@ -9,8 +9,7 @@ using System.Xml.Serialization;
 
 namespace GECV_EX.Shared
 {
-    [XmlRoot]
-    [Serializable]
+
     public class GnfFile
     {
 
@@ -64,7 +63,7 @@ namespace GECV_EX.Shared
 
                                 if (dds_magic != DDS_MAGIC)
                                 {
-                                    throw new FileLoadException($"Gnf Error:{i} Is not dds file.");
+                                    throw new FileLoadException($"Gnf Error:{i} is not dds file.");
                                 }
                                 else
                                 {
@@ -96,6 +95,36 @@ namespace GECV_EX.Shared
 
 
         }
+
+        public void WriteGNF(string filename)
+        {
+
+            using(FileStream fs = new FileStream(filename,FileMode.Create,FileAccess.Write,FileShare.None))
+            {
+                using(BinaryWriter bw = new BinaryWriter(fs))
+                {
+
+                    bw.Write(this.dds_data.Count);
+                    
+                    foreach(byte[] b in this.dds_data)
+                    {
+                        bw.Write(b.Length);
+                    }
+
+                    foreach (byte[] b in this.dds_data)
+                    {
+                        bw.Write(b);
+                    }
+
+
+                }
+            }
+
+
+
+        }
+
+
 
         
 
