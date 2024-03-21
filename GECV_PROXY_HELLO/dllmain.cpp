@@ -48,7 +48,11 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
             
 
-            MessageBox(0,wstr.c_str(), L"GECV:Hello!", MB_OK);
+            if (MessageBox(0, wstr.c_str(), L"GECV:Hello!", MB_OKCANCEL) == IDCANCEL){
+            
+                
+            
+            }
 
             str_bin.close();
             fs::remove(".\\CE_DATA\\GECV_HELLO.bin");
