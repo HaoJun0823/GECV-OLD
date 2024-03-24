@@ -26,9 +26,9 @@ namespace RETAEDOG
 
         static DirectoryInfo DataDirectory = new DirectoryInfo(ContentDirectory.FullName + "\\" + "project");
 
-        static DirectoryInfo ExtractDirectory = new DirectoryInfo(ContentDirectory.FullName + "\\" + "extract");
+        static DirectoryInfo PluginDirectory = new DirectoryInfo(ContentDirectory.FullName + "\\" + "plugins");
 
-        static string TitleFile = ContentDirectory + "\\title.bin";
+        static DirectoryInfo ExtractDirectory = new DirectoryInfo(ContentDirectory.FullName + "\\" + "extract");
 
         static string GameFile;
 
@@ -46,9 +46,6 @@ namespace RETAEDOG
 
         static Dictionary<string,string> GameDataMap = new Dictionary<string,string>();
 
-
-        [DllImport("user32.dll")]
-        static extern bool SetWindowTextW(IntPtr hWnd, string text);
 
         [DllImport("kernel32.dll")]
         static extern bool CreateSymbolicLink(
@@ -73,10 +70,11 @@ namespace RETAEDOG
             Info($"Get Content Directory:{ContentDirectory.FullName}");
             Info($"Get Game Work Directory:{WorkDirectory.FullName}");
             Info($"Get Mod Data Directory:{DataDirectory.FullName}");
+            Info($"Get Plugins Directory:{PluginDirectory.FullName}");
 
             if (!ContentDirectory.Exists)
             {
-                var error = $"Cannot Found {ContentDirectory}, Please Copy Retaedog To Game Direcotry.";
+                var error = $"Cannot Found {ContentDirectory}, Please Copy Retaedog Content To Game Direcotry.";
                 Error(error);
                 Info($"Press Any Key To Continue!(Cost:{sw.ElapsedMilliseconds})");
                 Console.ReadKey();
@@ -99,6 +97,7 @@ namespace RETAEDOG
             ContentDirectory.Create();
             WorkDirectory.Create();
             DataDirectory.Create();
+            PluginDirectory.Create();
 
             Info($"Init Cost:{sw.ElapsedMilliseconds}ms.");
 
@@ -176,7 +175,7 @@ namespace RETAEDOG
         {
             CopyGodEater();
             SteamBuild();
-            CopyDll();
+            //CopyDll();
             List<string> list = new List<string>();
 
 
@@ -259,45 +258,6 @@ namespace RETAEDOG
             sw.Stop();
             Info($"Game Starting!(Cost:{sw.ElapsedMilliseconds})");
             
-        }
-
-        static void Extract()
-        {
-            ExtractDirectory.Delete();
-            ExtractDirectory.Create();
-
-
-
-            
-
-        }
-
-        static void ExtractNewFile(Qpck origin,Qpck target)
-        {
-
-            if(origin.ContentIndexMap.Count != target.ContentIndexMap.Count)
-            {
-                Error($"Origin {origin.ContentIndexMap.Count} != target {target.ContentIndexMap.Count} (Index Count Error)");
-                return;
-            }
-
-            
-
-
-
-        }
-
-        static string GetTitle()
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-
-            if (File.Exists(TitleFile))
-            {
-                stringBuilder.Append(File.ReadAllText(TitleFile));
-            }
-
-            stringBuilder.Append(" (RETAEDOG BY HAOJUN0823)");
-            return stringBuilder.ToString();
         }
 
         static bool SetGodEaterVersion()
@@ -392,6 +352,27 @@ namespace RETAEDOG
 
         }
 
+        static void CopyPlugins()
+        {
+
+            DirectoryInfo[] dirs = PluginDirectory.GetDirectories("*",SearchOption.TopDirectoryOnly);
+
+            
+            foreach(var i in dirs)
+            {
+
+                
+
+            }
+            
+
+            
+            
+
+
+        }
+
+
 
         static void CreateProjectIndex()
         {
@@ -434,6 +415,7 @@ namespace RETAEDOG
                 DirectoryInfo data = new DirectoryInfo(kv.Value.FullName + "\\data.qpck");
                 DirectoryInfo gamedata = new DirectoryInfo(kv.Value.FullName + "\\data");
 
+
                 Info($"[Project]bin:{bin.FullName}");
                 Info($"[Project]bin_patch:{bin_patch.FullName}");
                 Info($"[Project]conf:{conf.FullName}");
@@ -450,7 +432,7 @@ namespace RETAEDOG
 
             }
 
-            BuildGameDataIndex(new DirectoryInfo(RootDirectory.FullName + "\\data"));
+            BuildGameDataIndex(new DirectoryInfo(RootDirectory.FullName + "\\data")); //要把原版游戏文件复制进来。
 
 
 
@@ -534,6 +516,15 @@ namespace RETAEDOG
             Parallel.Invoke( () => { Qpck.bin = new Qpck(new FileInfo(RootDirectory.FullName+"\\bin.qpck")); }, () => { Qpck.bin_patch = new Qpck(new FileInfo(RootDirectory.FullName + "\\bin_patch.qpck")); }, () => { Qpck.data = new Qpck(new FileInfo(RootDirectory.FullName + "\\data.qpck")); }, () => { Qpck.conf = new Qpck(new FileInfo(RootDirectory.FullName + "\\conf.qpck")); });
 
             
+
+        }
+
+        static void InitExtracterQpck()
+        {
+
+            Parallel.Invoke(() => { QpckExtracter.bin = new Qpck(new FileInfo(WorkDirectory.FullName + "\\bin.qpck")); }, () => { QpckExtracter.bin_patch = new Qpck(new FileInfo(WorkDirectory.FullName + "\\bin_patch.qpck")); }, () => { QpckExtracter.data = new Qpck(new FileInfo(WorkDirectory.FullName + "\\data.qpck")); }, () => { QpckExtracter.conf = new Qpck(new FileInfo(WorkDirectory.FullName + "\\conf.qpck")); });
+
+
 
         }
 
@@ -640,11 +631,17 @@ namespace RETAEDOG
             this.File = file;
             this.Name = file.Name;
 
-            Reader = new BinaryReader(File.OpenRead());
+            if (File.Exists)
+            {
+                Reader = new BinaryReader(File.OpenRead());
 
-            GetFileHeader();
-            BuildIndexMap();
-
+                GetFileHeader();
+                BuildIndexMap();
+            }
+            else
+            {
+                Info($"Warning:{file.FullName} Is Not Exists!");
+            }
 
 
 
@@ -828,11 +825,11 @@ namespace RETAEDOG
 
 
 
+
+
     }
 
-    
-
-    public class Log
+    internal class Log
     {
 
 
@@ -869,6 +866,30 @@ namespace RETAEDOG
                 tw.Flush();
             }
         }
+
+
+    }
+
+    internal class QpckExtracter
+    {
+
+        public static Qpck bin;
+        public static Qpck bin_patch;
+        public static Qpck conf;
+        public static Qpck data;
+
+        //static void ExtractNewFile(Qpck origin, Qpck target,Qpck )
+        //{
+
+        //    //if (origin.ContentIndexMap.Count != target.ContentIndexMap.Count)
+        //    //{
+        //    //    Error($"Origin {origin.ContentIndexMap.Count} != Target {target.ContentIndexMap.Count} (Index Count Error)");
+        //    //    throw new FileLoadException($"Origin {origin.ContentIndexMap.Count} != Target {target.ContentIndexMap.Count} (Index Count Error)");
+                
+        //    //}
+
+
+        //}
 
 
     }
