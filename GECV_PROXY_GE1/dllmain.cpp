@@ -1,6 +1,7 @@
 ﻿// dllmain.cpp : 定义 DLL 应用程序的入口点。
 #include <Windows.h>
 #include <fstream>
+#include <filesystem>
 static DWORD game_baseaddress;
 static DWORD dll_baseaddress;
 static HMODULE dllModule;
@@ -12,6 +13,12 @@ static DWORD FixNpcAction1_Ret;
 
 static DWORD FixNpcAction2_Jmp;
 static DWORD FixNpcAction2_Ret;
+
+namespace fs = std::filesystem;
+
+
+void FixGE1();
+void FixGE2();
 
  __declspec(naked) void FIX_NPC_ACTION_1(void)
 {
@@ -86,23 +93,26 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         logg << "Dll Base Address:" << std::hex << game_baseaddress << "\n";
         dllModule = hModule;
        
+        if (fs::exists(".\\ger.exe")) {
+            logg << "This is God Eater 1\n";
+            FixGE1();
+            
+        }
+        else if (fs::exists(".\\ge2rb.exe")) {
+            logg << "This is God Eater 2\n";
+            FixGE2();
+        }
+        else {
 
-        //GER.exe+17073BA
-        FixNpcAction1_Jmp = game_baseaddress + 0x17073BA;
-        FixNpcAction1_Ret =  game_baseaddress + 0x17073C3;
+            logg << "Get Game Error! No Fixed Game!\n";
 
-        Install(FixNpcAction1_Jmp, (DWORD)&FIX_NPC_ACTION_1);
-
-        //GER.exe + 17073D7 - 0FB6 07 - movzx eax, byte ptr[edi]
-        //GER.exe + 17073DA - 83 C4 08 - add esp, 08 { 8 }
-        //GER.exe + 17073DD - 80 C3 FF - add bl, -01 { 255 }
-        //GER.exe + 17073E0 - 75 E5 - jne GER.exe + 17073C7
+            //MessageBox(0, L"Unofficial patch: Your game is not recognized.", L"Where is the game?", MB_OK);
 
 
-        FixNpcAction2_Jmp = game_baseaddress + 0x17073D7;
-        FixNpcAction2_Ret = game_baseaddress + 0x17073E0;
+            
+        }
 
-        Install(FixNpcAction2_Jmp, (DWORD)&FIX_NPC_ACTION_2);
+
 
     }
 
@@ -110,3 +120,40 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 }
 
 
+void FixGE1() {
+    //GER.exe+17073BA
+    FixNpcAction1_Jmp = game_baseaddress + 0x17073BA;
+    FixNpcAction1_Ret = game_baseaddress + 0x17073C3;
+
+    Install(FixNpcAction1_Jmp, (DWORD)&FIX_NPC_ACTION_1);
+
+    //GER.exe + 17073D7 - 0FB6 07 - movzx eax, byte ptr[edi]
+    //GER.exe + 17073DA - 83 C4 08 - add esp, 08 { 8 }
+    //GER.exe + 17073DD - 80 C3 FF - add bl, -01 { 255 }
+    //GER.exe + 17073E0 - 75 E5 - jne GER.exe + 17073C7
+
+
+    FixNpcAction2_Jmp = game_baseaddress + 0x17073D7;
+    FixNpcAction2_Ret = game_baseaddress + 0x17073E0;
+
+    Install(FixNpcAction2_Jmp, (DWORD)&FIX_NPC_ACTION_2);
+}
+
+void FixGE2() {
+    //GE2RB.exe+1B95AAC - 0FB6 07               - movzx eax,byte ptr [edi]
+    FixNpcAction1_Jmp = game_baseaddress + 0x1B95AAC;
+    //GE2RB.exe+1B95AB5 - 74 1D                 - je GE2RB.exe+1B95AD4
+    FixNpcAction1_Ret = game_baseaddress + 0x1B95AB5;
+
+    Install(FixNpcAction1_Jmp, (DWORD)&FIX_NPC_ACTION_1);
+
+    //GE2RB.exe + 1B95AC9 - 0FB6 07 - movzx eax, byte ptr[edi]
+    //GE2RB.exe + 1B95ACC - 83 C4 08 - add esp, 08 { 8 }
+    //GE2RB.exe + 1B95ACF - 80 C3 FF - add bl, -01 { 255 }
+    //GE2RB.exe + 1B95AD2 - 75 E5 - jne GE2RB.exe + 1B95AB9
+
+    FixNpcAction2_Jmp = game_baseaddress + 0x1B95AC9;
+    FixNpcAction2_Ret = game_baseaddress + 0x1B95AD2;
+
+    Install(FixNpcAction2_Jmp, (DWORD)&FIX_NPC_ACTION_2);
+}

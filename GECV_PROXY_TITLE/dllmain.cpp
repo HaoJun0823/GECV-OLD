@@ -8,6 +8,8 @@
 
 namespace fs = std::filesystem;
 
+static std::string titlebin = ".\\CE_DATA\\GE1\\GECV_TITLE.bin";
+
 BOOL
 WINAPI
 Hook_SetWindowTextA(
@@ -27,6 +29,22 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
         std::ofstream log;
         log.open(".\\CE_DATA\\GECV_TITLE.log", std::ios::trunc | std::ios::out);
+
+
+        if (fs::exists(".\\ge2rb.exe")) {
+
+            log << "God Eater 2!\n";
+
+            titlebin = ".\\CE_DATA\\GE2\\GECV_TITLE.bin";
+
+
+        }
+        else {
+            log << "God Eater 1!\n";
+        }
+        log.flush();
+
+
         BYTE OLD_hook_bytes[5];
         BYTE NEW_hook_bytes[5];
         FARPROC title_hook = GetProcAddress(GetModuleHandleA("user32"), "SetWindowTextA");
@@ -90,7 +108,7 @@ BOOL WINAPI Hook_SetWindowTextA(
     log << "Start Hook Function." << "\n";
     std::string title;
 
-    std::ifstream file(".\\CE_DATA\\GECV_TITLE.bin");
+    std::ifstream file(titlebin);
 
     
 

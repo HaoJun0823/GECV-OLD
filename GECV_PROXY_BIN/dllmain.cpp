@@ -9,6 +9,9 @@
 
 using namespace std;
 
+static string DataFolder = ".\\CE_DATA\\GE1\\GECV_BIN";
+
+
 namespace fs = std::filesystem;
 
 BOOL APIENTRY DllMain( HMODULE hModule,
@@ -25,18 +28,34 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
         log << "Start!\n";
 
+
+        if (fs::exists(".\\ge2rb.exe")) {
+
+            DataFolder = ".\\CE_DATA\\GE2\\GECV_BIN";
+
+            log << "God Eater 2!\n";
+            
+
+        }
+        else {
+            log << "God Eater 1!\n";
+        }
+        log.flush();
+
+        log << "Get Data Bin From " << DataFolder << "\n";
+
         HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId());
 
         DWORD base_address = (DWORD)GetModuleHandle(NULL);
 
         log << "Base Address:" << std::hex << base_address << "\n";
 
-        if (!fs::exists(".\\CE_DATA\\GECV_BIN")) {
-            fs::create_directory(".\\CE_DATA\\GECV_BIN");
+        if (!fs::exists(DataFolder)) {
+            fs::create_directory(DataFolder);
         }
 
 
-        for (const auto& item : fs::recursive_directory_iterator(".\\CE_DATA\\GECV_BIN")) {
+        for (const auto& item : fs::recursive_directory_iterator(DataFolder)) {
 
 
             if (item.path().extension() == ".bin") {

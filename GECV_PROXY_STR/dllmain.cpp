@@ -12,6 +12,9 @@ using namespace std;
 static DWORD base_address;
 static HANDLE process;
 
+static string DataFile = ".\\CE_DATA\\GE1\\GECV_STR.bin";
+static string DataExtendFile = ".\\CE_DATA\\GE1\\GECV_BIN_EXTEND";
+
 namespace fs = std::filesystem;
 
 void ExtendBin();
@@ -27,8 +30,24 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 		ofstream log;
 		string line;
-		ifstream str_bin(L".\\CE_DATA\\GECV_STR.bin", ios::in);
+		ifstream str_bin(DataFile, ios::in);
 		log.open(".\\CE_DATA\\GECV_STR.log", std::ios::trunc | std::ios::out);
+		if (fs::exists(".\\ge2rb.exe")) {
+
+			DataFile = ".\\CE_DATA\\GE2\\GECV_STR.bin";
+			DataExtendFile = ".\\CE_DATA\\GE2\\GECV_BIN_EXTEND";
+
+			log << "GOD EATER 2!\n";
+
+		}
+		else {
+			log << "GOD EATER 1!\n";
+		}
+
+		log.flush();
+
+
+
 
 		log << "Start!\n";
 
@@ -166,13 +185,13 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 void ExtendBin() {
 	ofstream log;
-	log.open(".\\CE_DATA\\GECV_STR.log", std::ios::app | std::ios::out);
+	log.open(".\\CE_DATA\\GECV_STR_EXTEND.log", std::ios::app | std::ios::out);
 
-	if (!fs::exists(".\\CE_DATA\\GECV_BIN_EXTEND")) {
-		fs::create_directory(".\\CE_DATA\\GECV_BIN_EXTEND");
+	if (!fs::exists(DataExtendFile)) {
+		fs::create_directory(DataExtendFile);
 	}
 
-	for (const auto& item : fs::recursive_directory_iterator(".\\CE_DATA\\GECV_BIN_EXTEND")) {
+	for (const auto& item : fs::recursive_directory_iterator(DataExtendFile)) {
 
 
 		if (item.path().extension() == ".bin") {

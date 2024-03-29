@@ -88,22 +88,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         dllModule = hModule;
 
 
-        //GE2RB.exe+1B95AAC - 0FB6 07               - movzx eax,byte ptr [edi]
-        FixNpcAction1_Jmp = game_baseaddress + 0x1B95AAC;
-        //GE2RB.exe+1B95AB5 - 74 1D                 - je GE2RB.exe+1B95AD4
-        FixNpcAction1_Ret = game_baseaddress + 0x1B95AB5;
 
-        Install(FixNpcAction1_Jmp, (DWORD)&FIX_NPC_ACTION_1);
-
-        //GE2RB.exe + 1B95AC9 - 0FB6 07 - movzx eax, byte ptr[edi]
-        //GE2RB.exe + 1B95ACC - 83 C4 08 - add esp, 08 { 8 }
-        //GE2RB.exe + 1B95ACF - 80 C3 FF - add bl, -01 { 255 }
-        //GE2RB.exe + 1B95AD2 - 75 E5 - jne GE2RB.exe + 1B95AB9
-
-        FixNpcAction2_Jmp = game_baseaddress + 0x1B95AC9;
-        FixNpcAction2_Ret = game_baseaddress + 0x1B95AD2;
-
-        Install(FixNpcAction2_Jmp, (DWORD)&FIX_NPC_ACTION_2);
 
 
     }

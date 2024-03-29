@@ -20,6 +20,9 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         log.open(".\\CE_DATA\\GECV_HELLO.log", std::ios::trunc | std::ios::out);
         log << "Hello Game For Process!\n";
 
+        log << "Pass Check Game Version.\n";
+
+        log.flush();
 
         if (fs::exists(".\\CE_DATA\\GECV_HELLO.bin")) {
 

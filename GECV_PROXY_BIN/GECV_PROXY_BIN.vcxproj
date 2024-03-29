@@ -74,7 +74,8 @@
     <TargetName>GECV_BIN</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>GECV_BIN</TargetName>
+    <TargetName>\CE_DATA\GECV_BIN</TargetName>
+    <IntDir>$(Configuration)</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

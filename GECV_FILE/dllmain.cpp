@@ -243,8 +243,9 @@ Hook_WriteFile(
     std::ofstream unk_set;
     log.open(".\\CE_DATA\\GECV_FILE.log", std::ios::app | std::ios::out);
     unk_set.open(".\\CE_DATA\\unk_set.bin", std::ios::app | std::ios::binary);
-
+    log << "Pass Check Game Version.\n";
     log << "WriteFile Handle:" << hFile << "\n";
+    log.flush();
 
     bool IsExists = false;
     std::wstring savepath(L".\\CE_DATA\\GECV_FILE\\");
