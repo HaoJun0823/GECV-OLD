@@ -4,6 +4,7 @@
 #include <iostream>
 #include <filesystem>
 #include <string>
+#include <map>
 #include <Shlwapi.h>
 
 #include "hooker.h"
@@ -21,9 +22,15 @@ static Hooker Hooker_CreateFileA;
 static Hooker Hooker_PathFileExistsA;
 static Hooker Hooker_PathFileExistsW;
 
+static Hooker Hooker_WriteFile;
+
 static Hooker Hooker_OutputDebugStringA;
 
 static Hooker HK0printf, HK0_vsnprintf_s, HK0_snprintf, HK0_sprintf_s, HK0_vsnprintf, HK0_swprintf_s, HK0_vscprintf, HK0sprintf, HK0vsprintf, HK0vsprintf_s, HK0wsprintfW;
+
+
+static std::map<HANDLE,LPCWSTR> WFileMap;
+static long unknown_filename_count = 0;
 
 #pragma warning(disable : 4996)
 
@@ -221,6 +228,71 @@ Hook_OutputDebugStringA(
     _In_opt_ LPCSTR lpOutputString
 );
 
+BOOL
+WINAPI
+Hook_WriteFile(
+    _In_ HANDLE hFile,
+    _In_reads_bytes_opt_(nNumberOfBytesToWrite) LPCVOID lpBuffer,
+    _In_ DWORD nNumberOfBytesToWrite,
+    _Out_opt_ LPDWORD lpNumberOfBytesWritten,
+    _Inout_opt_ LPOVERLAPPED lpOverlapped
+) {
+    Hooker_WriteFile.UnInstall();
+    Hooker_CreateFileW.UnInstall();
+    std::wofstream log;
+    std::ofstream unk_set;
+    log.open(".\\CE_DATA\\GECV_FILE.log", std::ios::app | std::ios::out);
+    unk_set.open(".\\CE_DATA\\unk_set.bin", std::ios::app | std::ios::binary);
+
+    log << "WriteFile Handle:" << hFile << "\n";
+
+    bool IsExists = false;
+    std::wstring savepath(L".\\CE_DATA\\GECV_FILE\\");
+    for (const auto& pair : WFileMap) {
+
+        if (pair.first == hFile) {
+
+            IsExists = true;
+            log << "Get FileName By Handle:" << pair.second << "\n";
+            savepath.append(fs::path(pair.second).filename());
+            break;
+
+        }
+
+
+    }
+
+    if (!IsExists) {
+        log << "Warning:Handle " << hFile << " Is New Handle.\n";
+        savepath.append(L"\\UNK\\unknown_");
+        savepath.append(std::to_wstring(unknown_filename_count));
+        unknown_filename_count++;
+        log << "Set Save File Name:" << savepath.c_str() << "\n";
+
+        unk_set.write(reinterpret_cast<const char*>(lpBuffer), nNumberOfBytesToWrite);
+        unk_set.flush();
+    }
+
+
+    log << "WriteFile Save Path:" << savepath.c_str() << "\n";
+    HANDLE system_write_file = CreateFileW(savepath.c_str(), GENERIC_ALL, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    WriteFile(system_write_file, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, lpOverlapped);
+
+    
+
+
+    log.flush();
+    log.close();
+
+    auto result = WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, lpOverlapped);
+
+
+    Hooker_WriteFile.Install();
+    Hooker_CreateFileW.Install();
+    return result;
+
+}
+
 BOOL Hook_PathFileExistsA(_In_ LPCSTR pszPath);
 BOOL Hook_PathFileExistsW(_In_ LPCWSTR pszPath);
 
@@ -232,12 +304,15 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
 
         std::ofstream log;
+        
 
+        //fs::remove(".\\CE_DATA\\GECV_FILE");
 
-
-        logg.open(".\\CE_DATA\\GAME_DEBUG.log",std::ios::trunc|std::ios::out);
+        fs::create_directory(".\\CE_DATA\\GECV_FILE\\UNK");
 
         
+
+        logg.open(".\\CE_DATA\\GAME_DEBUG.log", std::ios::trunc | std::ios::out);
         log.open(".\\CE_DATA\\GECV_FILE.log", std::ios::trunc | std::ios::out);
         log.close();
         DisableThreadLibraryCalls(hModule);
@@ -276,6 +351,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         HK0_vsnprintf.Create(process, "msvcr120", "_vsnprintf", (DWORD)Hvsnprintf);
         HK0_vsnprintf_s.Create(process, "msvcr120", "_vsnprintf_s", (DWORD)Hvsnprintf_s);
 
+        Hooker_WriteFile.Create(process, "kernel32", "WriteFile", (DWORD)Hook_WriteFile);
 
 
         log << "Created Hook.\n";
@@ -286,6 +362,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         Hooker_PathFileExistsW.Install();
         Hooker_OutputDebugStringA.Install();
         
+        Hooker_WriteFile.Install();
+
         log << "Install Hook.\n";
         
         //Hooker_CreateFileA.UnInstall();
@@ -319,11 +397,13 @@ Hook_CreateFileA(
     std::ofstream log;
     log.open(".\\CE_DATA\\GECV_FILE.log", std::ios::app | std::ios::out);
 
-    log << "CreateFileA:" << lpFileName << "\n";
+    
 
     Hooker_CreateFileA.UnInstall();
     HANDLE result =  CreateFileA(lpFileName,dwDesiredAccess,dwShareMode,lpSecurityAttributes,dwCreationDisposition,dwFlagsAndAttributes,hTemplateFile);
     Hooker_CreateFileA.Install();
+
+    log << "CreateFileA:" << lpFileName << "\n";
 
     log.flush();
     log.close();
@@ -344,15 +424,24 @@ Hook_CreateFileW(
 ) {
     
 
-    std::ofstream log;
+    std::wofstream log;
     log.open(".\\CE_DATA\\GECV_FILE.log", std::ios::app | std::ios::out);
 
-    log << "CreateFileW:" << lpFileName << "\n";
+    
 
     Hooker_CreateFileW.UnInstall();
     
     
-    HANDLE result = CreateFileW(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);\
+    HANDLE result = CreateFileW(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+
+
+    
+
+    
+
+    log << "CreateFileW:" << lpFileName << ",Access:" << dwDesiredAccess <<",ShareMode:" << dwShareMode  << "\n";
+    WFileMap[result] = lpFileName;
+    log << "CreateFileW:" << result << "," << lpFileName << "\n";
     Hooker_CreateFileW.Install();
 
     log.flush();
@@ -377,7 +466,7 @@ BOOL Hook_PathFileExistsA(_In_ LPCSTR pszPath) {
     return result;
 }
 BOOL Hook_PathFileExistsW(_In_ LPCWSTR pszPath) {
-    std::ofstream log;
+    std::wofstream log;
     log.open(".\\CE_DATA\\GECV_FILE.log", std::ios::app | std::ios::out);
 
     log << "PathFileExistsW:" << pszPath << "\n";

@@ -5,10 +5,16 @@
 #include <iostream>
 #include <filesystem>
 #include <string>
+#include <sstream>
 
 using namespace std;
 
+static DWORD base_address;
+static HANDLE process;
+
 namespace fs = std::filesystem;
+
+void ExtendBin();
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -26,11 +32,9 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 		log << "Start!\n";
 
-		
+		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId());
 
-		HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId());
-
-		DWORD base_address = (DWORD)GetModuleHandle(NULL);
+		base_address = (DWORD)GetModuleHandle(NULL);
 
 		log << "Base Address:" << std::hex << base_address << "\n";
 
@@ -143,9 +147,15 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 			log << "Cannot Load GECV_STR.bin\n";
 		}
 
+		log << "Loading Extend Bin.\n";
+
+
+
 
 		log.flush();
 		log.close();
+
+		ExtendBin();
 
 	}
 
@@ -154,3 +164,100 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	return TRUE;
 }
 
+void ExtendBin() {
+	ofstream log;
+	log.open(".\\CE_DATA\\GECV_STR.log", std::ios::app | std::ios::out);
+
+	if (!fs::exists(".\\CE_DATA\\GECV_BIN_EXTEND")) {
+		fs::create_directory(".\\CE_DATA\\GECV_BIN_EXTEND");
+	}
+
+	for (const auto& item : fs::recursive_directory_iterator(".\\CE_DATA\\GECV_BIN_EXTEND")) {
+
+
+		if (item.path().extension() == ".bin") {
+
+			log << "Get Bin Data:" << item.path().generic_string() << '\n';
+
+			fs::path file_hex_offset = item.path().stem();
+
+
+			log << "Get Bin Name:" << file_hex_offset.u8string() << '\n';
+
+			uint32_t int_addr = stoi(file_hex_offset.c_str(), 0, 16);
+
+			log << "Get Bin int32:10:" << std::dec << int_addr << ",16:" << std::hex << int_addr << "\n";
+
+
+			ifstream bin_file(item.path(), ios_base::in);
+
+			if (!bin_file.is_open()) {
+
+				log << "Error To Open File!\n";
+				continue;
+			}
+
+			string line;
+			getline(bin_file, line);
+
+			istringstream iss(line);
+			std::vector<std::uint8_t> tokens;
+			std::string token;
+
+			log << "Read:" << line;
+			while (iss >> token) {
+				unsigned int byte;
+				std::stringstream ss;
+				ss << std::hex << token;
+				ss >> byte;
+				tokens.push_back(static_cast<uint8_t>(byte));
+			}
+			log << '\n';
+
+			DWORD ret = 0;
+			SIZE_T token_size = tokens.size();
+
+		
+			log << "Target Address:" << std::hex << int_addr << "\n";
+
+			int_addr += base_address;
+
+			
+
+			log << "+Base Address:" << std::hex << int_addr << "\n";
+
+
+			LPVOID alloc_addr = VirtualAllocEx(process, NULL, token_size, MEM_COMMIT, PAGE_READWRITE);
+
+			log << "Alloc Address:" << std::hex << alloc_addr << "\n";
+
+			if (VirtualProtectEx(process, (LPVOID)int_addr, token_size, PAGE_EXECUTE_READWRITE, &ret)) {
+
+				log << "Protect Size:" << ret << "\n";
+
+			}
+
+			if (WriteProcessMemory(process, alloc_addr, tokens.data(), token_size, &ret)) {
+
+				log << "Written Size:" << ret << "\n";
+			}
+
+			if (WriteProcessMemory(process, (LPVOID)int_addr, alloc_addr, 4, &ret)) {
+
+				log << "Written Address Size:" << ret << "\n";
+			}
+
+
+
+
+
+		}
+
+
+		log.flush();
+		log.close();
+
+
+	}
+
+}
