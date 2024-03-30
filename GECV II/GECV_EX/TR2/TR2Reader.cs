@@ -596,7 +596,7 @@ namespace GECV_EX.TR2
                                             data_arr_list_arr.value = xdata;
                                             break;
                                         case "INT8":
-                                            if (br.BaseStream.Position + 1 >= br.BaseStream.Length)
+                                            if (br.BaseStream.Position + 1 > br.BaseStream.Length)
                                             {
                                                 data_arr_list_arr.IsInVaildArrayOffset = true;
                                             }
@@ -610,7 +610,7 @@ namespace GECV_EX.TR2
                                             }
                                             break;
                                         case "UINT8":
-                                            if (br.BaseStream.Position + 1 >= br.BaseStream.Length)
+                                            if (br.BaseStream.Position + 1 > br.BaseStream.Length)
                                             {
                                                 data_arr_list_arr.IsInVaildArrayOffset = true;
                                             }
@@ -624,7 +624,7 @@ namespace GECV_EX.TR2
                                             }
                                             break;
                                         case "INT16":
-                                            if (br.BaseStream.Position + 2 >= br.BaseStream.Length)
+                                            if (br.BaseStream.Position + 2 > br.BaseStream.Length)
                                             {
                                                 data_arr_list_arr.IsInVaildArrayOffset = true;
                                             }
@@ -638,7 +638,7 @@ namespace GECV_EX.TR2
                                             }
                                             break;
                                         case "UINT16":
-                                            if (br.BaseStream.Position + 2 >= br.BaseStream.Length)
+                                            if (br.BaseStream.Position + 2 > br.BaseStream.Length)
                                             {
                                                 data_arr_list_arr.IsInVaildArrayOffset = true;
                                             }
@@ -652,7 +652,7 @@ namespace GECV_EX.TR2
                                             }
                                             break;
                                         case "INT32":
-                                            if (br.BaseStream.Position + 4 >= br.BaseStream.Length)
+                                            if (br.BaseStream.Position + 4 > br.BaseStream.Length)
                                             {
                                                 data_arr_list_arr.IsInVaildArrayOffset = true;
                                             }
@@ -666,7 +666,7 @@ namespace GECV_EX.TR2
                                             }
                                             break;
                                         case "UINT32":
-                                            if (br.BaseStream.Position + 4 >= br.BaseStream.Length)
+                                            if (br.BaseStream.Position + 4 > br.BaseStream.Length)
                                             {
                                                 data_arr_list_arr.IsInVaildArrayOffset = true;
 
@@ -681,7 +681,7 @@ namespace GECV_EX.TR2
                                             }
                                             break;
                                         case "FLOAT32":
-                                            if (br.BaseStream.Position + 4 >= br.BaseStream.Length)
+                                            if (br.BaseStream.Position + 4 > br.BaseStream.Length)
                                             {
                                                 data_arr_list_arr.IsInVaildArrayOffset = true;
 
@@ -706,7 +706,7 @@ namespace GECV_EX.TR2
 
 
 
-
+                                    Console.WriteLine($"Object {ssi} Read Data:{data_arr_list_arr.value_string_view}");
 
 
 

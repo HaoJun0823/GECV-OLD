@@ -10,7 +10,7 @@ namespace GECV_EX_TR2_Editor_GUI
         [STAThread]
         static void Main()
         {
-            //AllocConsole();
+            AllocConsole();
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
