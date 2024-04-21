@@ -302,20 +302,40 @@ BOOL APIENTRY DllMain( HMODULE hModule,
                        LPVOID lpReserved
                      )
 {
+
+
+    //MessageBox(0, L"TEST",L"TEST",0);
+
     if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
+        //MessageBox(0, L"TEST2", L"TEST2", 0);
+        
 
         std::ofstream log;
         
 
         //fs::remove(".\\CE_DATA\\GECV_FILE");
-
+        log.open(".\\CE_DATA\\GECV_FILE_FIRST.log", std::ios::trunc | std::ios::out);
+        try{
+            log << "GAME DEBUG FIX ON!\n";
+            fs::create_directory(".\\CE_DATA\\GECV_FILE");
         fs::create_directory(".\\CE_DATA\\GECV_FILE\\UNK");
+        }
+        catch (const fs::filesystem_error& e) {
+            
+            log << e.what() << "\n";
+            
 
+            log.close();
+        }
+        //MessageBox(0, L"TEST3", L"TEST3", 0);
         
 
         logg.open(".\\CE_DATA\\GAME_DEBUG.log", std::ios::trunc | std::ios::out);
         log.open(".\\CE_DATA\\GECV_FILE.log", std::ios::trunc | std::ios::out);
         log.close();
+
+
+        //MessageBox(0, L"TEST4", L"TEST4", 0);
         DisableThreadLibraryCalls(hModule);
 
         FARPROC File_Hook_A = GetProcAddress(GetModuleHandleA("kernel32"), "CreateFileA");

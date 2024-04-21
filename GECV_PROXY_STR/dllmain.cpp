@@ -30,7 +30,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 		ofstream log;
 		string line;
-		ifstream str_bin(DataFile, ios::in);
+		
 		log.open(".\\CE_DATA\\GECV_STR.log", std::ios::trunc | std::ios::out);
 		if (fs::exists(".\\ge2rb.exe")) {
 
@@ -48,7 +48,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 
 
-
+		ifstream str_bin(DataFile, ios::in);
 		log << "Start!\n";
 
 		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId());
