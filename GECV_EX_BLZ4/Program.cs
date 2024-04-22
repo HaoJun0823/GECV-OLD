@@ -35,7 +35,9 @@ namespace GECV_EX_BLZ4
                     }
                     if (args[0].ToLower().Equals("pack"))
                     {
-                        pack2(args[1], args[2]);
+                        Console.WriteLine("Warning:This Function Has Been Deprecated Beacause Game Cannot Read This Version.");
+                        Console.WriteLine("Try Python Version (blz2_compress.exe) Better Than Microsoft Fool ZLIB Library.");
+                        //pack2(args[1], args[2]);
                         return;
                     }
                     Console.WriteLine($"What is {args[0]}? input (unpack/pack) please.");
@@ -54,9 +56,8 @@ namespace GECV_EX_BLZ4
                 }
                 if (args[0].ToLower().Equals("pack"))
                 {
-                    //pack(args[1], args[2]);
-                    Console.WriteLine("Warning:This Function Has Been Deprecated Beacause Game Cannot Read This Version.");
-                    Console.WriteLine("Try Python Version (blz2_compress.exe) Better Than Microsoft Fool ZLIB Library.");
+                    pack(args[1], args[2]);
+
                     return;
                 }
 

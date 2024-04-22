@@ -58,6 +58,7 @@ namespace GECV_EX.Utils
 
             if(CompressionMode.Compress == mode)
             {
+                throw new NotSupportedException("Microsoft Deflate Zlib Cannot Create A Readable File For Game.");
                 using (MemoryStream outMemoryStream = new MemoryStream(inData))
                 {
                     using (MemoryStream resultStream = new MemoryStream())
