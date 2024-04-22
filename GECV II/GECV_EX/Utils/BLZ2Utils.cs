@@ -53,6 +53,106 @@ namespace GECV_EX.Utils
 
         }
 
+        public static byte[] DoMicrosoftDeflateData(byte[] inData, CompressionMode mode)
+        {
+
+            if(CompressionMode.Compress == mode)
+            {
+                using (MemoryStream outMemoryStream = new MemoryStream(inData))
+                {
+                    using (MemoryStream resultStream = new MemoryStream())
+                    {
+
+                        using (DeflateStream deflateStream = new DeflateStream(resultStream, mode))
+                        {
+
+
+
+                            outMemoryStream.CopyTo(deflateStream);
+                            
+                        }
+
+                        
+                        return resultStream.ToArray();
+                    }
+                }
+            }
+            else
+            {
+
+            using (MemoryStream outMemoryStream = new MemoryStream(inData))
+            {
+                using (MemoryStream resultStream = new MemoryStream())
+                {
+
+                    using (DeflateStream deflateStream = new DeflateStream(outMemoryStream, mode))
+                    {
+
+                            
+                            
+
+                        deflateStream.CopyTo(resultStream);
+
+                    }
+
+                    return resultStream.ToArray();
+
+                }
+            }
+
+
+            }
+        }
+
+
+
+        //public static byte[] DecompressData(byte[] data)
+        //{
+            
+        //    using(MemoryStream data_ms = new MemoryStream(data))
+        //    {
+        //        using(MemoryStream result_ms = new MemoryStream())
+        //        {
+
+        //            using(InflaterInputStream inputStream = new InflaterInputStream(data_ms))
+        //            {
+        //                inputStream.CopyTo(result_ms);
+        //            }
+
+
+        //            return result_ms.ToArray();
+        //        }
+        //    }
+
+
+
+
+        //}
+
+        //public static byte[] CompressData(byte[] data)
+        //{
+
+        //    using (MemoryStream data_ms = new MemoryStream(data))
+        //    {
+        //        using (MemoryStream result_ms = new MemoryStream())
+        //        {
+        //            Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
+        //            using (DeflaterOutputStream outputStream = new DeflaterOutputStream(data_ms, deflater))
+        //            {
+        //                outputStream.CopyTo(result_ms);
+        //            }
+
+
+        //            return result_ms.ToArray();
+        //        }
+        //    }
+
+
+
+
+        //}
+
+
 
 
 
@@ -104,7 +204,8 @@ namespace GECV_EX.Utils
 
                     if (split_data.Count > 1)
                     {
-                        BLZ4Utils.CompressData(split_data[split_data.Count - 1], out compress);
+                        compress = DoMicrosoftDeflateData(split_data[split_data.Count - 1],CompressionMode.Compress);
+                        
 
                         bw.Write(Convert.ToUInt16(compress.Length));
                         bw.Write(compress);
@@ -113,7 +214,8 @@ namespace GECV_EX.Utils
                         for (int i = 0; i < split_data.Count - 1; i++)
                         {
 
-                            BLZ4Utils.CompressData(split_data[i], out compress);
+                            compress = DoMicrosoftDeflateData(split_data[i],CompressionMode.Compress);
+                            //compress = BLZ2Utils.CompressData(split_data[i]);
 
                             bw.Write(Convert.ToUInt16(compress.Length));
                             bw.Write(compress);
@@ -127,9 +229,10 @@ namespace GECV_EX.Utils
                         {
 
 
-                            BLZ4Utils.CompressData(split_data[i], out compress);
+                                compress = DoMicrosoftDeflateData(split_data[i], CompressionMode.Compress);
 
-                            Console.WriteLine($"Compress Data;{split_data[i].Length} To {compress.Length}. ({i+1}/{split_data.Count})");
+
+                                Console.WriteLine($"Compress Data;{split_data[i].Length} To {compress.Length}. ({i+1}/{split_data.Count})");
 
                             bw.Write(Convert.ToUInt16(compress.Length));
                             bw.Write(compress);
@@ -163,6 +266,7 @@ namespace GECV_EX.Utils
                     return result;
                 }
             }
+
 
         }
 
@@ -228,13 +332,15 @@ namespace GECV_EX.Utils
 
 
 
+
             public byte[] GetByteResult()
             {
 
                 if (is_single)
                 {
                     byte[] out_single;
-                    BLZ4Utils.DecompressData(block_list[0], out out_single);
+                    out_single = DoMicrosoftDeflateData(block_list[0],CompressionMode.Decompress);
+                    //out_single = BLZ2Utils.DecompressData(block_list[0]);
                     return out_single;
                 }
                 else
@@ -254,7 +360,8 @@ namespace GECV_EX.Utils
                     {
 
                         byte[] out_file;
-                        BLZ4Utils.DecompressData(i, out out_file);
+                        out_file = DoMicrosoftDeflateData(i,CompressionMode.Decompress);
+                        //out_file = BLZ2Utils.DecompressData(block_list[0]);
                         real_block_list.AddLast(out_file);
 
                     }

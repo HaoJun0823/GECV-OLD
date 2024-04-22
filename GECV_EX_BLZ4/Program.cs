@@ -17,7 +17,8 @@ namespace GECV_EX_BLZ4
                 Console.WriteLine($"Your Need 3 Args:");
                 Console.WriteLine("(Unpack):1.{unpack} 2.{blz4 file} 3.{The name of the unzipped file.}");
                 Console.WriteLine("(Pack):1.{pack} 2.{original file} 3.{The name of the new blz4 file.}");
-                Console.WriteLine("Extra:If you Need BLZ2: 4.blz2");
+                Console.WriteLine("Extra:If You Need BLZ2 Unpack: 4.blz2");
+                Console.WriteLine("If You Need BLZ2 Pack:See blz2_compress.exe");
 
             }
             else
@@ -53,7 +54,9 @@ namespace GECV_EX_BLZ4
                 }
                 if (args[0].ToLower().Equals("pack"))
                 {
-                    pack(args[1], args[2]);
+                    //pack(args[1], args[2]);
+                    Console.WriteLine("Warning:This Function Has Been Deprecated Beacause Game Cannot Read This Version.");
+                    Console.WriteLine("Try Python Version (blz2_compress.exe) Better Than Microsoft Fool ZLIB Library.");
                     return;
                 }
 

@@ -11,4 +11,10 @@
     <ProjectReference Include="..\GECV II\GECV_EX\GECV_EX.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="dist\blzcompress.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
