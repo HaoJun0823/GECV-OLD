@@ -56,8 +56,8 @@ namespace GECV_EX_PRES
 
                 
 
-                Console.WriteLine("Press Any Key To Exit.");
-                Console.ReadKey();
+                //Console.WriteLine("Press Any Key To Exit.");
+                //Console.ReadKey();
             }
 
 
@@ -67,8 +67,8 @@ namespace GECV_EX_PRES
                 Console.WriteLine("Unpack:You Need 3 Args:\n0.unpack\n1.{Pres Folder}\n2.{Target Directory}");
                 Console.WriteLine("VAILD MODE:You Need 1 Args:\n1.{Target Directory}");
                 Console.WriteLine("Args 4:{*}=Parallel");
-                Console.WriteLine("Press Any Key To Exit.");
-                Console.ReadKey();
+                //Console.WriteLine("Press Any Key To Exit.");
+                //Console.ReadKey();
                 return;
 
 
@@ -112,6 +112,9 @@ namespace GECV_EX_PRES
                     Parallel.ForEach<DirectoryInfo>(dirs, d => {
 
                         Console.WriteLine(d.FullName);
+
+                        Directory.CreateDirectory(to_dir.FullName);
+
                         Encode(d.FullName, to_dir + "\\" + d.Name + ".pres");
 
                     });
@@ -185,8 +188,8 @@ namespace GECV_EX_PRES
 
 
             
-            Console.WriteLine("Press Any Key To Exit.");
-            Console.ReadKey();
+            //Console.WriteLine("Press Any Key To Exit.");
+            //Console.ReadKey();
 
         }
 
@@ -202,8 +205,8 @@ namespace GECV_EX_PRES
 
             File.WriteAllBytes(target_path, result);
 
-            File.WriteAllLines(result+".register_list.log", pk.GetRegisterText());
-            File.WriteAllLines(result+ ".gecv_book_list.log", pk.GetBookInformation());
+            File.WriteAllLines(root_path + "\\register_list.log", pk.GetRegisterText());
+            File.WriteAllLines(root_path + "\\gecv_book_list.log", pk.GetBookInformation());
 
 
             PresPC p = new PresPC(result);

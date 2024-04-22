@@ -6,21 +6,46 @@ namespace GECV_EX_BLZ4
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("GECV EX BLZ4 BY RANDERION(HAOJUN0823)");
+            Console.WriteLine("GECV EX BLZ BY RANDERION(HAOJUN0823)");
             Console.WriteLine("https://blog.haojun0823.xyz/");
             Console.WriteLine("https://github.com/HaoJun0823/GECV");
 
 
-            if(args.Length !=3)
+            if(args.Length <3)
             {
 
                 Console.WriteLine($"Your Need 3 Args:");
                 Console.WriteLine("(Unpack):1.{unpack} 2.{blz4 file} 3.{The name of the unzipped file.}");
                 Console.WriteLine("(Pack):1.{pack} 2.{original file} 3.{The name of the new blz4 file.}");
+                Console.WriteLine("Extra:If you Need BLZ2: 4.blz2");
 
             }
             else
             {
+
+                if(args.Length >=4 && args[3].ToLower().Equals("blz2")) {
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+
+                    if (args[0].ToLower().Equals("unpack"))
+                    {
+                        Unpack2(args[1], args[2]);
+                        return;
+                    }
+                    if (args[0].ToLower().Equals("pack"))
+                    {
+                        pack2(args[1], args[2]);
+                        return;
+                    }
+                    Console.WriteLine($"What is {args[0]}? input (unpack/pack) please.");
+
+                    
+
+                    return;
+                }
+
+                Console.ForegroundColor = ConsoleColor.Blue;
+
                 if (args[0].ToLower().Equals("unpack"))
                 {
                     Unpack(args[1], args[2]);
@@ -77,6 +102,42 @@ namespace GECV_EX_BLZ4
 
 
             File.WriteAllBytes(blz4,pack_data);
+
+
+        }
+
+        public static void Unpack2(string blz, string file)
+        {
+
+            byte[] blz2_data = File.ReadAllBytes(blz);
+            byte[] unpack_data;
+
+
+            unpack_data = BLZ2Utils.UnpackBLZ2Data(blz2_data);
+
+
+            Console.WriteLine($"Unpack:{blz}=>{file}.");
+
+
+            File.WriteAllBytes(file, unpack_data);
+
+
+        }
+
+        public static void pack2(string file, string blz2)
+        {
+
+            byte[] file_data = File.ReadAllBytes(file);
+            byte[] pack_data;
+
+
+            pack_data = BLZ2Utils.PackBLZ2Data(file_data);
+
+
+            Console.WriteLine($"Pack:{file}=>{blz2}.");
+
+
+            File.WriteAllBytes(blz2, pack_data);
 
 
         }
