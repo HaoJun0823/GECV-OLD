@@ -121,6 +121,7 @@ namespace GECV_EX_TR2_Editor_GUI
             this.MenuItem_Save.Enabled = status;
             this.MenuItem_SaveTr2.Enabled = status;
             this.MenuItem_Excel_Export.Enabled = status;
+            this.MenuItem_OldSave.Enabled = status;
 
         }
 
@@ -426,7 +427,7 @@ namespace GECV_EX_TR2_Editor_GUI
                 var current_type_cell = this.DataGridView_Main.Rows[i].Cells[2];
 
                 //if (current_type_cell.Value.ToString().Equals("UTF-16LE") || current_type_cell.Value.ToString().Equals("UTF-16"))
-                if(TR2Reader.IsStringFormat(current_type_cell.Value.ToString()))
+                if (TR2Reader.IsStringFormat(current_type_cell.Value.ToString()))
                 {
 
                     foreach (DataGridViewCell cell in this.DataGridView_Main.Rows[i].Cells)
@@ -850,14 +851,14 @@ namespace GECV_EX_TR2_Editor_GUI
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
 
-                    if(File.Exists(sfd.FileName))
+                    if (File.Exists(sfd.FileName))
                     {
                         File.Delete(sfd.FileName);
                     }
 
-                    if (File.Exists(sfd.FileName+".shadow.xlsx"))
+                    if (File.Exists(sfd.FileName + ".shadow.xlsx"))
                     {
-                        File.Delete(sfd.FileName+".shadow.xlsx");
+                        File.Delete(sfd.FileName + ".shadow.xlsx");
                     }
 
 
@@ -866,7 +867,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
 
 
-                    MessageBox.Show($"Because of Microsoft everything will be confusing to convert:\n{sfd.FileName + ".shadow.xlsx"} Is used to view text in different encodings.\n\nThis editor is a two-layer data table:\r\nThe display layer is used for ordinary data and the system can recognize the content.\r\nThe shadow layer is used to store binary data, and most text is modified through this layer.","Micorosft Problem!",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                    MessageBox.Show($"Because of Microsoft everything will be confusing to convert:\n{sfd.FileName + ".shadow.xlsx"} Is used to view text in different encodings.\n\nThis editor is a two-layer data table:\r\nThe display layer is used for ordinary data and the system can recognize the content.\r\nThe shadow layer is used to store binary data, and most text is modified through this layer.", "Micorosft Problem!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
             }
@@ -979,6 +980,16 @@ namespace GECV_EX_TR2_Editor_GUI
         }
 
         private void DataGridView_Main_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void MenuItem_OldOpen_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MenuItem_OldSave_Click(object sender, EventArgs e)
         {
 
         }

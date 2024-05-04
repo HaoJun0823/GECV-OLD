@@ -39,13 +39,16 @@
             MenuItem_Help = new ToolStripMenuItem();
             MenuStatus_Main = new StatusStrip();
             DataGridView_Main = new DataGridView();
+            MenuItem_Old = new ToolStripMenuItem();
+            MenuItem_OldOpen = new ToolStripMenuItem();
+            MenuItem_OldSave = new ToolStripMenuItem();
             MenuSet_Main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DataGridView_Main).BeginInit();
             SuspendLayout();
             // 
             // MenuSet_Main
             // 
-            MenuSet_Main.Items.AddRange(new ToolStripItem[] { MenuItem_Open, MenuItem_Save, MenuItem_SaveTr2, MenuItem_Import, MenuItem_Export, importExcelToolStripMenuItem, MenuItem_Excel_Export, MenuItem_Help });
+            MenuSet_Main.Items.AddRange(new ToolStripItem[] { MenuItem_Open, MenuItem_Save, MenuItem_SaveTr2, MenuItem_Import, MenuItem_Export, importExcelToolStripMenuItem, MenuItem_Excel_Export, MenuItem_Help, MenuItem_Old });
             MenuSet_Main.Location = new Point(0, 0);
             MenuSet_Main.Name = "MenuSet_Main";
             MenuSet_Main.Size = new Size(800, 25);
@@ -132,6 +135,27 @@
             DataGridView_Main.CellDoubleClick += DataGridView_Main_CellDoubleClick;
             DataGridView_Main.ColumnAdded += DataGridView_Main_ColumnAdded;
             // 
+            // MenuItem_Old
+            // 
+            MenuItem_Old.DropDownItems.AddRange(new ToolStripItem[] { MenuItem_OldOpen, MenuItem_OldSave });
+            MenuItem_Old.Name = "MenuItem_Old";
+            MenuItem_Old.Size = new Size(64, 21);
+            MenuItem_Old.Text = "Old Tr2";
+            // 
+            // MenuItem_OldOpen
+            // 
+            MenuItem_OldOpen.Name = "MenuItem_OldOpen";
+            MenuItem_OldOpen.Size = new Size(180, 22);
+            MenuItem_OldOpen.Text = "Open Old Tr2";
+            MenuItem_OldOpen.Click += MenuItem_OldOpen_Click;
+            // 
+            // MenuItem_OldSave
+            // 
+            MenuItem_OldSave.Name = "MenuItem_OldSave";
+            MenuItem_OldSave.Size = new Size(180, 22);
+            MenuItem_OldSave.Text = "Save Old Tr2";
+            MenuItem_OldSave.Click += MenuItem_OldSave_Click;
+            // 
             // Main
             // 
             AllowDrop = true;
@@ -167,5 +191,8 @@
         private ToolStripMenuItem MenuItem_Excel_Export;
         private ToolStripMenuItem MenuItem_SaveTr2;
         private ToolStripMenuItem importExcelToolStripMenuItem;
+        private ToolStripMenuItem MenuItem_Old;
+        private ToolStripMenuItem MenuItem_OldOpen;
+        private ToolStripMenuItem MenuItem_OldSave;
     }
 }

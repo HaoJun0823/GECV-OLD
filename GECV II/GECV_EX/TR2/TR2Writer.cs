@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GECV_EX.TR2
 {
-    public class TR2Writer
+    public partial class TR2Writer
     {
 
         private BinaryBooker booker;

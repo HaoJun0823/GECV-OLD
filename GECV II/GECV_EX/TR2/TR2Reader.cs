@@ -16,7 +16,7 @@ namespace GECV_EX.TR2
 
     [XmlRoot]
     [Serializable]
-    public class TR2Reader
+    public partial class TR2Reader
     {
 
 
@@ -36,7 +36,7 @@ namespace GECV_EX.TR2
         public int table_column_infromation_count;
 
         [XmlElement]
-        public TR2ColumnCounter column_counter;
+        public TR2ColumnCounter column_counter; //OLD TR2 NOT THIS
 
         [XmlArray]
         public TR2ColumnInformation[] table_column_infromation;
