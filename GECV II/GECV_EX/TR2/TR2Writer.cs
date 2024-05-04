@@ -323,14 +323,37 @@ namespace GECV_EX.TR2
 
         }
 
+        public bool CheckNullString(byte[] array)
+        {
+
+            if(array.Length == 1 && array[0]==0)
+            {
+                return true;
+            }else if (array.Length == 2 && array[0] == 0 && array[1] == 0)
+            {
+                return true;
+            }
+
+
+            return false;
+        }
+
 
         public void ResizeArrayWithStringType(ref byte[] array,string type)
         {
 
-            if (array.Length == 1)
+            //if (array.Length == 1)
+            //{
+            //    return;
+            //}
+
+            if (CheckNullString(array))
             {
                 return;
             }
+            
+
+            
 
             switch (type)
             {
@@ -344,7 +367,7 @@ namespace GECV_EX.TR2
                     Array.Resize<byte>(ref array, array.Length + 2);
                     break;
                 case "UTF-16LE":
-                    Array.Resize<byte>(ref array, array.Length+2);
+                    Array.Resize<byte>(ref array, array.Length + 2);
                     break;
                 default:
                     return;
