@@ -574,7 +574,7 @@ namespace GECV_EX.TR2
                                             data_arr_list_arr.value_string_view = xdata.ToString();
                                             data_arr_list_arr.value = xdata;
                                             break;
-                                        case "UTF-16LE":
+                                        case "UTF-16LE": //NO USED
                                             xdata = StreamUtils.readWideDataterminated(br);
                                             data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
                                             xdata = Encoding.Unicode.GetString(xdata);

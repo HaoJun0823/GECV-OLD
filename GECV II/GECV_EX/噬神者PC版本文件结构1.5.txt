@@ -214,6 +214,18 @@ tr2:
 		
 		注：参见GECV TR2 GUI EDITOR展示的方法。
 			
+
+		2024/05/04一种新的发现：https://github.com/HaoJun0823/GECV/issues/17
+		如果0x76是多数组，且为文本格式：ASCII UTF8 UTF16 那么可能会出现以下这种情况，示例数据的0x76是0x14，UTF8，也就是十进制20：
+		FF FF 2C 00 42 00 6A 00 7D 00 8D 00 A9 00 BC 00 C9 00 D2 00 DB 00 E4 00 ED 00 F6 00 FF 00 08 01 11 01 1A 01 23 01 2C 01 35 01 
+		FF FF E5 A4 9A E7 81 BD E5 A4 9A E9 9B A3 E7 9A 84 E6 97 A5 E5 AD 90 00 E4 BA 9E E8 8E 89 E8 8E 8E EF BC 8C E5 9B A0 E9 81 8E 
+		E5 BA A6 E5 8B 9E E7 B4 AF E8 80 8C E5 80 92 E4 B8 8B E3 80 82 00 等等……
+		第一个 FF FF 双字节指针组
+		第二个 FF FF 文本组
+		将第一个 FF FF 的地址视为0x00，那么第一个指针2C 00刚好能跳转到 E5 A4，取UTF8格式也就是00结束，正确文本为：
+		E5 A4 9A E7 81 BD E5 A4 9A E9 9B A3 E7 9A 84 E6 97 A5 E5 AD 90 00
+		第二个42 00 跳转正确文本为：
+		E4 BA 9E E8 8E 89 E8 8E 8E EF BC 8C E5 9B A0 E9 81 8E E5 BA A6 E5 8B 9E E7 B4 AF E8 80 8C E5 80 92 E4 B8 8B E3 80 82 00
 		
 
 	*row_data：从这里开始对齐16的整数倍，不足用00补齐，如果正好是16倍则不做任何变化。

@@ -123,12 +123,27 @@ namespace GECV_EX_TR2_Editor_GUI
 
         }
 
+        //private bool CheckTR2StringArray(TR2Reader tr2data)
+        //{
+
+        //    bool result = false;
+
+            
+
+            
+
+
+        //    return result;
+        //}
+
 
         private void BuildDataTable(TR2Reader tr2data, bool check = false)
         {
             DataTable dt = new DataTable();
 
             dt.TableName = tr2data.table_name;
+
+            
 
             dt.Columns.Add("Id", typeof(int));
             dt.Columns.Add("Name", typeof(string));
