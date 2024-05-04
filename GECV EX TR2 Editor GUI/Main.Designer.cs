@@ -128,6 +128,7 @@
             DataGridView_Main.Size = new Size(800, 403);
             DataGridView_Main.TabIndex = 1;
             DataGridView_Main.VirtualMode = true;
+            DataGridView_Main.CellContentDoubleClick += DataGridView_Main_CellContentDoubleClick;
             DataGridView_Main.CellDoubleClick += DataGridView_Main_CellDoubleClick;
             DataGridView_Main.ColumnAdded += DataGridView_Main_ColumnAdded;
             // 

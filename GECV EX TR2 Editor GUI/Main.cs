@@ -128,9 +128,9 @@ namespace GECV_EX_TR2_Editor_GUI
 
         //    bool result = false;
 
-            
 
-            
+
+
 
 
         //    return result;
@@ -143,7 +143,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
             dt.TableName = tr2data.table_name;
 
-            
+
 
             dt.Columns.Add("Id", typeof(int));
             dt.Columns.Add("Name", typeof(string));
@@ -424,7 +424,8 @@ namespace GECV_EX_TR2_Editor_GUI
 
                 var current_type_cell = this.DataGridView_Main.Rows[i].Cells[2];
 
-                if (current_type_cell.Value.ToString().Equals("UTF-16LE") || current_type_cell.Value.ToString().Equals("UTF-16"))
+                //if (current_type_cell.Value.ToString().Equals("UTF-16LE") || current_type_cell.Value.ToString().Equals("UTF-16"))
+                if(TR2Reader.IsStringFormat(current_type_cell.Value.ToString()))
                 {
 
                     foreach (DataGridViewCell cell in this.DataGridView_Main.Rows[i].Cells)
@@ -848,7 +849,15 @@ namespace GECV_EX_TR2_Editor_GUI
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
 
+                    if(File.Exists(sfd.FileName))
+                    {
+                        File.Delete(sfd.FileName);
+                    }
 
+                    if (File.Exists(sfd.FileName+".shadow.xlsx"))
+                    {
+                        File.Delete(sfd.FileName+".shadow.xlsx");
+                    }
 
 
                     MiniExcel.SaveAs(sfd.FileName, System_DataTable);
@@ -856,7 +865,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
 
 
-
+                    MessageBox.Show($"Because of Microsoft everything will be confusing to convert:\n{sfd.FileName + ".shadow.xlsx"} Is used to view text in different encodings.\n\nThis editor is a two-layer data table:\r\nThe display layer is used for ordinary data and the system can recognize the content.\r\nThe shadow layer is used to store binary data, and most text is modified through this layer.","Micorosft Problem!",MessageBoxButtons.OK,MessageBoxIcon.Warning);
                 }
 
             }
@@ -937,7 +946,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
         private void importExcelToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("This function is not working beacause you can use Excel or other tools to do that.", "Attention!",MessageBoxButtons.OK,MessageBoxIcon.Stop);
+            MessageBox.Show("This function is not working beacause you can use Excel or other tools to do that.", "Attention!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
             return;
 
 
@@ -957,7 +966,7 @@ namespace GECV_EX_TR2_Editor_GUI
                     DataTable dt = MiniExcel.QueryAsDataTable(sfd.FileName, useHeaderRow: true);
 
 
-                    MessageBox.Show($"You are import {sfd.FileName} now.\nUTF-16 data cannot import because some data is special font.","Warning!",MessageBoxButtons.OKCancel,MessageBoxIcon.Warning);
+                    MessageBox.Show($"You are import {sfd.FileName} now.\nUTF-16 data cannot import because some data is special font.", "Warning!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
 
 
 
@@ -966,6 +975,11 @@ namespace GECV_EX_TR2_Editor_GUI
                 }
 
             }
+        }
+
+        private void DataGridView_Main_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
     }
 }

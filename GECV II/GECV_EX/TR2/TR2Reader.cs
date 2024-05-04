@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -150,7 +151,7 @@ namespace GECV_EX.TR2
             [XmlAttribute]
             public int DulpicatedObjectOffset;
 
-            
+
 
         }
 
@@ -466,6 +467,18 @@ namespace GECV_EX.TR2
             return br.BaseStream.Position;
         }
 
+
+        public static bool IsStringFormat(string type)
+        {
+
+            if (type == "ASCII " || type == "UTF-16LE" || type == "UTF-8" || type == "UTF-16")
+            {
+                return true;
+            }
+            return false;
+
+        }
+
         public void BuildColumnBinaryData()
         {
 
@@ -522,10 +535,10 @@ namespace GECV_EX.TR2
                         {
 
 
-                            
+
 
                             int data_arr_offset = br.ReadInt32();
-                            
+
 
 
                             long br_position = br.BaseStream.Position;
@@ -540,8 +553,9 @@ namespace GECV_EX.TR2
                             }
                             else
                             {
-                                
-                                if(duplicate_check_list.Contains(data_arr_offset)) {
+
+                                if (duplicate_check_list.Contains(data_arr_offset))
+                                {
 
                                     column_data.column_data_list[si].DulpicatedObjectOffset = data_arr_offset;
                                 }
@@ -552,169 +566,286 @@ namespace GECV_EX.TR2
 
 
                                 column_data.column_data_list[si].column_data = new TR2ColumnDataArray[column_data.data_76_array_size];
-                                Console.WriteLine($"Every Cell Have {column_data.column_data_list[si].column_data.Length} Object.");
+                                Console.WriteLine($"{si + 1} Data Every Cell Have {column_data.column_data_list[si].column_data.Length} Object.");
                                 br.BaseStream.Seek(data_arr_offset, SeekOrigin.Begin);
-                                for (int ssi = 0; ssi < column_data.column_data_list[si].column_data.Length; ssi++)
+
+
+                                if (IsStringFormat(column_data.column_type) && column_data.column_data_list[si].column_data.Length > 1)
                                 {
-                                    var data_arr_list_arr = new TR2ColumnDataArray();
-
-                                    
-
-                                    Console.WriteLine($"Object {ssi} Data Cursor:{br.BaseStream.Position.ToString("X")}.");
-                                    dynamic xdata;
+                                    Console.WriteLine($"{si + 1} Special Text Array Format:{column_data.column_type} with {column_data.column_data_list[si].column_data.Length} Object.");
 
 
+                                    //List<Int16>  SpecialTextCursorList = new List<Int16>();
+                                    Int16[] SpecialTextCursorList = new Int16[column_data.column_data_list[si].column_data.Length];
 
-                                    switch (column_data.column_type)
+                                    Console.WriteLine($"Special Base Offset:{br.BaseStream.Position.ToString("X")}.");
+                                    long Current_Speical_Position = br.BaseStream.Position;
+
+
+
+                                    UInt16 Cursor_FFFF = br.ReadUInt16();
+
+                                    if (Cursor_FFFF != 0xFFFF)
                                     {
-                                        case "ASCII":
-                                            xdata = StreamUtils.readZeroterminated(br);
-                                            data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
-                                            xdata = Encoding.ASCII.GetString(xdata);
-                                            data_arr_list_arr.value_string_view = xdata.ToString();
-                                            data_arr_list_arr.value = xdata;
-                                            break;
-                                        case "UTF-16LE": //NO USED
-                                            xdata = StreamUtils.readWideDataterminated(br);
-                                            data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
-                                            xdata = Encoding.Unicode.GetString(xdata);
-                                            data_arr_list_arr.value_string_view = xdata.ToString();
-                                            data_arr_list_arr.value = xdata;
-                                            break;
-                                        case "UTF-8":
-                                            xdata = StreamUtils.readZeroterminated(br);
-                                            data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
-                                            xdata = Encoding.UTF8.GetString(xdata);
-                                            data_arr_list_arr.value_string_view = xdata.ToString();
-                                            data_arr_list_arr.value = xdata;
-                                            break;
-                                        case "UTF-16":
-                                            xdata = StreamUtils.readWideDataterminated(br);
-                                            data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
-                                            xdata = Encoding.Unicode.GetString(xdata); //BIG?
-                                            data_arr_list_arr.value_string_view = xdata.ToString();
-                                            data_arr_list_arr.value = xdata;
-                                            break;
-                                        case "INT8":
-                                            if (br.BaseStream.Position + 1 > br.BaseStream.Length)
-                                            {
-                                                data_arr_list_arr.IsInVaildArrayOffset = true;
-                                            }
-                                            else
-                                            {
-                                                sbyte tdata = br.ReadSByte();
-                                                data_arr_list_arr.value_hex_view = tdata.ToString("X2");
-                                                xdata = tdata;
-                                                data_arr_list_arr.value_string_view = xdata.ToString();
-                                                data_arr_list_arr.value = xdata;
-                                            }
-                                            break;
-                                        case "UINT8":
-                                            if (br.BaseStream.Position + 1 > br.BaseStream.Length)
-                                            {
-                                                data_arr_list_arr.IsInVaildArrayOffset = true;
-                                            }
-                                            else
-                                            {
-                                                byte t2data = br.ReadByte();
-                                                data_arr_list_arr.value_hex_view = t2data.ToString("X2");
-                                                xdata = t2data;
-                                                data_arr_list_arr.value_string_view = xdata.ToString();
-                                                data_arr_list_arr.value = xdata;
-                                            }
-                                            break;
-                                        case "INT16":
-                                            if (br.BaseStream.Position + 2 > br.BaseStream.Length)
-                                            {
-                                                data_arr_list_arr.IsInVaildArrayOffset = true;
-                                            }
-                                            else
-                                            {
-                                                Int16 t3data = br.ReadInt16();
-                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(t3data));
-                                                xdata = t3data;
-                                                data_arr_list_arr.value_string_view = xdata.ToString();
-                                                data_arr_list_arr.value = xdata;
-                                            }
-                                            break;
-                                        case "UINT16":
-                                            if (br.BaseStream.Position + 2 > br.BaseStream.Length)
-                                            {
-                                                data_arr_list_arr.IsInVaildArrayOffset = true;
-                                            }
-                                            else
-                                            {
-                                                UInt16 t4data = br.ReadUInt16();
-                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(t4data));
-                                                xdata = t4data;
-                                                data_arr_list_arr.value_string_view = xdata.ToString();
-                                                data_arr_list_arr.value = xdata;
-                                            }
-                                            break;
-                                        case "INT32":
-                                            if (br.BaseStream.Position + 4 > br.BaseStream.Length)
-                                            {
-                                                data_arr_list_arr.IsInVaildArrayOffset = true;
-                                            }
-                                            else
-                                            {
-                                                Int32 t5data = br.ReadInt32();
-                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(t5data));
-                                                xdata = t5data;
-                                                data_arr_list_arr.value_string_view = xdata.ToString();
-                                                data_arr_list_arr.value = xdata;
-                                            }
-                                            break;
-                                        case "UINT32":
-                                            if (br.BaseStream.Position + 4 > br.BaseStream.Length)
-                                            {
-                                                data_arr_list_arr.IsInVaildArrayOffset = true;
-
-                                            }
-                                            else
-                                            {
-                                                UInt32 t6data = br.ReadUInt32();
-                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(t6data));
-                                                xdata = t6data;
-                                                data_arr_list_arr.value_string_view = xdata.ToString();
-                                                data_arr_list_arr.value = xdata;
-                                            }
-                                            break;
-                                        case "FLOAT32":
-                                            if (br.BaseStream.Position + 4 > br.BaseStream.Length)
-                                            {
-                                                data_arr_list_arr.IsInVaildArrayOffset = true;
-
-                                            }
-                                            else
-                                            {
-                                                Single t7data = br.ReadSingle();
-                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(t7data));
-                                                xdata = t7data;
-                                                data_arr_list_arr.value_string_view = xdata.ToString();
-                                                data_arr_list_arr.value = xdata;
-                                            }
-                                            break;
-                                        default:
-                                            throw new InvalidCastException($"What is {column_data.column_type}?");
+                                        throw new InvalidDataException($"0x{br.BaseStream.Position.ToString("X")} Value {Cursor_FFFF.ToString("X")} Should be 0xFFFF For Cursor Header, Current:{Cursor_FFFF.ToString("X")}");
                                     }
 
-                                    //if (string.IsNullOrEmpty(data_arr_list_arr.value_hex_view))
-                                    //{
-                                    //    data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(xdata));
-                                    //}
+
+                                    for (int ssi = 0; ssi < column_data.column_data_list[si].column_data.Length; ssi++)
+                                    {
+                                        var data_arr_list_arr = new TR2ColumnDataArray();
 
 
 
-                                    Console.WriteLine($"Object {ssi} Read Data:{data_arr_list_arr.value_string_view}");
+                                        Console.WriteLine($"Special Object {ssi} Data Offset:{br.BaseStream.Position.ToString("X")}.");
+
+                                        Int16 Cursor_Read = br.ReadInt16();
+
+                                        Console.WriteLine($"Special Object {ssi} Data Value:{Cursor_Read.ToString("X")}.");
+
+                                        SpecialTextCursorList[ssi] = Cursor_Read;
 
 
 
-                                    column_data.column_data_list[si].column_data[ssi] = data_arr_list_arr;
+                                    }
+
+                                    UInt16 Text_FFFF = br.ReadUInt16();
+
+                                    if (Text_FFFF != 0xFFFF)
+                                    {
+                                        throw new InvalidDataException($"0x{br.BaseStream.Position.ToString("X")} Value {Cursor_FFFF.ToString("X")} Should be 0xFFFF For Text Header, Current:{Cursor_FFFF.ToString("X")}");
+                                    }
+
+
+
+
+                                    for (int ssi = 0; ssi < column_data.column_data_list[si].column_data.Length; ssi++)
+                                    {
+
+
+                                        Int16 speical_cursor_item = SpecialTextCursorList[ssi];
+                                        br.BaseStream.Position = Current_Speical_Position + speical_cursor_item;
+                                        var data_arr_list_arr = new TR2ColumnDataArray();
+
+                                        Console.WriteLine($"Text Object {ssi} Data Cursor:{br.BaseStream.Position.ToString("X")}.");
+                                        dynamic xdata;
+
+
+
+                                        switch (column_data.column_type)
+                                        {
+                                            case "ASCII":
+                                                xdata = StreamUtils.readZeroterminated(br);
+                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
+                                                xdata = Encoding.ASCII.GetString(xdata);
+                                                data_arr_list_arr.value_string_view = xdata.ToString();
+                                                data_arr_list_arr.value = xdata;
+                                                break;
+                                            case "UTF-16LE": //NO USED
+                                                xdata = StreamUtils.readWideDataterminated(br);
+                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
+                                                xdata = Encoding.Unicode.GetString(xdata);
+                                                data_arr_list_arr.value_string_view = xdata.ToString();
+                                                data_arr_list_arr.value = xdata;
+                                                break;
+                                            case "UTF-8":
+                                                xdata = StreamUtils.readZeroterminated(br);
+                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
+                                                xdata = Encoding.UTF8.GetString(xdata);
+                                                data_arr_list_arr.value_string_view = xdata.ToString();
+                                                data_arr_list_arr.value = xdata;
+                                                break;
+                                            case "UTF-16":
+                                                xdata = StreamUtils.readWideDataterminated(br);
+                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
+                                                xdata = Encoding.Unicode.GetString(xdata); //BIG?
+                                                data_arr_list_arr.value_string_view = xdata.ToString();
+                                                data_arr_list_arr.value = xdata;
+                                                break;
+                                            default:
+                                                throw new InvalidCastException($"Special Text Array:What is {column_data.column_type}?");
+                                        }
+
+                                        Console.WriteLine($"Object {ssi} Read Data:{data_arr_list_arr.value_string_view}");
+
+
+
+                                        column_data.column_data_list[si].column_data[ssi] = data_arr_list_arr;
+
+
+                                    }
+
+
 
 
                                 }
+                                else
+                                {
 
+
+
+
+                                    for (int ssi = 0; ssi < column_data.column_data_list[si].column_data.Length; ssi++)
+                                    {
+                                        var data_arr_list_arr = new TR2ColumnDataArray();
+
+
+
+                                        Console.WriteLine($"Object {ssi} Data Cursor:{br.BaseStream.Position.ToString("X")}.");
+                                        dynamic xdata;
+
+
+
+                                        switch (column_data.column_type)
+                                        {
+                                            case "ASCII":
+                                                xdata = StreamUtils.readZeroterminated(br);
+                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
+                                                xdata = Encoding.ASCII.GetString(xdata);
+                                                data_arr_list_arr.value_string_view = xdata.ToString();
+                                                data_arr_list_arr.value = xdata;
+                                                break;
+                                            case "UTF-16LE": //NO USED
+                                                xdata = StreamUtils.readWideDataterminated(br);
+                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
+                                                xdata = Encoding.Unicode.GetString(xdata);
+                                                data_arr_list_arr.value_string_view = xdata.ToString();
+                                                data_arr_list_arr.value = xdata;
+                                                break;
+                                            case "UTF-8":
+                                                xdata = StreamUtils.readZeroterminated(br);
+                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
+                                                xdata = Encoding.UTF8.GetString(xdata);
+                                                data_arr_list_arr.value_string_view = xdata.ToString();
+                                                data_arr_list_arr.value = xdata;
+                                                break;
+                                            case "UTF-16":
+                                                xdata = StreamUtils.readWideDataterminated(br);
+                                                data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(xdata);
+                                                xdata = Encoding.Unicode.GetString(xdata); //BIG?
+                                                data_arr_list_arr.value_string_view = xdata.ToString();
+                                                data_arr_list_arr.value = xdata;
+                                                break;
+                                            case "INT8":
+                                                if (br.BaseStream.Position + 1 > br.BaseStream.Length)
+                                                {
+                                                    data_arr_list_arr.IsInVaildArrayOffset = true;
+                                                }
+                                                else
+                                                {
+                                                    sbyte tdata = br.ReadSByte();
+                                                    data_arr_list_arr.value_hex_view = tdata.ToString("X2");
+                                                    xdata = tdata;
+                                                    data_arr_list_arr.value_string_view = xdata.ToString();
+                                                    data_arr_list_arr.value = xdata;
+                                                }
+                                                break;
+                                            case "UINT8":
+                                                if (br.BaseStream.Position + 1 > br.BaseStream.Length)
+                                                {
+                                                    data_arr_list_arr.IsInVaildArrayOffset = true;
+                                                }
+                                                else
+                                                {
+                                                    byte t2data = br.ReadByte();
+                                                    data_arr_list_arr.value_hex_view = t2data.ToString("X2");
+                                                    xdata = t2data;
+                                                    data_arr_list_arr.value_string_view = xdata.ToString();
+                                                    data_arr_list_arr.value = xdata;
+                                                }
+                                                break;
+                                            case "INT16":
+                                                if (br.BaseStream.Position + 2 > br.BaseStream.Length)
+                                                {
+                                                    data_arr_list_arr.IsInVaildArrayOffset = true;
+                                                }
+                                                else
+                                                {
+                                                    Int16 t3data = br.ReadInt16();
+                                                    data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(t3data));
+                                                    xdata = t3data;
+                                                    data_arr_list_arr.value_string_view = xdata.ToString();
+                                                    data_arr_list_arr.value = xdata;
+                                                }
+                                                break;
+                                            case "UINT16":
+                                                if (br.BaseStream.Position + 2 > br.BaseStream.Length)
+                                                {
+                                                    data_arr_list_arr.IsInVaildArrayOffset = true;
+                                                }
+                                                else
+                                                {
+                                                    UInt16 t4data = br.ReadUInt16();
+                                                    data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(t4data));
+                                                    xdata = t4data;
+                                                    data_arr_list_arr.value_string_view = xdata.ToString();
+                                                    data_arr_list_arr.value = xdata;
+                                                }
+                                                break;
+                                            case "INT32":
+                                                if (br.BaseStream.Position + 4 > br.BaseStream.Length)
+                                                {
+                                                    data_arr_list_arr.IsInVaildArrayOffset = true;
+                                                }
+                                                else
+                                                {
+                                                    Int32 t5data = br.ReadInt32();
+                                                    data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(t5data));
+                                                    xdata = t5data;
+                                                    data_arr_list_arr.value_string_view = xdata.ToString();
+                                                    data_arr_list_arr.value = xdata;
+                                                }
+                                                break;
+                                            case "UINT32":
+                                                if (br.BaseStream.Position + 4 > br.BaseStream.Length)
+                                                {
+                                                    data_arr_list_arr.IsInVaildArrayOffset = true;
+
+                                                }
+                                                else
+                                                {
+                                                    UInt32 t6data = br.ReadUInt32();
+                                                    data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(t6data));
+                                                    xdata = t6data;
+                                                    data_arr_list_arr.value_string_view = xdata.ToString();
+                                                    data_arr_list_arr.value = xdata;
+                                                }
+                                                break;
+                                            case "FLOAT32":
+                                                if (br.BaseStream.Position + 4 > br.BaseStream.Length)
+                                                {
+                                                    data_arr_list_arr.IsInVaildArrayOffset = true;
+
+                                                }
+                                                else
+                                                {
+                                                    Single t7data = br.ReadSingle();
+                                                    data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(t7data));
+                                                    xdata = t7data;
+                                                    data_arr_list_arr.value_string_view = xdata.ToString();
+                                                    data_arr_list_arr.value = xdata;
+                                                }
+                                                break;
+                                            default:
+                                                throw new InvalidCastException($"What is {column_data.column_type}?");
+                                        }
+
+                                        //if (string.IsNullOrEmpty(data_arr_list_arr.value_hex_view))
+                                        //{
+                                        //    data_arr_list_arr.value_hex_view = FileUtils.GetByteArrayString(BitConverter.GetBytes(xdata));
+                                        //}
+
+
+
+                                        Console.WriteLine($"Object {ssi} Read Data:{data_arr_list_arr.value_string_view}");
+
+
+
+                                        column_data.column_data_list[si].column_data[ssi] = data_arr_list_arr;
+
+
+                                    }
+                                }
                                 br.BaseStream.Seek(br_position, SeekOrigin.Begin);
                             }
 
