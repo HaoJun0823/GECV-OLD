@@ -141,6 +141,9 @@ namespace GECV_EX.TR2
             public TR2ColumnDataArray[] column_data;
 
             [XmlAttribute]
+            public int OldSonyVaildCount;
+
+            [XmlAttribute]
             public bool IsInVaildOffset;
 
             [XmlAttribute]
@@ -500,7 +503,7 @@ namespace GECV_EX.TR2
         public static bool IsStringFormat(string type)
         {
 
-            if (type == "ASCII " || type == "UTF-16LE" || type == "UTF-8" || type == "UTF-16")
+            if (type == "ASCII" || type == "UTF-16LE" || type == "UTF-8" || type == "UTF-16")
             {
                 return true;
             }

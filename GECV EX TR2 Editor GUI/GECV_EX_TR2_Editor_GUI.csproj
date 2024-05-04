@@ -11,6 +11,10 @@
     <FileVersion>1.0.1.1</FileVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\GECV II\GECV_EX\GECV_EX.csproj" />
   </ItemGroup>

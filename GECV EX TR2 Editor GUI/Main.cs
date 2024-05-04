@@ -77,7 +77,7 @@ namespace GECV_EX_TR2_Editor_GUI
                     BuildDataTable(System_TR2, true);
                     RefreshDataTable();
 
-                    this.Text = original_title + " " + select_file;
+                    this.Text = original_title + " (XML) " + select_file;
                     SetMenuStatus(true);
                     return;
                 }
@@ -90,7 +90,7 @@ namespace GECV_EX_TR2_Editor_GUI
                     this.Text = original_title + $" Building {System_TR2.table_name} Table, Please Wait...";
                     BuildDataTable(System_TR2, true);
                     RefreshDataTable();
-                    this.Text = original_title + " " + select_file;
+                    this.Text = original_title + " (PC) " + select_file;
                     SetMenuStatus(true);
                     return;
                 }
@@ -638,7 +638,6 @@ namespace GECV_EX_TR2_Editor_GUI
         private void MenuItem_Save_Click(object sender, EventArgs e)
         {
 
-            UpdateTR2Reader();
 
             var xml_data = System_TR2.SaveAsXml();
 
@@ -664,6 +663,12 @@ namespace GECV_EX_TR2_Editor_GUI
                 }
 
             }
+
+
+
+
+
+
 
 
 
@@ -876,32 +881,40 @@ namespace GECV_EX_TR2_Editor_GUI
 
         private void MenuItem_SaveTr2_Click(object sender, EventArgs e)
         {
-            UpdateTR2Reader();
-
-
-
-            using (SaveFileDialog sfd = new SaveFileDialog())
+            try
             {
-                sfd.Filter = "tr2 file(*.tr2)|*.tr2";
-                sfd.RestoreDirectory = true;
-                sfd.Title = "Export File:";
-                sfd.FileName = input_file_name;
+                UpdateTR2Reader();
 
-                if (sfd.ShowDialog() == DialogResult.OK)
+
+
+                using (SaveFileDialog sfd = new SaveFileDialog())
                 {
+                    sfd.Filter = "tr2 file(*.tr2)|*.tr2";
+                    sfd.RestoreDirectory = true;
+                    sfd.Title = "Export File:";
+                    sfd.FileName = input_file_name;
+
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
 
 
 
 
-                    TR2Writer writer = new TR2Writer(System_TR2);
+                        TR2Writer writer = new TR2Writer(System_TR2);
 
-                    File.WriteAllBytes(sfd.FileName, writer.GetTr2Data());
+                        File.WriteAllBytes(sfd.FileName, writer.GetTr2Data());
 
-                    File.WriteAllLines(sfd.FileName + ".log", writer.GetBookInformation());
+                        File.WriteAllLines(sfd.FileName + ".log", writer.GetBookInformation());
 
+
+                    }
 
                 }
-
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{input_file_name} Save Error:\n{ex.Message}\n{ex.StackTrace}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
         }
 
@@ -978,10 +991,6 @@ namespace GECV_EX_TR2_Editor_GUI
             }
         }
 
-        private void DataGridView_Main_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
 
         private void MenuItem_OldOpen_Click(object sender, EventArgs e)
         {
@@ -1010,7 +1019,7 @@ namespace GECV_EX_TR2_Editor_GUI
                         if (ext.ToLower() == ".tr2")
                         {
 
-                            System_TR2 = new TR2Reader(File.ReadAllBytes(select_file),TR2Version.SONY_A);
+                            System_TR2 = new TR2Reader(File.ReadAllBytes(select_file), TR2Version.SONY_A);
                             this.Text = original_title + $" Building Old Sony_A {System_TR2.table_name} Table, Please Wait...";
                             BuildDataTable(System_TR2, true);
                             RefreshDataTable();
@@ -1043,6 +1052,41 @@ namespace GECV_EX_TR2_Editor_GUI
         private void MenuItem_OldSave_Click(object sender, EventArgs e)
         {
 
+            try
+            {
+                UpdateTR2Reader();
+
+
+
+                using (SaveFileDialog sfd = new SaveFileDialog())
+                {
+                    sfd.Filter = "old tr2 (SONY_A) file(*.tr2)|*.tr2";
+                    sfd.RestoreDirectory = true;
+                    sfd.Title = "Export old tr2 (SONY_A) Format File:";
+                    sfd.FileName = input_file_name;
+
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+
+
+
+
+                        TR2Writer writer = new TR2Writer(System_TR2, TR2Version.SONY_A);
+
+                        File.WriteAllBytes(sfd.FileName, writer.GetTr2Data());
+
+                        File.WriteAllLines(sfd.FileName + ".log", writer.GetBookInformation());
+
+
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{input_file_name} Save Error:\n{ex.Message}\n{ex.StackTrace}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
         }
     }
 }

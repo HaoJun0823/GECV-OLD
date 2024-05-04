@@ -37,11 +37,11 @@
             importExcelToolStripMenuItem = new ToolStripMenuItem();
             MenuItem_Excel_Export = new ToolStripMenuItem();
             MenuItem_Help = new ToolStripMenuItem();
-            MenuStatus_Main = new StatusStrip();
-            DataGridView_Main = new DataGridView();
             MenuItem_Old = new ToolStripMenuItem();
             MenuItem_OldOpen = new ToolStripMenuItem();
             MenuItem_OldSave = new ToolStripMenuItem();
+            MenuStatus_Main = new StatusStrip();
+            DataGridView_Main = new DataGridView();
             MenuSet_Main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DataGridView_Main).BeginInit();
             SuspendLayout();
@@ -112,6 +112,27 @@
             MenuItem_Help.Text = "About";
             MenuItem_Help.Click += MenuItem_Help_Click;
             // 
+            // MenuItem_Old
+            // 
+            MenuItem_Old.DropDownItems.AddRange(new ToolStripItem[] { MenuItem_OldOpen, MenuItem_OldSave });
+            MenuItem_Old.Name = "MenuItem_Old";
+            MenuItem_Old.Size = new Size(64, 21);
+            MenuItem_Old.Text = "Old Tr2";
+            // 
+            // MenuItem_OldOpen
+            // 
+            MenuItem_OldOpen.Name = "MenuItem_OldOpen";
+            MenuItem_OldOpen.Size = new Size(156, 22);
+            MenuItem_OldOpen.Text = "Open Old Tr2";
+            MenuItem_OldOpen.Click += MenuItem_OldOpen_Click;
+            // 
+            // MenuItem_OldSave
+            // 
+            MenuItem_OldSave.Name = "MenuItem_OldSave";
+            MenuItem_OldSave.Size = new Size(156, 22);
+            MenuItem_OldSave.Text = "Save Old Tr2";
+            MenuItem_OldSave.Click += MenuItem_OldSave_Click;
+            // 
             // MenuStatus_Main
             // 
             MenuStatus_Main.Location = new Point(0, 428);
@@ -131,30 +152,8 @@
             DataGridView_Main.Size = new Size(800, 403);
             DataGridView_Main.TabIndex = 1;
             DataGridView_Main.VirtualMode = true;
-            DataGridView_Main.CellContentDoubleClick += DataGridView_Main_CellContentDoubleClick;
             DataGridView_Main.CellDoubleClick += DataGridView_Main_CellDoubleClick;
             DataGridView_Main.ColumnAdded += DataGridView_Main_ColumnAdded;
-            // 
-            // MenuItem_Old
-            // 
-            MenuItem_Old.DropDownItems.AddRange(new ToolStripItem[] { MenuItem_OldOpen, MenuItem_OldSave });
-            MenuItem_Old.Name = "MenuItem_Old";
-            MenuItem_Old.Size = new Size(64, 21);
-            MenuItem_Old.Text = "Old Tr2";
-            // 
-            // MenuItem_OldOpen
-            // 
-            MenuItem_OldOpen.Name = "MenuItem_OldOpen";
-            MenuItem_OldOpen.Size = new Size(180, 22);
-            MenuItem_OldOpen.Text = "Open Old Tr2";
-            MenuItem_OldOpen.Click += MenuItem_OldOpen_Click;
-            // 
-            // MenuItem_OldSave
-            // 
-            MenuItem_OldSave.Name = "MenuItem_OldSave";
-            MenuItem_OldSave.Size = new Size(180, 22);
-            MenuItem_OldSave.Text = "Save Old Tr2";
-            MenuItem_OldSave.Click += MenuItem_OldSave_Click;
             // 
             // Main
             // 

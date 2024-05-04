@@ -3,6 +3,7 @@ using GECV_EX.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,12 +17,14 @@ namespace GECV_EX.TR2
         private TR2Reader tr2data;
 
 
+        
+        private TR2Version tr2version;
 
 
-
-        public TR2Writer(TR2Reader tr2data)
+        public TR2Writer(TR2Reader tr2data,TR2Version tR2Version = TR2Version.PC)
         {
             this.tr2data = tr2data;
+            tr2version = tR2Version;
             this.booker = new BinaryBooker();
             Build();
         }
@@ -78,30 +81,46 @@ namespace GECV_EX.TR2
 
             }
 
-            booker.SetBookMark("column_data_count",offset);
-            offset += 4;
-            booker.WriteData("column_data_count",tr2data.column_counter.id.Length);
-            
+            if (this.tr2version == TR2Version.PC) {
 
-            for (int i = 0; i<tr2data.column_counter.id.Length;i++)
-            {
-                booker.SetBookMark("column_data_count_data_"+i, offset);
+                booker.SetBookMark("column_data_count", offset);
                 offset += 4;
-                booker.WriteData("column_data_count_data_"+i, tr2data.column_counter.id[i]);
+                booker.WriteData("column_data_count", tr2data.column_counter.id.Length);
+
+
+                for (int i = 0; i < tr2data.column_counter.id.Length; i++)
+                {
+                    booker.SetBookMark("column_data_count_data_" + i, offset);
+                    offset += 4;
+                    booker.WriteData("column_data_count_data_" + i, tr2data.column_counter.id[i]);
+                }
+
+
             }
+
 
             booker.SetBookMark("tr2_header_inf_zero16", offset);
             int zero_offset = offset % 16;
 
-            if(zero_offset != 0) {
+            if (zero_offset != 0)
+            {
 
                 booker.WriteData("tr2_header_inf_zero16", new byte[16 - zero_offset]);
                 offset += 16 - zero_offset;
             }
-            
-            
 
-            offset = BuildBin(offset);
+
+            switch (this.tr2version)
+            {
+                case TR2Version.SONY_A:
+                    offset = BuildBin_SONY_A(offset);
+                    break;
+                default:
+                    offset = BuildBin(offset);
+                    break;
+            }
+
+            //offset = BuildBin(offset);
 
 
         }
