@@ -62,8 +62,8 @@
             // MenuItem_Save
             // 
             MenuItem_Save.Name = "MenuItem_Save";
-            MenuItem_Save.Size = new Size(47, 21);
-            MenuItem_Save.Text = "Save";
+            MenuItem_Save.Size = new Size(73, 21);
+            MenuItem_Save.Text = "Save Xml";
             MenuItem_Save.Click += MenuItem_Save_Click;
             // 
             // MenuItem_SaveTr2

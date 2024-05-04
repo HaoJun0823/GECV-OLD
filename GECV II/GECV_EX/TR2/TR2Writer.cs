@@ -219,23 +219,60 @@ namespace GECV_EX.TR2
                         booker.WriteData($"table_column_information_{i}_column_data_list_{si}_offset",task_offset - offset);
                     }
 
-                    for (int ssi=0;ssi<parent.column_data.Length; ssi++)
+                    if (TR2Reader.IsStringFormat(tr2data.table_column_infromation[i].column_data.column_type) && tr2data.table_column_infromation[i].column_data.column_data_list[si].column_data.Length > 1)
                     {
 
-                        var child = parent.column_data[ssi];
+                        byte[] Byte_FFFF = { 0xff, 0xff, 0xff, 0xff };
 
-                        byte[] input_data = FileUtils.GetBytesByHexString(child.value_hex_view);
-                        ResizeArrayWithStringType(ref input_data, tr2data.table_column_infromation[i].column_data.column_type);
-                        booker.SetBookMark($"table_column_information_{i}_column_data_list_{si}_{ssi}", task_offset);
-                        task_offset += input_data.Length;
-                        booker.WriteData($"table_column_information_{i}_column_data_list_{si}_{ssi}", input_data);
+                        booker.SetBookMark($"table_column_information_{i}_column_data_list_{si}_Cursor_FFFF_Header", task_offset);
+                        booker.WriteData($"table_column_information_{i}_column_data_list_{si}_Cursor_FFFF_Header", Byte_FFFF);
+                        long current_special_offset = task_offset;
+                        task_offset += 2;
+                        for (int ssi = 0; ssi < parent.column_data.Length; ssi++)
+                        {
+
+                            booker.SetBookMark($"table_column_information_{i}_column_data_list_{si}_{ssi}_Cursor_FFFF", task_offset);
+                            task_offset += 2;
+                        }
+
+                        booker.SetBookMark($"table_column_information_{i}_column_data_list_{si}_Text_FFFF_Header", task_offset);
+                        booker.WriteData($"table_column_information_{i}_column_data_list_{si}_Text_FFFF_Header", Byte_FFFF);
+                        task_offset += 2;
 
 
+                        for (int ssi = 0; ssi < parent.column_data.Length; ssi++)
+                        {
 
+                            var child = parent.column_data[ssi];
 
+                            byte[] input_data = FileUtils.GetBytesByHexString(child.value_hex_view);
+                            ResizeArrayWithStringType(ref input_data, tr2data.table_column_infromation[i].column_data.column_type);
+                            booker.SetBookMark($"table_column_information_{i}_column_data_list_{si}_{ssi}", task_offset);
+                            Int16 FFFF_cursor = Convert.ToInt16(task_offset - current_special_offset);
+
+                            booker.WriteData($"table_column_information_{i}_column_data_list_{si}_{ssi}_Cursor_FFFF", BitConverter.GetBytes(FFFF_cursor));
+                            task_offset += input_data.Length;
+                            booker.WriteData($"table_column_information_{i}_column_data_list_{si}_{ssi}", input_data);
+                            
+                        }
 
                     }
+                    else
+                    {
 
+                        for (int ssi = 0; ssi < parent.column_data.Length; ssi++)
+                        {
+
+                            var child = parent.column_data[ssi];
+
+                            byte[] input_data = FileUtils.GetBytesByHexString(child.value_hex_view);
+                            ResizeArrayWithStringType(ref input_data, tr2data.table_column_infromation[i].column_data.column_type);
+                            booker.SetBookMark($"table_column_information_{i}_column_data_list_{si}_{ssi}", task_offset);
+                            task_offset += input_data.Length;
+                            booker.WriteData($"table_column_information_{i}_column_data_list_{si}_{ssi}", input_data);
+                        }
+
+                    }
 
                     // booker.GetBookMark($"table_column_information_{i}_column_data_list_{si}");
 

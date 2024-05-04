@@ -119,6 +119,7 @@ namespace GECV_EX_TR2_Editor_GUI
             this.MenuItem_Export.Enabled = status;
             this.MenuItem_Import.Enabled = status;
             this.MenuItem_Save.Enabled = status;
+            this.MenuItem_SaveTr2.Enabled = status;
             this.MenuItem_Excel_Export.Enabled = status;
 
         }
@@ -658,7 +659,7 @@ namespace GECV_EX_TR2_Editor_GUI
                     File.WriteAllText(sfd.FileName, xml_data);
 
 
-
+                    MessageBox.Show($"Xml has been abandoned as we have the full TR2 converter.\r\nThis part is only available in Debug.", "Attention!", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 }
 
