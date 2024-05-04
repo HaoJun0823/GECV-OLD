@@ -53,7 +53,6 @@ namespace GECV_EX_TR2_Editor_GUI
 
         }
 
-
         private void OpenFile(string filename)
         {
 
@@ -986,7 +985,59 @@ namespace GECV_EX_TR2_Editor_GUI
 
         private void MenuItem_OldOpen_Click(object sender, EventArgs e)
         {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
 
+                ofd.RestoreDirectory = true;
+                ofd.Multiselect = false;
+                ofd.Title = "Open Old SONY_A Tr2 File:";
+                ofd.Filter = "(Old SONY_A TR2 File)|*.tr2";
+                ofd.RestoreDirectory = false;
+
+
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+
+                    string select_file = ofd.FileName;
+
+
+                    string ext = Path.GetExtension(select_file);
+
+                    input_file_name = Path.GetFileNameWithoutExtension(select_file);
+
+                    try
+                    {
+                        if (ext.ToLower() == ".tr2")
+                        {
+
+                            System_TR2 = new TR2Reader(File.ReadAllBytes(select_file),TR2Version.SONY_A);
+                            this.Text = original_title + $" Building Old Sony_A {System_TR2.table_name} Table, Please Wait...";
+                            BuildDataTable(System_TR2, true);
+                            RefreshDataTable();
+                            this.Text = original_title + " (SONY_A) " + select_file;
+                            SetMenuStatus(true);
+                            return;
+                        }
+
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"{select_file} Open Error:\n{ex.Message}\n{ex.StackTrace}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        input_file_name = "";
+                        this.Text = original_title;
+                        SetMenuStatus(false);
+                        return;
+                    }
+                    MessageBox.Show($"{select_file} Is not supported file!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+
+                }
+
+
+
+            }
         }
 
         private void MenuItem_OldSave_Click(object sender, EventArgs e)

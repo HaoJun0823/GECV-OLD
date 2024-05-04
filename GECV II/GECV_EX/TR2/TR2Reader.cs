@@ -1,15 +1,6 @@
-﻿using GECV_EX.Shared.Old;
-using GECV_EX.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Runtime.Intrinsics.X86;
+﻿using GECV_EX.Utils;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
-using static GECV_EX.Shared.Old.OldTR2File;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GECV_EX.TR2
 {
@@ -18,7 +9,11 @@ namespace GECV_EX.TR2
     [Serializable]
     public partial class TR2Reader
     {
+        [XmlIgnore]
+        public static readonly int TR2_HEADER = 0x3272742E;
 
+        [XmlAttribute]
+        public TR2Version TR2_VERSION;
 
         [XmlAttribute]
         public int file_header;
@@ -151,6 +146,13 @@ namespace GECV_EX.TR2
             [XmlAttribute]
             public int DulpicatedObjectOffset;
 
+            [XmlAttribute]
+            public int OldSonyDataId;
+            [XmlAttribute]
+            public int OldSonyDataCursor;
+            [XmlAttribute]
+            public int OldSonyDataLength;
+
 
 
         }
@@ -173,11 +175,21 @@ namespace GECV_EX.TR2
             public string value_string_view;
 
 
+            [XmlAttribute]
+            public int OldSonyDataArrayId;
+            [XmlAttribute]
+            public int OldSonyDataArrayCursor;
+            [XmlAttribute]
+            public int OldSonyDataArrayLength;
+
+
+
         }
 
 
-        public TR2Reader(byte[] tr2_file_data)
+        public TR2Reader(byte[] tr2_file_data,TR2Version tr2_version = TR2Version.PC)
         {
+            this.TR2_VERSION = tr2_version;
 
             using (MemoryStream ms = new MemoryStream(tr2_file_data))
             {
@@ -187,7 +199,7 @@ namespace GECV_EX.TR2
 
                     file_header = br.ReadInt32();
 
-                    if (file_header != OldTR2File.TR2_HEADER)
+                    if (file_header != TR2_HEADER)
                     {
 
                         throw new FileLoadException($"This is Not TR2 File!");
@@ -218,8 +230,25 @@ namespace GECV_EX.TR2
 
 
                     offset = ReadColumnInformtaion(br);
-                    offset = ReadColumnCounter(br);
-                    BuildColumnBinaryData();
+
+                    switch (this.TR2_VERSION)
+                    {
+                        case TR2Version.SONY_A:
+                            BuildColumnBinaryData_SonyA();
+                            break;
+                        default:
+                            ReadColumnCounter(br);
+                            BuildColumnBinaryData();
+                            break;
+                    }
+
+                    //if(this.TR2_VERSION == TR2Version.PC)
+                    //{
+                    //    offset = ReadColumnCounter(br);
+                    //}
+
+                    
+                    //BuildColumnBinaryData();
 
 
                 }
