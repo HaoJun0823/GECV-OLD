@@ -9,7 +9,7 @@ using System.Text;
 
 namespace GECV_EX.Utils
 {
-    public static class BLZ4Utils
+    public static class BLZ4Utils //Ionic.Zlib;?
     {
         public static readonly int BLZ4_HEADER = 0x347a6c62;
 

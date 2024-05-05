@@ -183,6 +183,7 @@ namespace GECV_EX_TR2_Editor_GUI
             this.MenuItem_SaveTr2.Enabled = status;
             this.MenuItem_Excel_Export.Enabled = status;
             this.MenuItem_OldSave.Enabled = status;
+            this.importExcelToolStripMenuItem.Enabled = status;
 
         }
 
@@ -390,7 +391,7 @@ namespace GECV_EX_TR2_Editor_GUI
         }
 
 
-        private DataRow GetDatRowFromTable(ref DataTable dt, int id, string column_name, string column_type, byte index)
+        public DataRow GetDatRowFromTable(ref DataTable dt, int id, string column_name, string column_type, byte index)
         {
 
             //DataRow dr = dt.NewRow();
@@ -917,23 +918,27 @@ namespace GECV_EX_TR2_Editor_GUI
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
 
-                    if (File.Exists(sfd.FileName))
-                    {
-                        File.Delete(sfd.FileName);
-                    }
+                    TR2ExcelHelper.Save(System_DataTable, System_DataTable_Hex, sfd.FileName);
 
-                    if (File.Exists(sfd.FileName + ".shadow.xlsx"))
-                    {
-                        File.Delete(sfd.FileName + ".shadow.xlsx");
-                    }
+                    MessageBox.Show($"Since multiple encodings may not be converted correctly (mainly occurs in UTF-16), you need to fill in the imported type:\r\n\r\n0=Do not import.\r\n1=Import the text of the Value column.\r\n2=Import the text of the Hex column. (only text available)\r\n\r\nNote that this only happens with text (UTF-8, UTF-16, UTF-16LE, ASCII), values will be converted correctly and no hex column is needed.", "Encoding Problem!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                    //if (File.Exists(sfd.FileName))
+                    //{
+                    //    File.Delete(sfd.FileName);
+                    //}
+
+                    //if (File.Exists(sfd.FileName + ".shadow.xlsx"))
+                    //{
+                    //    File.Delete(sfd.FileName + ".shadow.xlsx");
+                    //}
 
 
-                    MiniExcel.SaveAs(sfd.FileName, System_DataTable);
-                    MiniExcel.SaveAs(sfd.FileName + ".shadow.xlsx", System_DataTable_Hex);
+                    //MiniExcel.SaveAs(sfd.FileName, System_DataTable);
+                    //MiniExcel.SaveAs(sfd.FileName + ".shadow.xlsx", System_DataTable_Hex);
 
 
 
-                    MessageBox.Show($"Because of Microsoft everything will be confusing to convert:\n{sfd.FileName + ".shadow.xlsx"} Is used to view text in different encodings.\n\nThis editor is a two-layer data table:\r\nThe display layer is used for ordinary data and the system can recognize the content.\r\nThe shadow layer is used to store binary data, and most text is modified through this layer.", "Micorosft Problem!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    //MessageBox.Show($"Because of Microsoft everything will be confusing to convert:\n{sfd.FileName + ".shadow.xlsx"} Is used to view text in different encodings.\n\nThis editor is a two-layer data table:\r\nThe display layer is used for ordinary data and the system can recognize the content.\r\nThe shadow layer is used to store binary data, and most text is modified through this layer.", "Micorosft Problem!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
             }
@@ -1022,8 +1027,8 @@ namespace GECV_EX_TR2_Editor_GUI
 
         private void importExcelToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("This function is not working beacause you can use Excel or other tools to do that.", "Attention!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-            return;
+            MessageBox.Show("Warning:\r\nYou must back up your files.\r\nYou must back up your files.\r\nYou must back up your files.\r\n\r\nThis is not a stable feature because of the complexity of the Excel format, which will destroy the table if a fatal error occurs during the import.\r\nIf some data is incorrect, please correct it manually.", "Attention!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            
 
 
             UpdateTR2Reader();
@@ -1038,11 +1043,23 @@ namespace GECV_EX_TR2_Editor_GUI
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
 
+                    try
+                    {
 
-                    DataTable dt = MiniExcel.QueryAsDataTable(sfd.FileName, useHeaderRow: true);
+                    
+                    //DataTable dt = MiniExcel.QueryAsDataTable(sfd.FileName, useHeaderRow: true);
 
+                    TR2ExcelHelper.Load(ref System_DataTable, ref System_DataTable_Hex, sfd.FileName);
+                        UpdateTR2Reader();
+                        BuildDataTable(System_TR2);
+                        RefreshDataTable();
+                    }
+                    catch(Exception ex) {
 
-                    MessageBox.Show($"You are import {sfd.FileName} now.\nUTF-16 data cannot import because some data is special font.", "Warning!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                        MessageBox.Show($"{input_file_name} Save Error:\n{ex.Message}\n{ex.StackTrace}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    //MessageBox.Show($"You are import {sfd.FileName} now.\nUTF-16 data cannot import because some data is special font.", "Warning!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
 
 
 
@@ -1051,6 +1068,8 @@ namespace GECV_EX_TR2_Editor_GUI
                 }
 
             }
+
+            
         }
 
 

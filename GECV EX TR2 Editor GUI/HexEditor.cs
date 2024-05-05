@@ -78,8 +78,13 @@ namespace GECV_EX_TR2_Editor_GUI
 
         }
 
-
         private string ParseHex(string hex)
+        {
+            return ParseHex(hex, data_type);
+        }
+
+
+        public static string ParseHex(string hex,string data_type)
         {
 
 

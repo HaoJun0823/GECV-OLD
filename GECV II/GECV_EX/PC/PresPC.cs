@@ -25,11 +25,11 @@ namespace GECV_EX.PC
         [XmlAttribute]
         public int magic_0; // vaild this = PRES_MAGIC
         [XmlAttribute]
-        public int magic_1;
+        public int magic_1; //group_offset
         [XmlAttribute]
-        public int magic_2;
+        public int magic_2; //group_count
         [XmlAttribute]
-        public int magic_3;
+        public int magic_3; //checksum
 
         [XmlIgnore]
         private int offset_data; //HeaderBinaryLength
