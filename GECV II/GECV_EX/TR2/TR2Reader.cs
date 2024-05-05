@@ -190,6 +190,8 @@ namespace GECV_EX.TR2
         }
 
 
+
+
         public TR2Reader(byte[] tr2_file_data,TR2Version tr2_version = TR2Version.PC)
         {
             this.TR2_VERSION = tr2_version;

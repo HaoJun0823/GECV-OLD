@@ -1,6 +1,7 @@
 using GECV_EX.TR2;
 using GECV_EX.Utils;
 using MiniExcelLibs;
+using System.Configuration;
 using System.Data;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
@@ -53,6 +54,67 @@ namespace GECV_EX_TR2_Editor_GUI
 
         }
 
+        private void AutoOpenTR2(string filename)
+        {
+            string select_file = filename;
+
+
+            string ext = Path.GetExtension(select_file);
+
+            input_file_name = Path.GetFileNameWithoutExtension(select_file);
+
+            try
+            {
+
+
+                if (ext.ToLower() == ".tr2")
+                {
+
+                    byte[] file_bytes = File.ReadAllBytes(select_file);
+
+                    TR2Version tr2v = TR2Reader.ThinkTR2Version(file_bytes);
+
+                    System_TR2 = new TR2Reader(file_bytes, tr2v);
+
+                    string version_text;// = "Version:(Unknown)";
+
+                    switch (tr2v)
+                    {
+                        case TR2Version.SONY_A:
+                            version_text = "(Auto Ver.1)";
+                            break;
+                        case TR2Version.PC:
+                            version_text = "(Auto Ver.2)";
+                            break;
+                        default:
+                            version_text = "(Auto Ver.Unknown)";
+                            break;
+                    }
+
+
+                    this.Text = original_title + $" Building {System_TR2.table_name} Table, Please Wait... " + version_text;
+                    BuildDataTable(System_TR2, true);
+                    RefreshDataTable();
+                    this.Text = original_title + " " + version_text + " " + select_file;
+                    SetMenuStatus(true);
+                    return;
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{select_file} Open Error:\n{ex.Message}\n{ex.StackTrace}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                input_file_name = "";
+                this.Text = original_title;
+                SetMenuStatus(false);
+                return;
+            }
+            MessageBox.Show($"{select_file} Is not supported file!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+        }
+
         private void OpenFile(string filename)
         {
 
@@ -90,7 +152,7 @@ namespace GECV_EX_TR2_Editor_GUI
                     this.Text = original_title + $" Building {System_TR2.table_name} Table, Please Wait...";
                     BuildDataTable(System_TR2, true);
                     RefreshDataTable();
-                    this.Text = original_title + " (PC) " + select_file;
+                    this.Text = original_title + " (Ver.2) " + select_file;
                     SetMenuStatus(true);
                     return;
                 }
@@ -948,7 +1010,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
 
 
-                OpenFile(files[0]);
+                AutoOpenTR2(files[0]);
 
 
             }
@@ -1062,7 +1124,7 @@ namespace GECV_EX_TR2_Editor_GUI
                 {
                     sfd.Filter = "old tr2 (SONY_A) file(*.tr2)|*.tr2";
                     sfd.RestoreDirectory = true;
-                    sfd.Title = "Export old tr2 (SONY_A) Format File:";
+                    sfd.Title = "Export old tr2 (Ver.1) Format File:";
                     sfd.FileName = input_file_name;
 
                     if (sfd.ShowDialog() == DialogResult.OK)
@@ -1087,6 +1149,61 @@ namespace GECV_EX_TR2_Editor_GUI
                 MessageBox.Show($"{input_file_name} Save Error:\n{ex.Message}\n{ex.StackTrace}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+        }
+
+        private void Main_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MenuItem_AutoOpen_Click(object sender, EventArgs e)
+        {
+
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+
+                ofd.RestoreDirectory = true;
+                ofd.Multiselect = false;
+                ofd.Title = "Open Tr2 Or Xml File (Auto Version Selecter):";
+                ofd.Filter = "(TR2 Editor Supported File)|*.tr2";
+                ofd.RestoreDirectory = false;
+
+
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+
+                    AutoOpenTR2(ofd.FileName);
+
+                }
+
+
+
+            }
+
+
+
+        }
+
+        private void MenuItem_Tr2VersionHelp_Click(object sender, EventArgs e)
+        {
+
+            string text = @"Tr2 currently has two versions:
+The header part of Ver.2 has an Id sequence, and the objects of each fragment are loaded in the order of the header part.
+The header part of Ver.1 does not have an ID sequence, these IDs are stored in each fragment.
+
+How to determine the version?
+So I wrote a simple version selector and I think this is enough to run successfully most of the time.
+If my tool is not sure, you can check it yourself with a hex editor:
+tr2 files have a fixed length header of 0x40, visible at 0x38.
+0x3A is the number of fragments.
+Starting from 0x40, each fragment has 5 int32 data (id, offset, magic, csize, usize). If you skip the number of fragments * 5, you will see an int32, which is the number of id sequences.
+If it is 0, or exceeds the header size, then this is a Ver.1 file, if not, then it is a Ver.2 file.
+
+How to determine the total length of the head?
+Look at the offset of the first clip.";
+
+            MessageBox.Show(text, "What Is Tr2 Version?", MessageBoxButtons.OK, MessageBoxIcon.Question);
+
         }
     }
 }

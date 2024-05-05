@@ -243,6 +243,12 @@ tr2:
 		文本区域
 
 		文本长度不包含utf8,ascii的00和utf16的00 00，但文本需要00。
+
+		如何判断是哪个版本的TR2？
+		我们把PC称之为VER.2，把SONY_A称之为VER.1
+		PC版本有header_count，如果读取header_count为0，或者header_count超过了头的大小，那么就是ver.1，反之是ver.2
+		如何判断头的总长度？
+		第一个片段的offset是头数据的结尾。
 		
 
 	*row_data：从这里开始对齐16的整数倍，不足用00补齐，如果正好是16倍则不做任何变化。

@@ -12,6 +12,111 @@ namespace GECV_EX.TR2
     public partial class TR2Reader
     {
 
+        public static TR2Version ThinkTR2Version(byte[] tr2_file_data)
+        {
+            using (MemoryStream ms = new MemoryStream(tr2_file_data))
+            {
+                using (BinaryReader br = new BinaryReader(ms))
+                {
+
+
+                    int file_header = br.ReadInt32();
+
+                    if (file_header != TR2_HEADER)
+                    {
+
+                        throw new FileLoadException($"This is Not TR2 File!");
+
+                    }
+
+                    int file_header_magic = br.ReadInt32();
+
+
+                    long offset = br.BaseStream.Position;
+
+
+                    string table_name = StreamUtils.readNullterminated(br);
+
+
+                    br.BaseStream.Seek(offset, SeekOrigin.Begin);
+                    br.BaseStream.Seek(48, SeekOrigin.Current);
+
+
+                    int table_column_infromation_offset = br.ReadInt32();
+
+                    int table_column_infromation_count = br.ReadInt32();
+
+                    var table_column_infromation = new TR2ColumnInformation[table_column_infromation_count];
+
+
+                    br.BaseStream.Seek(table_column_infromation_offset, SeekOrigin.Begin);
+
+                    for (int i = 0; i < table_column_infromation.Length; i++)
+                    {
+
+                        var data = new TR2ColumnInformation();
+
+                        data.id = br.ReadInt32();
+                        data.offset = br.ReadInt32();
+                        data.magic = br.ReadInt32();
+                        data.csize = br.ReadInt32();
+                        data.usize = br.ReadInt32();
+
+                        Console.WriteLine($"TS2 DATA INFORMATION:\nID:{data.id}\noffset:{data.offset}\nmagic:{data.magic}\ncsize:{data.csize}\nusize:{data.usize}");
+
+                        offset = br.BaseStream.Position;
+
+                        br.BaseStream.Seek(data.offset, SeekOrigin.Begin);
+
+                        data.column_data = new TR2ColumnData();
+
+                        data.column_data.bin_data = br.ReadBytes(data.csize);
+
+                        table_column_infromation[i] = data;
+
+                        br.BaseStream.Seek(offset, SeekOrigin.Begin);
+
+                    }
+
+
+                    var first_bin = table_column_infromation[0];
+
+                    int header_length = first_bin.offset;
+
+                    Console.WriteLine($"Guess header offset is :{header_length.ToString("X")},current poisition:{br.BaseStream.Position.ToString("X")}.");
+                    Console.WriteLine($"{br.BaseStream.Position}+4={br.BaseStream.Position + 4} > {header_length}?");
+                    if (br.BaseStream.Position + 4 <= header_length)
+                    {
+                        int count = br.ReadInt32();
+                        if (count > 0)
+                        {
+                            Console.WriteLine($"Count:{count},So this is PC Version.");
+                            return TR2Version.PC;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Count:{count},So this is Sony Version.");
+                            return TR2Version.SONY_A;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{br.BaseStream.Position}+4={br.BaseStream.Position+4} > {header_length},no count version (SONY_A).");
+                        return TR2Version.SONY_A;
+                    }
+
+
+                }
+
+
+            }
+
+
+
+
+
+        }
+
         public void BuildColumnBinaryData_SonyA()
         {
 

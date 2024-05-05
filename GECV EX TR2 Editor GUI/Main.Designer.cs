@@ -29,9 +29,10 @@
         private void InitializeComponent()
         {
             MenuSet_Main = new MenuStrip();
+            MenuItem_AutoOpen = new ToolStripMenuItem();
             MenuItem_Open = new ToolStripMenuItem();
-            MenuItem_Save = new ToolStripMenuItem();
             MenuItem_SaveTr2 = new ToolStripMenuItem();
+            MenuItem_Save = new ToolStripMenuItem();
             MenuItem_Import = new ToolStripMenuItem();
             MenuItem_Export = new ToolStripMenuItem();
             importExcelToolStripMenuItem = new ToolStripMenuItem();
@@ -42,25 +43,40 @@
             MenuItem_OldSave = new ToolStripMenuItem();
             MenuStatus_Main = new StatusStrip();
             DataGridView_Main = new DataGridView();
+            MenuItem_Tr2VersionHelp = new ToolStripMenuItem();
             MenuSet_Main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DataGridView_Main).BeginInit();
             SuspendLayout();
             // 
             // MenuSet_Main
             // 
-            MenuSet_Main.Items.AddRange(new ToolStripItem[] { MenuItem_Open, MenuItem_Save, MenuItem_SaveTr2, MenuItem_Import, MenuItem_Export, importExcelToolStripMenuItem, MenuItem_Excel_Export, MenuItem_Help, MenuItem_Old });
+            MenuSet_Main.Items.AddRange(new ToolStripItem[] { MenuItem_AutoOpen, MenuItem_Open, MenuItem_SaveTr2, MenuItem_Save, MenuItem_Import, MenuItem_Export, importExcelToolStripMenuItem, MenuItem_Excel_Export, MenuItem_Old, MenuItem_Help });
             MenuSet_Main.Location = new Point(0, 0);
             MenuSet_Main.Name = "MenuSet_Main";
-            MenuSet_Main.Size = new Size(800, 25);
+            MenuSet_Main.Size = new Size(1008, 25);
             MenuSet_Main.TabIndex = 0;
             MenuSet_Main.Text = "MenuSet_Main";
+            // 
+            // MenuItem_AutoOpen
+            // 
+            MenuItem_AutoOpen.Name = "MenuItem_AutoOpen";
+            MenuItem_AutoOpen.Size = new Size(106, 21);
+            MenuItem_AutoOpen.Text = "Auto Open Tr2";
+            MenuItem_AutoOpen.Click += MenuItem_AutoOpen_Click;
             // 
             // MenuItem_Open
             // 
             MenuItem_Open.Name = "MenuItem_Open";
-            MenuItem_Open.Size = new Size(52, 21);
-            MenuItem_Open.Text = "Open";
+            MenuItem_Open.Size = new Size(109, 21);
+            MenuItem_Open.Text = "Open Ver.2 Tr2";
             MenuItem_Open.Click += MenuItem_Open_Click;
+            // 
+            // MenuItem_SaveTr2
+            // 
+            MenuItem_SaveTr2.Name = "MenuItem_SaveTr2";
+            MenuItem_SaveTr2.Size = new Size(104, 21);
+            MenuItem_SaveTr2.Text = "Save Ver.2 Tr2";
+            MenuItem_SaveTr2.Click += MenuItem_SaveTr2_Click;
             // 
             // MenuItem_Save
             // 
@@ -68,13 +84,6 @@
             MenuItem_Save.Size = new Size(73, 21);
             MenuItem_Save.Text = "Save Xml";
             MenuItem_Save.Click += MenuItem_Save_Click;
-            // 
-            // MenuItem_SaveTr2
-            // 
-            MenuItem_SaveTr2.Name = "MenuItem_SaveTr2";
-            MenuItem_SaveTr2.Size = new Size(70, 21);
-            MenuItem_SaveTr2.Text = "Save Tr2";
-            MenuItem_SaveTr2.Click += MenuItem_SaveTr2_Click;
             // 
             // MenuItem_Import
             // 
@@ -107,6 +116,7 @@
             // 
             // MenuItem_Help
             // 
+            MenuItem_Help.DropDownItems.AddRange(new ToolStripItem[] { MenuItem_Tr2VersionHelp });
             MenuItem_Help.Name = "MenuItem_Help";
             MenuItem_Help.Size = new Size(55, 21);
             MenuItem_Help.Text = "About";
@@ -116,28 +126,28 @@
             // 
             MenuItem_Old.DropDownItems.AddRange(new ToolStripItem[] { MenuItem_OldOpen, MenuItem_OldSave });
             MenuItem_Old.Name = "MenuItem_Old";
-            MenuItem_Old.Size = new Size(64, 21);
-            MenuItem_Old.Text = "Old Tr2";
+            MenuItem_Old.Size = new Size(110, 21);
+            MenuItem_Old.Text = "Ver.1 Tr2 Menu";
             // 
             // MenuItem_OldOpen
             // 
             MenuItem_OldOpen.Name = "MenuItem_OldOpen";
-            MenuItem_OldOpen.Size = new Size(156, 22);
-            MenuItem_OldOpen.Text = "Open Old Tr2";
+            MenuItem_OldOpen.Size = new Size(180, 22);
+            MenuItem_OldOpen.Text = "Open Ver.1 Tr2";
             MenuItem_OldOpen.Click += MenuItem_OldOpen_Click;
             // 
             // MenuItem_OldSave
             // 
             MenuItem_OldSave.Name = "MenuItem_OldSave";
-            MenuItem_OldSave.Size = new Size(156, 22);
-            MenuItem_OldSave.Text = "Save Old Tr2";
+            MenuItem_OldSave.Size = new Size(180, 22);
+            MenuItem_OldSave.Text = "Save Ver.1 Tr2";
             MenuItem_OldSave.Click += MenuItem_OldSave_Click;
             // 
             // MenuStatus_Main
             // 
-            MenuStatus_Main.Location = new Point(0, 428);
+            MenuStatus_Main.Location = new Point(0, 707);
             MenuStatus_Main.Name = "MenuStatus_Main";
-            MenuStatus_Main.Size = new Size(800, 22);
+            MenuStatus_Main.Size = new Size(1008, 22);
             MenuStatus_Main.TabIndex = 2;
             MenuStatus_Main.Text = "MenuStatus_Main";
             // 
@@ -149,18 +159,25 @@
             DataGridView_Main.Dock = DockStyle.Fill;
             DataGridView_Main.Location = new Point(0, 25);
             DataGridView_Main.Name = "DataGridView_Main";
-            DataGridView_Main.Size = new Size(800, 403);
+            DataGridView_Main.Size = new Size(1008, 682);
             DataGridView_Main.TabIndex = 1;
             DataGridView_Main.VirtualMode = true;
             DataGridView_Main.CellDoubleClick += DataGridView_Main_CellDoubleClick;
             DataGridView_Main.ColumnAdded += DataGridView_Main_ColumnAdded;
+            // 
+            // MenuItem_Tr2VersionHelp
+            // 
+            MenuItem_Tr2VersionHelp.Name = "MenuItem_Tr2VersionHelp";
+            MenuItem_Tr2VersionHelp.Size = new Size(196, 22);
+            MenuItem_Tr2VersionHelp.Text = "What is Tr2 Version?";
+            MenuItem_Tr2VersionHelp.Click += MenuItem_Tr2VersionHelp_Click;
             // 
             // Main
             // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1008, 729);
             Controls.Add(DataGridView_Main);
             Controls.Add(MenuStatus_Main);
             Controls.Add(MenuSet_Main);
@@ -168,6 +185,7 @@
             Name = "Main";
             Text = "GECV EX TR2 Editor GUI";
             FormClosing += Main_FormClosing;
+            Load += Main_Load;
             DragDrop += Main_DragDrop;
             DragEnter += Main_DragEnter;
             MenuSet_Main.ResumeLayout(false);
@@ -193,5 +211,7 @@
         private ToolStripMenuItem MenuItem_Old;
         private ToolStripMenuItem MenuItem_OldOpen;
         private ToolStripMenuItem MenuItem_OldSave;
+        private ToolStripMenuItem MenuItem_AutoOpen;
+        private ToolStripMenuItem MenuItem_Tr2VersionHelp;
     }
 }
