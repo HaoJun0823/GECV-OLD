@@ -952,13 +952,17 @@ namespace GECV_EX_TR2_Editor_GUI
             {
                 UpdateTR2Reader();
 
+                if(System_TR2.TR2_VERSION == TR2Version.SONY_A)
+                {
+                    MessageBox.Show($"You are saving a old version to new version, You must be know old to new maybe have some bugs.","Warning!",MessageBoxButtons.OK,MessageBoxIcon.Stop);
+                }
 
 
                 using (SaveFileDialog sfd = new SaveFileDialog())
                 {
                     sfd.Filter = "tr2 file(*.tr2)|*.tr2";
                     sfd.RestoreDirectory = true;
-                    sfd.Title = "Export File:";
+                    sfd.Title = "Export New Version Tr2 File:";
                     sfd.FileName = input_file_name;
 
                     if (sfd.ShowDialog() == DialogResult.OK)
@@ -1137,6 +1141,10 @@ namespace GECV_EX_TR2_Editor_GUI
             {
                 UpdateTR2Reader();
 
+                if (System_TR2.TR2_VERSION == TR2Version.PC)
+                {
+                    MessageBox.Show($"You are saving a new version to old version, You must be know new to old maybe have some bugs.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                }
 
 
                 using (SaveFileDialog sfd = new SaveFileDialog())

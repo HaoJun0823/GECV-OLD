@@ -245,7 +245,8 @@ namespace GECV_EX_TR2_Editor_GUI
 
                     if (excel.Import == 2 && TR2Reader.IsStringFormat(excel.Type))
                     {
-                        row[excel.Column.ToString()] = Form_HexEditor.ParseHex(excel.Hex,excel.Type);
+                        //row[excel.Column.ToString()] = Form_HexEditor.ParseHex(excel.Hex,excel.Type);
+                        row[excel.Column.ToString()] = excel.Hex;
                         Console.WriteLine($"Import {excel.Value} To Shadow Table.");
                         continue;
                     }

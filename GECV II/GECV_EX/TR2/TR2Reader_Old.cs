@@ -22,6 +22,8 @@ namespace GECV_EX.TR2
 
                     int file_header = br.ReadInt32();
 
+                    
+
                     if (file_header != TR2_HEADER)
                     {
 
@@ -29,8 +31,21 @@ namespace GECV_EX.TR2
 
                     }
 
-                    int file_header_magic = br.ReadInt32();
 
+                    
+                    int file_header_magic = br.ReadInt32();
+                    Console.WriteLine($"Think Header Version:{file_header_magic}");
+                    switch (file_header_magic)
+                    {
+                        case TR2Reader.NEW_VERSION_HEADER:
+                            Console.WriteLine($"{file_header_magic}={TR2Reader.NEW_VERSION_HEADER} So This is New Verison.");
+                            return TR2Version.PC;
+                        case TR2Reader.OLD_VERSION_HEADER:
+                            Console.WriteLine($"{file_header_magic}={TR2Reader.OLD_VERSION_HEADER} So This is Old Verison.");
+                            return TR2Version.SONY_A;
+                        default:
+                            throw new InvalidDataException($"{file_header_magic}({file_header_magic.ToString("X")}) Is Not Any Known Data.");
+                    }
 
                     long offset = br.BaseStream.Position;
 

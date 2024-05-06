@@ -30,7 +30,12 @@ namespace GECV_EX.TR2
                 task_offset += 8;
                 booker.SetBookMark($"table_column_information_{i}_data_column_serial_right", task_offset);
                 booker.WriteData($"table_column_information_{i}_data_column_serial_right", tr2data.table_column_infromation[i].column_data.column_serial_right);
-                task_offset += 8;
+                task_offset += 5;
+
+                booker.SetBookMark($"table_column_information_{i}_data_column_serial_right_version_old", task_offset);
+                booker.WriteData($"table_column_information_{i}_data_column_serial_right_version_old", new byte[] { 0x00, 0xCF, 0x07 });
+                task_offset += 3;
+
                 booker.SetBookMark($"table_column_information_{i}_data_column_type", task_offset);
                 byte[] column_type = Get48ByteLengthStringData(tr2data.table_column_infromation[i].column_data.column_type);
                 booker.WriteData($"table_column_information_{i}_data_column_type", column_type);

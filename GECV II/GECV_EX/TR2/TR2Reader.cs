@@ -36,7 +36,11 @@ namespace GECV_EX.TR2
         [XmlArray]
         public TR2ColumnInformation[] table_column_infromation;
 
+        [XmlIgnore]
+        public const int OLD_VERSION_HEADER = 0x07CF0000;
 
+        [XmlIgnore]
+        public const int NEW_VERSION_HEADER = 0x07DF0002;
 
 
         //zero16

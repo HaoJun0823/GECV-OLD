@@ -49,7 +49,19 @@ namespace GECV_EX.TR2
 
             booker.WriteData("file_header",tr2data.file_header);
 
-            booker.WriteData("file_header_magic", tr2data.file_header_magic);
+            switch (tr2version)
+            {
+                case TR2Version.PC:
+                    booker.WriteData("file_header_magic", TR2Reader.NEW_VERSION_HEADER);
+                    break;
+                case TR2Version.SONY_A:
+                    booker.WriteData("file_header_magic", TR2Reader.OLD_VERSION_HEADER);
+                    break;
+                default:
+                    throw new InvalidDataException("Which Version? Please Contact Developer.");
+            }
+
+            //booker.WriteData("file_header_magic", tr2data.file_header_magic);
 
             booker.WriteData("table_name", table_name_data);
 
@@ -145,7 +157,13 @@ namespace GECV_EX.TR2
                 task_offset += 8;
                 booker.SetBookMark($"table_column_information_{i}_data_column_serial_right", task_offset);
                 booker.WriteData($"table_column_information_{i}_data_column_serial_right", tr2data.table_column_infromation[i].column_data.column_serial_right);
-                task_offset += 8;
+                task_offset += 5;
+
+                booker.SetBookMark($"table_column_information_{i}_data_column_serial_right_version", task_offset);
+                booker.WriteData($"table_column_information_{i}_data_column_serial_right_version",  new byte[] { 0x02,0xDF,0x07 });
+                task_offset += 3;
+
+
                 booker.SetBookMark($"table_column_information_{i}_data_column_type", task_offset);
                 byte[] column_type = Get48ByteLengthStringData(tr2data.table_column_infromation[i].column_data.column_type);
                 booker.WriteData($"table_column_information_{i}_data_column_type", column_type);

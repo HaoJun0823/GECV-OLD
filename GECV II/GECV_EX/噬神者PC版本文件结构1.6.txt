@@ -148,7 +148,7 @@ qpck:
 	
 tr2:
 	header:int32，头，固定：0x3272742E
-	header_magic:int32，差不多也是固定的：0x07DF0002
+	header_magic:int32，差不多也是固定的：新版本：0x07DF0002 老版本：0x07CF0000
 	table_name:byte[48]：固定是48byte，从头读到0结束。
 
 	table_column_inf_offset:表信息开始的地方，绝大多数是0x40
@@ -174,7 +174,7 @@ tr2:
 
 	*row_data:该文件需要从0x00开始算起始指针，不能从tr2文件内部算
 		row_name:byte[48]:固定是48byte，从头读到0结束。
-		row_serial:byte[16]:怀疑是对象类型序列化的特征。
+		row_serial:byte[16]:怀疑是对象类型序列化的特征。头8字节是数据格式？后8字节是Bin的版本。（前8老版本参考：6A 61 6A 70 00 00 00 00 = jajp） 后8字节参考（79 6F 62 69 38 yobi8）(老：00 CF 07 新：02 DF 07)
 		row_type:byte[48]:固定是48byte，从头读到0结束。 只可能是 INT8 UINT8 INT16 UINT16 INT32 UINT32 FLOAT32 这些数字和 ASCII UTF-8 UTF-16LE 还有一个也许存在的 UTF-16（大端编码？）
 
 		以上是固定长度的内容
