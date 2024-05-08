@@ -36,12 +36,16 @@ namespace GECV_EX.TR2
         [XmlArray]
         public TR2ColumnInformation[] table_column_infromation;
 
-        [XmlIgnore]
-        public const int OLD_VERSION_HEADER = 0x07CF0000;
+        //[XmlIgnore]
+        //public const int OLD_VERSION_HEADER = 0x07CF0000;
 
-        [XmlIgnore]
-        public const int NEW_VERSION_HEADER = 0x07DF0002;
+        //[XmlIgnore]
+        //public const int OLD_OLD_VERSION_HEADER = 0x07DA0000;
 
+        //[XmlIgnore]
+        //public const int NEW_VERSION_HEADER = 0x07DF0002;
+
+        
 
         //zero16
 
@@ -242,7 +246,7 @@ namespace GECV_EX.TR2
 
                     switch (this.TR2_VERSION)
                     {
-                        case TR2Version.SONY_A:
+                        case TR2Version.SONY:
                             BuildColumnBinaryData_SonyA();
                             break;
                         default:

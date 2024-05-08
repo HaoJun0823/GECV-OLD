@@ -35,17 +35,35 @@ namespace GECV_EX.TR2
                     
                     int file_header_magic = br.ReadInt32();
                     Console.WriteLine($"Think Header Version:{file_header_magic}");
-                    switch (file_header_magic)
+                    int year = GetYearFromHeader(file_header_magic);
+
+                    if(year == 2015)
                     {
-                        case TR2Reader.NEW_VERSION_HEADER:
-                            Console.WriteLine($"{file_header_magic}={TR2Reader.NEW_VERSION_HEADER} So This is New Verison.");
-                            return TR2Version.PC;
-                        case TR2Reader.OLD_VERSION_HEADER:
-                            Console.WriteLine($"{file_header_magic}={TR2Reader.OLD_VERSION_HEADER} So This is Old Verison.");
-                            return TR2Version.SONY_A;
-                        default:
-                            throw new InvalidDataException($"{file_header_magic}({file_header_magic.ToString("X")}) Is Not Any Known Data.");
+                        return TR2Version.PC;
+                    }else if(year == 1999 || year == 2000 || year == 2010)
+                    {
+                        return TR2Version.SONY;
                     }
+                    else
+                    {
+                        throw new InvalidDataException($"{file_header_magic}({file_header_magic.ToString("X")})({year}) Is Not Any Known Data.");
+                    }
+
+
+                    //switch (file_header_magic)
+                    //{
+                    //    case TR2Reader.NEW_VERSION_HEADER:
+                    //        Console.WriteLine($"{file_header_magic}={TR2Reader.NEW_VERSION_HEADER} So This is New (PC) Verison.");
+                    //        return TR2Version.PC;
+                    //    case TR2Reader.OLD_VERSION_HEADER:
+                    //        Console.WriteLine($"{file_header_magic}={TR2Reader.OLD_VERSION_HEADER} So This is Old (SONY_A) Verison.");
+                    //        return TR2Version.SONY_A;
+                    //    case TR2Reader.OLD_OLD_VERSION_HEADER:
+                    //        Console.WriteLine($"{file_header_magic}={TR2Reader.OLD_OLD_VERSION_HEADER} So This is Old Old (SONY_B) Verison.");
+                    //        return TR2Version.SONY_B;
+                    //    default:
+                    //        throw new InvalidDataException($"{file_header_magic}({file_header_magic.ToString("X")}) Is Not Any Known Data.");
+                    //}
 
                     long offset = br.BaseStream.Position;
 
@@ -111,13 +129,13 @@ namespace GECV_EX.TR2
                         else
                         {
                             Console.WriteLine($"Count:{count},So this is Sony Version.");
-                            return TR2Version.SONY_A;
+                            return TR2Version.SONY;
                         }
                     }
                     else
                     {
                         Console.WriteLine($"{br.BaseStream.Position}+4={br.BaseStream.Position+4} > {header_length},no count version (SONY_A).");
-                        return TR2Version.SONY_A;
+                        return TR2Version.SONY;
                     }
 
 
@@ -130,6 +148,17 @@ namespace GECV_EX.TR2
 
 
 
+        }
+
+        public static short GetYearFromHeader(int magic_header)
+        {
+            int value = magic_header; //文心一言写的，面向字符串编码，跟我没关系。
+            string hexString = value.ToString("X8"); // 将int转换为至少8位的十六进制字符串，不足部分用0填充  
+            string desiredSubstring = hexString.Substring(0, 4); // 截取前四个字符  
+            //Console.WriteLine("Year:"+desiredSubstring); // 输出: 07DA
+
+            short year = Convert.ToInt16(desiredSubstring,16);
+            return year;
         }
 
         public void BuildColumnBinaryData_SonyA()

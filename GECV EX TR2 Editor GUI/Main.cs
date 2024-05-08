@@ -80,7 +80,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
                     switch (tr2v)
                     {
-                        case TR2Version.SONY_A:
+                        case TR2Version.SONY:
                             version_text = "(Auto Ver.1)";
                             break;
                         case TR2Version.PC:
@@ -90,9 +90,12 @@ namespace GECV_EX_TR2_Editor_GUI
                             version_text = "(Auto Ver.Unknown)";
                             break;
                     }
+                    
+                    short year = TR2Reader.GetYearFromHeader(System_TR2.file_header_magic);
 
+                    version_text += $"-{year}";
 
-                    this.Text = original_title + $" Building {System_TR2.table_name} Table, Please Wait... " + version_text;
+                    this.Text = original_title + $" Building {System_TR2.table_name}({year}) Table, Please Wait... " + version_text;
                     BuildDataTable(System_TR2, true);
                     RefreshDataTable();
                     this.Text = original_title + " " + version_text + " " + select_file;
@@ -951,10 +954,13 @@ namespace GECV_EX_TR2_Editor_GUI
             try
             {
                 UpdateTR2Reader();
-
-                if(System_TR2.TR2_VERSION == TR2Version.SONY_A)
+                bool isNew = false;
+                int new_year = TR2Writer.ShortYearToIntYear(2015);
+                if (System_TR2.TR2_VERSION == TR2Version.SONY)
                 {
-                    MessageBox.Show($"You are saving a old version to new version, You must be know old to new maybe have some bugs.","Warning!",MessageBoxButtons.OK,MessageBoxIcon.Stop);
+                    
+                    MessageBox.Show($"You are saving a old version to new version, You must be know old to new maybe have some bugs.\nWe will write 2015 as the year. Currently, we only find that the latest version has the year 2015.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    isNew = true;
                 }
 
 
@@ -968,10 +974,21 @@ namespace GECV_EX_TR2_Editor_GUI
                     if (sfd.ShowDialog() == DialogResult.OK)
                     {
 
+                        TR2Writer writer;
+                        if (isNew)
+                        {
+                            Console.WriteLine($"New Version."+new_year);
+                            writer = new TR2Writer(System_TR2,TR2Version.PC, new_year);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Original Version.");
+                            writer = new TR2Writer(System_TR2, TR2Version.PC);
+                        }
 
+                        
 
-
-                        TR2Writer writer = new TR2Writer(System_TR2);
+                        
 
                         File.WriteAllBytes(sfd.FileName, writer.GetTr2Data());
 
@@ -1032,7 +1049,7 @@ namespace GECV_EX_TR2_Editor_GUI
         private void importExcelToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Warning:\r\nYou must back up your files.\r\nYou must back up your files.\r\nYou must back up your files.\r\n\r\nThis is not a stable feature because of the complexity of the Excel format, which will destroy the table if a fatal error occurs during the import.\r\nIf some data is incorrect, please correct it manually.", "Attention!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            
+
 
 
             UpdateTR2Reader();
@@ -1050,15 +1067,16 @@ namespace GECV_EX_TR2_Editor_GUI
                     try
                     {
 
-                    
-                    //DataTable dt = MiniExcel.QueryAsDataTable(sfd.FileName, useHeaderRow: true);
 
-                    TR2ExcelHelper.Load(ref System_DataTable, ref System_DataTable_Hex, sfd.FileName);
+                        //DataTable dt = MiniExcel.QueryAsDataTable(sfd.FileName, useHeaderRow: true);
+
+                        TR2ExcelHelper.Load(ref System_DataTable, ref System_DataTable_Hex, sfd.FileName);
                         UpdateTR2Reader();
                         BuildDataTable(System_TR2);
                         RefreshDataTable();
                     }
-                    catch(Exception ex) {
+                    catch (Exception ex)
+                    {
 
                         MessageBox.Show($"{input_file_name} Save Error:\n{ex.Message}\n{ex.StackTrace}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
@@ -1073,7 +1091,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
             }
 
-            
+
         }
 
 
@@ -1104,7 +1122,7 @@ namespace GECV_EX_TR2_Editor_GUI
                         if (ext.ToLower() == ".tr2")
                         {
 
-                            System_TR2 = new TR2Reader(File.ReadAllBytes(select_file), TR2Version.SONY_A);
+                            System_TR2 = new TR2Reader(File.ReadAllBytes(select_file), TR2Version.SONY);
                             this.Text = original_title + $" Building Old Sony_A {System_TR2.table_name} Table, Please Wait...";
                             BuildDataTable(System_TR2, true);
                             RefreshDataTable();
@@ -1141,9 +1159,12 @@ namespace GECV_EX_TR2_Editor_GUI
             {
                 UpdateTR2Reader();
 
+                bool isNew = false;
+                int new_year = TR2Writer.ShortYearToIntYear(2010);
                 if (System_TR2.TR2_VERSION == TR2Version.PC)
                 {
-                    MessageBox.Show($"You are saving a new version to old version, You must be know new to old maybe have some bugs.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    MessageBox.Show($"You are saving a new version to old version, You must be know new to old maybe have some bugs.\nWe will write 2010 as the year, usually, there may also be 1999, 2000, we think 2010 is the year that the game can load.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    isNew = true;
                 }
 
 
@@ -1160,7 +1181,18 @@ namespace GECV_EX_TR2_Editor_GUI
 
 
 
-                        TR2Writer writer = new TR2Writer(System_TR2, TR2Version.SONY_A);
+                        TR2Writer writer;
+
+                        if (isNew)
+                        {
+                            Console.WriteLine($"New Version."+new_year);
+                            writer = new TR2Writer(System_TR2, TR2Version.SONY, new_year);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Original Version.");
+                            writer = new TR2Writer(System_TR2, TR2Version.SONY);
+                        }
 
                         File.WriteAllBytes(sfd.FileName, writer.GetTr2Data());
 
@@ -1232,5 +1264,6 @@ Look at the offset of the first clip.";
             MessageBox.Show(text, "What Is Tr2 Version?", MessageBoxButtons.OK, MessageBoxIcon.Question);
 
         }
+
     }
 }

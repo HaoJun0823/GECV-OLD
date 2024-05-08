@@ -17,13 +17,17 @@ namespace GECV_EX.TR2
         private TR2Reader tr2data;
 
 
-        
+
         private TR2Version tr2version;
 
 
-        public TR2Writer(TR2Reader tr2data,TR2Version tR2Version = TR2Version.PC)
+        public int new_year = 0;
+
+
+        public TR2Writer(TR2Reader tr2data, TR2Version tR2Version = TR2Version.PC,int new_year = 0)
         {
             this.tr2data = tr2data;
+            this.new_year = new_year;
             tr2version = tR2Version;
             this.booker = new BinaryBooker();
             Build();
@@ -34,7 +38,7 @@ namespace GECV_EX.TR2
         {
 
             int offset = 0;
-            booker.SetBookMark("file_header",offset);
+            booker.SetBookMark("file_header", offset);
             offset += 4;
             booker.SetBookMark("file_header_magic", offset);
             offset += 4;
@@ -47,19 +51,34 @@ namespace GECV_EX.TR2
             offset += 4;
             booker.SetBookMark("table_column_infromation_count", offset);
 
-            booker.WriteData("file_header",tr2data.file_header);
+            booker.WriteData("file_header", tr2data.file_header);
 
-            switch (tr2version)
+            if (new_year != 0)
             {
-                case TR2Version.PC:
-                    booker.WriteData("file_header_magic", TR2Reader.NEW_VERSION_HEADER);
-                    break;
-                case TR2Version.SONY_A:
-                    booker.WriteData("file_header_magic", TR2Reader.OLD_VERSION_HEADER);
-                    break;
-                default:
-                    throw new InvalidDataException("Which Version? Please Contact Developer.");
+                booker.WriteData("file_header_magic", new_year);
+                Console.WriteLine($"Is Custom Year:{new_year.ToString("X8")}");
             }
+            else
+            {
+                booker.WriteData("file_header_magic", tr2data.file_header_magic);
+                Console.WriteLine($"Not Custom Year:{tr2data.file_header_magic.ToString("X8")}");
+            }
+
+
+            //switch (tr2version)
+            //{
+            //    case TR2Version.PC:
+            //        booker.WriteData("file_header_magic", TR2Reader.NEW_VERSION_HEADER);
+            //        break;
+            //    case TR2Version.SONY:
+            //        booker.WriteData("file_header_magic", TR2Reader.OLD_VERSION_HEADER);
+            //        break;
+            //    case TR2Version.SONY_B:
+            //        booker.WriteData("file_header_magic", TR2Reader.OLD_OLD_VERSION_HEADER);
+            //        break;
+            //    default:
+            //        throw new InvalidDataException("Which Version? Please Contact Developer.");
+            //}
 
             //booker.WriteData("file_header_magic", tr2data.file_header_magic);
 
@@ -74,9 +93,9 @@ namespace GECV_EX.TR2
             offset = 64;
 
 
-            for(int i = 0;i < tr2data.table_column_infromation.Length;i++) {
+            for (int i = 0; i < tr2data.table_column_infromation.Length; i++) {
 
-                booker.SetBookMark("table_column_infromation_id_"+i, offset);
+                booker.SetBookMark("table_column_infromation_id_" + i, offset);
                 booker.WriteData("table_column_infromation_id_" + i, tr2data.table_column_infromation[i].id);
                 offset += 4;
                 booker.SetBookMark("table_column_infromation_offset_" + i, offset); //BuildBin
@@ -124,7 +143,7 @@ namespace GECV_EX.TR2
 
             switch (this.tr2version)
             {
-                case TR2Version.SONY_A:
+                case TR2Version.SONY:
                     offset = BuildBin_SONY_A(offset);
                     break;
                 default:
@@ -134,6 +153,28 @@ namespace GECV_EX.TR2
 
             //offset = BuildBin(offset);
 
+
+        }
+
+        public static int ShortYearToIntYear(short year)
+        {
+
+            String hex_str = year.ToString("X4");
+
+            hex_str = hex_str.PadRight(8, '0');
+            
+            Console.WriteLine($"Convert short to int {year.ToString("X4")} to {hex_str}");
+
+            if (year == 2015)
+            {
+                hex_str = hex_str.Substring(0, 7) + '2';
+            }
+           
+
+            int result = Convert.ToInt32(hex_str, 16);
+            Console.WriteLine($"Result:{result.ToString("X8")} is {result}");
+
+            return result;
 
         }
 

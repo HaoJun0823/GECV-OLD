@@ -148,7 +148,7 @@ qpck:
 	
 tr2:
 	header:int32，头，固定：0x3272742E
-	header_magic:int32，差不多也是固定的：新版本：0x07DF0002 老版本：0x07CF0000
+	header_magic:int32，差不多也是固定的：这里一般是年份，例如00 00 DF 07是2015，也就是新版本(PC)，如果是00 00 DA 07，也就是老版本2010（SONY_A），老版本还可能有2000,1999。
 	table_name:byte[48]：固定是48byte，从头读到0结束。
 
 	table_column_inf_offset:表信息开始的地方，绝大多数是0x40

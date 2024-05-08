@@ -37,13 +37,13 @@
             MenuItem_Export = new ToolStripMenuItem();
             importExcelToolStripMenuItem = new ToolStripMenuItem();
             MenuItem_Excel_Export = new ToolStripMenuItem();
-            MenuItem_Help = new ToolStripMenuItem();
             MenuItem_Old = new ToolStripMenuItem();
             MenuItem_OldOpen = new ToolStripMenuItem();
             MenuItem_OldSave = new ToolStripMenuItem();
+            MenuItem_Help = new ToolStripMenuItem();
+            MenuItem_Tr2VersionHelp = new ToolStripMenuItem();
             MenuStatus_Main = new StatusStrip();
             DataGridView_Main = new DataGridView();
-            MenuItem_Tr2VersionHelp = new ToolStripMenuItem();
             MenuSet_Main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DataGridView_Main).BeginInit();
             SuspendLayout();
@@ -66,6 +66,7 @@
             // 
             // MenuItem_Open
             // 
+            MenuItem_Open.Enabled = false;
             MenuItem_Open.Name = "MenuItem_Open";
             MenuItem_Open.Size = new Size(109, 21);
             MenuItem_Open.Text = "Open Ver.2 Tr2";
@@ -114,14 +115,6 @@
             MenuItem_Excel_Export.Text = "Export Excel";
             MenuItem_Excel_Export.Click += exportExcelToolStripMenuItem_Click;
             // 
-            // MenuItem_Help
-            // 
-            MenuItem_Help.DropDownItems.AddRange(new ToolStripItem[] { MenuItem_Tr2VersionHelp });
-            MenuItem_Help.Name = "MenuItem_Help";
-            MenuItem_Help.Size = new Size(55, 21);
-            MenuItem_Help.Text = "About";
-            MenuItem_Help.Click += MenuItem_Help_Click;
-            // 
             // MenuItem_Old
             // 
             MenuItem_Old.DropDownItems.AddRange(new ToolStripItem[] { MenuItem_OldOpen, MenuItem_OldSave });
@@ -131,6 +124,7 @@
             // 
             // MenuItem_OldOpen
             // 
+            MenuItem_OldOpen.Enabled = false;
             MenuItem_OldOpen.Name = "MenuItem_OldOpen";
             MenuItem_OldOpen.Size = new Size(180, 22);
             MenuItem_OldOpen.Text = "Open Ver.1 Tr2";
@@ -142,6 +136,21 @@
             MenuItem_OldSave.Size = new Size(180, 22);
             MenuItem_OldSave.Text = "Save Ver.1 Tr2";
             MenuItem_OldSave.Click += MenuItem_OldSave_Click;
+            // 
+            // MenuItem_Help
+            // 
+            MenuItem_Help.DropDownItems.AddRange(new ToolStripItem[] { MenuItem_Tr2VersionHelp });
+            MenuItem_Help.Name = "MenuItem_Help";
+            MenuItem_Help.Size = new Size(55, 21);
+            MenuItem_Help.Text = "About";
+            MenuItem_Help.Click += MenuItem_Help_Click;
+            // 
+            // MenuItem_Tr2VersionHelp
+            // 
+            MenuItem_Tr2VersionHelp.Name = "MenuItem_Tr2VersionHelp";
+            MenuItem_Tr2VersionHelp.Size = new Size(196, 22);
+            MenuItem_Tr2VersionHelp.Text = "What is Tr2 Version?";
+            MenuItem_Tr2VersionHelp.Click += MenuItem_Tr2VersionHelp_Click;
             // 
             // MenuStatus_Main
             // 
@@ -164,13 +173,6 @@
             DataGridView_Main.VirtualMode = true;
             DataGridView_Main.CellDoubleClick += DataGridView_Main_CellDoubleClick;
             DataGridView_Main.ColumnAdded += DataGridView_Main_ColumnAdded;
-            // 
-            // MenuItem_Tr2VersionHelp
-            // 
-            MenuItem_Tr2VersionHelp.Name = "MenuItem_Tr2VersionHelp";
-            MenuItem_Tr2VersionHelp.Size = new Size(196, 22);
-            MenuItem_Tr2VersionHelp.Text = "What is Tr2 Version?";
-            MenuItem_Tr2VersionHelp.Click += MenuItem_Tr2VersionHelp_Click;
             // 
             // Main
             // 
