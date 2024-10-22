@@ -69,6 +69,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GE_MENU_ACTION_MOD", "GE_ME
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Controller_Freeze_Fix", "Controller_Freeze_Fix\Controller_Freeze_Fix.vcxproj", "{02C3A199-ED63-4464-BC64-C67E343A3ACF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IS14LoopFixer", "IS14LoopFixer\IS14LoopFixer.csproj", "{1931F61F-36C5-4389-AF61-2408C497A07B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -427,6 +429,18 @@ Global
 		{02C3A199-ED63-4464-BC64-C67E343A3ACF}.Release|x64.Build.0 = Release|x64
 		{02C3A199-ED63-4464-BC64-C67E343A3ACF}.Release|x86.ActiveCfg = Release|Win32
 		{02C3A199-ED63-4464-BC64-C67E343A3ACF}.Release|x86.Build.0 = Release|Win32
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Debug|x64.Build.0 = Debug|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Debug|x86.Build.0 = Debug|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Release|x64.ActiveCfg = Release|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Release|x64.Build.0 = Release|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Release|x86.ActiveCfg = Release|Any CPU
+		{1931F61F-36C5-4389-AF61-2408C497A07B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
