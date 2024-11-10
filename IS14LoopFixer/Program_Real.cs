@@ -77,7 +77,7 @@ namespace IS14LoopFixer
 
                         bw.Seek(0x28, SeekOrigin.Begin);
 
-
+                         
                         byte[] unk = { 0x6c, 0x6f, 0x6f, 0x70, 0x00, 0x00, 0x00, 0x08 };
 
                         bw.Write(unk);
