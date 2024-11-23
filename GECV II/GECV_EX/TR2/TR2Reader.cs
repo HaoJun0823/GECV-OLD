@@ -299,7 +299,7 @@ namespace GECV_EX.TR2
         }
 
 
-        public bool SetDataByIdNameTypeArrayIndexAndDataIdWithParseStringData(int id, string name, string type, byte index, int data_id, string input_data)
+        public bool SetDataByIdNameTypeArrayIndexAndDataIdWithParseStringData(int id, string name, string type, short index, int data_id, string input_data)
         {
 
             data_id = GetColumnCounterIndexById(data_id);
@@ -383,7 +383,7 @@ namespace GECV_EX.TR2
 
 
 
-        public bool SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(int id, string name, string type, byte index, int data_id, byte[] input_data)
+        public bool SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(int id, string name, string type, short index, int data_id, byte[] input_data)
         {
             data_id = GetColumnCounterIndexById(data_id);
 
