@@ -319,9 +319,9 @@ namespace GECV_EX_TR2_Editor_GUI
                         Dulpicate_list.Add($"{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{tr2data_inf.column_data.column_type}-{tr2data.column_counter.id[si].ToString()}.");
                     }
 
-                    for (byte ssi = 0; ssi < data_arr.data_76_array_size; ssi++)
+                    for (byte ssi = 0; ssi < data_arr.data_76_77_array_size; ssi++)
                     {
-                        Console.WriteLine($"Debug Build Table 76 Data:{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{si}-{ssi}(Array Length:{data_arr.data_76_array_size})");
+                        Console.WriteLine($"Debug Build Table 76-77 Data:{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{si}-{ssi}(Array Length:{data_arr.data_76_77_array_size})");
 
                         DataRow dr = GetDatRowFromTable(ref dt, tr2data_inf.id, tr2data_inf.column_data.column_name, tr2data_inf.column_data.column_type, ssi);
                         DataRow dr_hex = GetDatRowFromTable(ref dt_hex, tr2data_inf.id, tr2data_inf.column_data.column_name, tr2data_inf.column_data.column_type, ssi);

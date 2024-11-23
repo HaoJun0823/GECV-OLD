@@ -207,32 +207,32 @@ namespace GECV_EX.TR2
                         column_data.data_70_73 = br.ReadInt32();
                         column_data.data_74 = br.ReadByte();
                         column_data.data_75 = br.ReadByte();
-                        column_data.data_76_array_size = br.ReadByte();
-                        column_data.data_77 = br.ReadByte();
+                        column_data.data_76_77_array_size = br.ReadInt16();
+                        //column_data.data_77 = br.ReadByte();
                         column_data.data_78_7B = br.ReadInt32();
                         column_data.data_7C_7F_column_data_count = br.ReadInt32();
 
 
 
-                        Console.WriteLine($"TS2 DATA COLUMN INFORMATION:\nname:{column_data.column_name}\nserial_left:{column_data.column_serial_left}\nserial_right:{column_data.column_serial_right}\n70-73:{column_data.data_70_73}\n74:{column_data.data_74}\n75:{column_data.data_75}\n76:{column_data.data_76_array_size}\n77:{column_data.data_77}\n78-7B:{column_data.data_78_7B}\n7C-7F:{column_data.data_7C_7F_column_data_count}");
+                        Console.WriteLine($"TS2 DATA COLUMN INFORMATION:\nname:{column_data.column_name}\nserial_left:{column_data.column_serial_left}\nserial_right:{column_data.column_serial_right}\n70-73:{column_data.data_70_73}\n74:{column_data.data_74}\n75:{column_data.data_75}\n76-77:{column_data.data_76_77_array_size}\n78-7B:{column_data.data_78_7B}\n7C-7F:{column_data.data_7C_7F_column_data_count}");
 
 
 
 
 
-                        if (TR2Reader.IsStringFormat(column_data.column_type) && column_data.data_76_array_size > 1)
+                        if (TR2Reader.IsStringFormat(column_data.column_type) && column_data.data_76_77_array_size > 1)
                         {
 
-                            if (column_data.data_7C_7F_column_data_count % column_data.data_76_array_size != 0)
+                            if (column_data.data_7C_7F_column_data_count % column_data.data_76_77_array_size != 0)
                             {
-                                throw new InvalidDataException($"Total Text Array Caculate Error:{column_data.data_7C_7F_column_data_count} % {column_data.data_76_array_size} != 0");
+                                throw new InvalidDataException($"Total Text Array Caculate Error:{column_data.data_7C_7F_column_data_count} % {column_data.data_76_77_array_size} != 0");
                             }
                             else
                             {
-                                Console.WriteLine($"Text Array Total Size:{column_data.data_7C_7F_column_data_count / column_data.data_76_array_size}");
+                                Console.WriteLine($"Text Array Total Size:{column_data.data_7C_7F_column_data_count / column_data.data_76_77_array_size}");
                             }
 
-                            int calc_total = column_data.data_7C_7F_column_data_count / column_data.data_76_array_size;
+                            int calc_total = column_data.data_7C_7F_column_data_count / column_data.data_76_77_array_size;
                             column_data.column_data_list = new TR2ColumnDataList[calc_total];
 
                             long br_position = br.BaseStream.Position;
@@ -241,10 +241,10 @@ namespace GECV_EX.TR2
                             {
 
 
-                                column_data.column_data_list[ri].column_data = new TR2ColumnDataArray[column_data.data_76_array_size];
+                                column_data.column_data_list[ri].column_data = new TR2ColumnDataArray[column_data.data_76_77_array_size];
                                 Console.WriteLine($"{ri + 1} Data Every Text Array Have {column_data.column_data_list[ri].column_data.Length} Object.");
 
-                                for (int rri = 0; rri < column_data.data_76_array_size; rri++)
+                                for (int rri = 0; rri < column_data.data_76_77_array_size; rri++)
                                 {
                                     var data_arr_list_arr = new TR2ColumnDataArray();
                                     int data_arr_id = br.ReadInt32();
@@ -394,16 +394,16 @@ namespace GECV_EX.TR2
                                         switch (column_data.column_type)
                                         {
                                             case "ASCII":
-                                                column_data.column_data_list[si].OldSonyVaildCount = column_data.data_76_array_size;
+                                                column_data.column_data_list[si].OldSonyVaildCount = column_data.data_76_77_array_size;
                                                 break;
                                             case "UTF-16LE": //NO USED
-                                                column_data.column_data_list[si].OldSonyVaildCount = column_data.data_76_array_size;
+                                                column_data.column_data_list[si].OldSonyVaildCount = column_data.data_76_77_array_size;
                                                 break;
                                             case "UTF-8":
-                                                column_data.column_data_list[si].OldSonyVaildCount = column_data.data_76_array_size;
+                                                column_data.column_data_list[si].OldSonyVaildCount = column_data.data_76_77_array_size;
                                                 break;
                                             case "UTF-16":
-                                                column_data.column_data_list[si].OldSonyVaildCount = column_data.data_76_array_size;
+                                                column_data.column_data_list[si].OldSonyVaildCount = column_data.data_76_77_array_size;
                                                 break;
                                             case "INT8":
                                                 column_data.column_data_list[si].OldSonyVaildCount = column_data.column_data_list[si].OldSonyDataLength / 1;
@@ -433,14 +433,14 @@ namespace GECV_EX.TR2
                                     else
                                     {
                                         Console.WriteLine($"Warning:{si}.Old Sony Length == {column_data.column_data_list[si].OldSonyDataLength}.");
-                                        column_data.column_data_list[si].OldSonyVaildCount = column_data.data_76_array_size;
+                                        column_data.column_data_list[si].OldSonyVaildCount = column_data.data_76_77_array_size;
                                     }
 
 
 
-                                    Console.WriteLine($"Array:{column_data.data_76_array_size},Length Vaild Count:{column_data.column_data_list[si].OldSonyVaildCount}");
+                                    Console.WriteLine($"Array:{column_data.data_76_77_array_size},Length Vaild Count:{column_data.column_data_list[si].OldSonyVaildCount}");
 
-                                    column_data.column_data_list[si].column_data = new TR2ColumnDataArray[column_data.data_76_array_size];
+                                    column_data.column_data_list[si].column_data = new TR2ColumnDataArray[column_data.data_76_77_array_size];
                                     Console.WriteLine($"{si + 1} Data Every Cell Have {column_data.column_data_list[si].OldSonyVaildCount} Object.");
                                     br.BaseStream.Seek(data_arr_offset, SeekOrigin.Begin);
 
