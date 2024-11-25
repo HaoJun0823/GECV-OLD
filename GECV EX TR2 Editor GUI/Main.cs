@@ -406,7 +406,7 @@ namespace GECV_EX_TR2_Editor_GUI
             if (check && Dulpicate_list.Count != 0)
             {
 
-                MessageBox.Show($"There are {Dulpicate_list.Count} data is dulpicate object:\n\n({sb.ToString().Substring(0,100)})......\nThe source project will merge the same data to the same address (For optimization and publishing, since the data does not need to be modified again.), which is not possible to edit in the table.\nThe editor will allocate new pointers for each data, even though they all have the same data.\nYou need to know this. ", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"There are {Dulpicate_list.Count} data is dulpicate object:\n\n({sb.ToString()})\nThe source project will merge the same data to the same address (For optimization and publishing, since the data does not need to be modified again.), which is not possible to edit in the table.\nThe editor will allocate new pointers for each data, even though they all have the same data.\nYou need to know this. ", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             }
 
