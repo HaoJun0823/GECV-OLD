@@ -54,11 +54,11 @@ namespace GECV_EX.TR2
                 booker.SetBookMark($"table_column_information_{i}_data_75", task_offset);
                 booker.WriteData($"table_column_information_{i}_data_75", tr2data.table_column_infromation[i].column_data.data_75);
                 task_offset += 1;
-                booker.SetBookMark($"table_column_information_{i}_data_76_array_size", task_offset);
-                booker.WriteData($"table_column_information_{i}_data_76_array_size", tr2data.table_column_infromation[i].column_data.data_76_array_size);
+                booker.SetBookMark($"table_column_information_{i}_data_76_77_array_size", task_offset);
+                booker.WriteData($"table_column_information_{i}_data_76_77_array_size", tr2data.table_column_infromation[i].column_data.data_76_77_array_size);
                 task_offset += 1;
                 booker.SetBookMark($"table_column_information_{i}_data_77", task_offset);
-                booker.WriteData($"table_column_information_{i}_data_77", tr2data.table_column_infromation[i].column_data.data_77);
+                //booker.WriteData($"table_column_information_{i}_data_77", tr2data.table_column_infromation[i].column_data.data_77);
                 task_offset += 1;
 
                 booker.SetBookMark($"table_column_information_{i}_data_78_7B", task_offset);
@@ -71,9 +71,9 @@ namespace GECV_EX.TR2
 
                 List<string> vaild_offset_list = new List<string>();
                 List<string> invaild_offset_list = new List<string>();
-                if (TR2Reader.IsStringFormat(tr2data.table_column_infromation[i].column_data.column_type) && tr2data.table_column_infromation[i].column_data.data_76_array_size > 1)
+                if (TR2Reader.IsStringFormat(tr2data.table_column_infromation[i].column_data.column_type) && tr2data.table_column_infromation[i].column_data.data_76_77_array_size > 1)
                 {
-                    booker.WriteData($"table_column_information_{i}_data_7C_7F_column_data_count", tr2data.table_column_infromation[i].column_data.column_data_list.Length * tr2data.table_column_infromation[i].column_data.data_76_array_size);
+                    booker.WriteData($"table_column_information_{i}_data_7C_7F_column_data_count", tr2data.table_column_infromation[i].column_data.column_data_list.Length * tr2data.table_column_infromation[i].column_data.data_76_77_array_size);
                     for (int si = 0; si < tr2data.table_column_infromation[i].column_data.column_data_list.Length; si++)
                     {
                         var parent = tr2data.table_column_infromation[i].column_data.column_data_list[si];

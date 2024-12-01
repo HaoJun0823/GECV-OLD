@@ -173,6 +173,18 @@ namespace GECV_EX.Shared
             this.WriteBytes(name, data);
         }
 
+        public int WriteData(string name, short data)
+        {
+
+            byte[] b = BitConverter.GetBytes(data);
+
+            //Array.Reverse(b);
+
+            this.WriteData(name, b);
+
+            return b.Length;
+        }
+
         public int WriteData(string name, int data)
         {
 

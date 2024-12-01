@@ -223,11 +223,11 @@ namespace GECV_EX.TR2
                 booker.SetBookMark($"table_column_information_{i}_data_75", task_offset);
                 booker.WriteData($"table_column_information_{i}_data_75", tr2data.table_column_infromation[i].column_data.data_75);
                 task_offset += 1;
-                booker.SetBookMark($"table_column_information_{i}_data_76_array_size", task_offset);
-                booker.WriteData($"table_column_information_{i}_data_76_array_size", tr2data.table_column_infromation[i].column_data.data_76_array_size);
+                booker.SetBookMark($"table_column_information_{i}_data_76_77_array_size", task_offset);
+                booker.WriteData($"table_column_information_{i}_data_76_77_array_size", tr2data.table_column_infromation[i].column_data.data_76_77_array_size);
                 task_offset += 1;
                 booker.SetBookMark($"table_column_information_{i}_data_77", task_offset);
-                booker.WriteData($"table_column_information_{i}_data_77", tr2data.table_column_infromation[i].column_data.data_77);
+               // booker.WriteData($"table_column_information_{i}_data_77", tr2data.table_column_infromation[i].column_data.data_77);
                 task_offset += 1;
 
                 booker.SetBookMark($"table_column_information_{i}_data_78_7B", task_offset);

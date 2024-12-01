@@ -3,14 +3,18 @@ using GECV_EX.Utils;
 using MiniExcelLibs;
 using System.Configuration;
 using System.Data;
+using System.Reflection;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
 using System.Text;
+using System.Windows.Forms;
 
 namespace GECV_EX_TR2_Editor_GUI
 {
     public partial class Main : Form
     {
+
+        public static float FillWeight = 10f;
 
         public static DataTable System_DataTable;
         public static DataTable System_DataTable_Hex;
@@ -210,6 +214,8 @@ namespace GECV_EX_TR2_Editor_GUI
 
             dt.TableName = tr2data.table_name;
 
+            bool dialogLargeColumns = false;
+
 
 
             dt.Columns.Add("Id", typeof(int));
@@ -292,7 +298,7 @@ namespace GECV_EX_TR2_Editor_GUI
 
                 for (int si = 0; si < tr2data.column_counter.id.Length; si++)
                 {
-                    Console.WriteLine($"Debug Build Table 76:{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{si}(Array Length:{tr2data_inf.column_data.column_data_list.Length})");
+                    Console.WriteLine($"Debug:Build Table 76-77:{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{si}(Array Length:{tr2data_inf.column_data.column_data_list.Length})");
 
                     var data_arr = tr2data_inf.column_data;
 
@@ -319,9 +325,16 @@ namespace GECV_EX_TR2_Editor_GUI
                         Dulpicate_list.Add($"{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{tr2data_inf.column_data.column_type}-{tr2data.column_counter.id[si].ToString()}.");
                     }
 
-                    for (byte ssi = 0; ssi < data_arr.data_76_array_size; ssi++)
+                    if (tr2data_inf.column_data.column_data_list.Length > 2000)
                     {
-                        Console.WriteLine($"Debug Build Table 76 Data:{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{si}-{ssi}(Array Length:{data_arr.data_76_array_size})");
+                        dialogLargeColumns = true;
+                        Console.WriteLine($"BIG TR2!");
+                    }
+
+
+                    for (short ssi = 0; ssi < data_arr.data_76_77_array_size; ssi++)
+                    {
+                        Console.WriteLine($"Debug:Build Table 76-77 Data:{tr2data_inf.id}-{tr2data_inf.column_data.column_name}-{si}-{ssi}(Array Length:{data_arr.data_76_77_array_size})");
 
                         DataRow dr = GetDatRowFromTable(ref dt, tr2data_inf.id, tr2data_inf.column_data.column_name, tr2data_inf.column_data.column_type, ssi);
                         DataRow dr_hex = GetDatRowFromTable(ref dt_hex, tr2data_inf.id, tr2data_inf.column_data.column_name, tr2data_inf.column_data.column_type, ssi);
@@ -359,9 +372,10 @@ namespace GECV_EX_TR2_Editor_GUI
                         }
 
 
-
+                        Console.WriteLine($"Data loop has been done!");
                     }
 
+                    Console.WriteLine($"Header loop has been done!");
 
 
 
@@ -369,32 +383,46 @@ namespace GECV_EX_TR2_Editor_GUI
 
 
 
+                Console.WriteLine($"Table loop has been done!");
 
 
+            }
 
+            if ( dialogLargeColumns)
+            {
+                Console.WriteLine("Message big tr2.");
+                FillWeight = 1f;
+                MessageBox.Show("You are opening an oversized tr2 file, which will make the table cramped and potentially slow, I hope you get the message!", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else
+            {
+                FillWeight = 10f;
             }
 
             StringBuilder sb = new StringBuilder();
 
-            foreach (var str in Dulpicate_list) { sb.Append(str); sb.Append('\n'); };
+            foreach (var str in Dulpicate_list) { sb.Append(str); sb.Append(','); Console.WriteLine($"Append:{str} to builder."); };
 
             if (check && Dulpicate_list.Count != 0)
             {
 
-                MessageBox.Show($"There are {Dulpicate_list.Count} data is dulpicate object:\n\n{sb.ToString()}\nThe source project will merge the same data to the same address (For optimization and publishing, since the data does not need to be modified again.), which is not possible to edit in the table.\nThe editor will allocate new pointers for each data, even though they all have the same data.\nYou need to know this. ", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"There are {Dulpicate_list.Count} data is dulpicate object:\n\n({sb.ToString()})\nThe source project will merge the same data to the same address (For optimization and publishing, since the data does not need to be modified again.), which is not possible to edit in the table.\nThe editor will allocate new pointers for each data, even though they all have the same data.\nYou need to know this. ", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             }
 
 
 
 
-
+            Console.WriteLine("76-77:Working For Other Job...");
             System_DataTable = dt;
             System_DataTable_Hex = dt_hex;
         }
 
 
-        public DataRow GetDatRowFromTable(ref DataTable dt, int id, string column_name, string column_type, byte index)
+
+
+
+        public DataRow GetDatRowFromTable(ref DataTable dt, int id, string column_name, string column_type, short index)
         {
 
             //DataRow dr = dt.NewRow();
@@ -482,12 +510,30 @@ namespace GECV_EX_TR2_Editor_GUI
 
         private void RefreshDataTable()
         {
+
+            Console.WriteLine("Refresh Table.");
+
+            Type dgvType = DataGridView_Main.GetType();
+            PropertyInfo pi = dgvType.GetProperty("DoubleBuffered",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            pi.SetValue(DataGridView_Main, true, null);
+
+            DataGridView_Main.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+            DataGridView_Main.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+            DataGridView_Main.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+
+            DataGridView_Main.RowHeadersVisible = false;
+            DataGridView_Main.ColumnHeadersVisible = false;
+
+
             this.DataGridView_Main.DataSource = System_DataTable;
             this.DataGridView_Main.TopLeftHeaderCell.Value = System_DataTable.TableName;
 
+            Console.WriteLine($"Total Refresh {this.DataGridView_Main.Rows.Count}");
 
             for (int i = 0; i < this.DataGridView_Main.Rows.Count; i++)
             {
+                Console.WriteLine($"Refresh {i}/{this.DataGridView_Main.Rows.Count}");
 
                 var current_type_cell = this.DataGridView_Main.Rows[i].Cells[2];
 
@@ -510,6 +556,8 @@ namespace GECV_EX_TR2_Editor_GUI
             }
 
 
+            Console.WriteLine("Done!");
+            
 
             //foreach(var i in  this.DataGridView_Main.Columns) {
 
@@ -518,13 +566,14 @@ namespace GECV_EX_TR2_Editor_GUI
 
             //}
 
-
+            DataGridView_Main.RowHeadersVisible = true;
+            DataGridView_Main.ColumnHeadersVisible = true;
             this.DataGridView_Main.Refresh();
         }
 
         private void DataGridView_Main_ColumnAdded(object sender, DataGridViewColumnEventArgs e)
         {
-            e.Column.FillWeight = 10;
+            e.Column.FillWeight = 1f;
         }
 
         private void DataGridView_Main_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -583,7 +632,7 @@ namespace GECV_EX_TR2_Editor_GUI
                 string name = row["Name"].ToString();
 
                 string type = row["Type"].ToString();
-                byte arr_index = Convert.ToByte(row["Index"].ToString());
+                short arr_index = Convert.ToInt16(row["Index"].ToString());
                 //NEXT =4;
 
 
@@ -638,7 +687,7 @@ namespace GECV_EX_TR2_Editor_GUI
                 string name = row["Name"].ToString();
 
                 string type = row["Type"].ToString();
-                byte arr_index = Convert.ToByte(row["Index"].ToString());
+                short arr_index = Convert.ToInt16(row["Index"].ToString());
                 //NEXT =4;
 
 
@@ -799,7 +848,7 @@ namespace GECV_EX_TR2_Editor_GUI
                     int id = Convert.ToInt32(name_arr[0]);
                     string name = name_arr[1];
                     string type = name_arr[2];
-                    byte arr_index = Convert.ToByte(name_arr[3]);
+                    short arr_index = Convert.ToInt16(name_arr[3]);
                     int data_id = Convert.ToInt32(name_arr[4]);
 
                     byte[] input_data = File.ReadAllBytes(file.FullName);

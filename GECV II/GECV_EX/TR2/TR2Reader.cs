@@ -120,10 +120,10 @@ namespace GECV_EX.TR2
             public byte data_75;
 
             [XmlAttribute]
-            public byte data_76_array_size; //ARRAY
+            public short data_76_77_array_size; //ARRAY
 
-            [XmlAttribute]
-            public byte data_77;
+            //[XmlAttribute]
+            //public byte data_77;
 
             [XmlAttribute]
             public int data_78_7B;
@@ -299,7 +299,7 @@ namespace GECV_EX.TR2
         }
 
 
-        public bool SetDataByIdNameTypeArrayIndexAndDataIdWithParseStringData(int id, string name, string type, byte index, int data_id, string input_data)
+        public bool SetDataByIdNameTypeArrayIndexAndDataIdWithParseStringData(int id, string name, string type, short index, int data_id, string input_data)
         {
 
             data_id = GetColumnCounterIndexById(data_id);
@@ -383,7 +383,7 @@ namespace GECV_EX.TR2
 
 
 
-        public bool SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(int id, string name, string type, byte index, int data_id, byte[] input_data)
+        public bool SetDataByIdNameTypeArrayIndexAndDataIdWithParseBytes(int id, string name, string type, short index, int data_id, byte[] input_data)
         {
             data_id = GetColumnCounterIndexById(data_id);
 
@@ -561,14 +561,14 @@ namespace GECV_EX.TR2
                         column_data.data_70_73 = br.ReadInt32();
                         column_data.data_74 = br.ReadByte();
                         column_data.data_75 = br.ReadByte();
-                        column_data.data_76_array_size = br.ReadByte();
-                        column_data.data_77 = br.ReadByte();
+                        column_data.data_76_77_array_size = br.ReadInt16();
+                        //column_data.data_77 = br.ReadByte();
                         column_data.data_78_7B = br.ReadInt32();
                         column_data.data_7C_7F_column_data_count = br.ReadInt32();
 
 
 
-                        Console.WriteLine($"TS2 DATA COLUMN INFORMATION:\nname:{column_data.column_name}\nserial_left:{column_data.column_serial_left}\nserial_right:{column_data.column_serial_right}\n70-73:{column_data.data_70_73}\n74:{column_data.data_74}\n75:{column_data.data_75}\n76:{column_data.data_76_array_size}\n77:{column_data.data_77}\n78-7B:{column_data.data_78_7B}\n7C-7F:{column_data.data_7C_7F_column_data_count}");
+                        Console.WriteLine($"TS2 DATA COLUMN INFORMATION:\nname:{column_data.column_name}\nserial_left:{column_data.column_serial_left}\nserial_right:{column_data.column_serial_right}\n70-73:{column_data.data_70_73}\n74:{column_data.data_74}\n75:{column_data.data_75}\n76-77:{column_data.data_76_77_array_size}\n78-7B:{column_data.data_78_7B}\n7C-7F:{column_data.data_7C_7F_column_data_count}");
 
                         column_data.column_data_list = new TR2ColumnDataList[column_data.data_7C_7F_column_data_count];
 
@@ -607,7 +607,7 @@ namespace GECV_EX.TR2
                                 }
 
 
-                                column_data.column_data_list[si].column_data = new TR2ColumnDataArray[column_data.data_76_array_size];
+                                column_data.column_data_list[si].column_data = new TR2ColumnDataArray[column_data.data_76_77_array_size];
                                 Console.WriteLine($"{si + 1} Data Every Cell Have {column_data.column_data_list[si].column_data.Length} Object.");
                                 br.BaseStream.Seek(data_arr_offset, SeekOrigin.Begin);
 
