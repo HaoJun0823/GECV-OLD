@@ -3,27 +3,30 @@
 //
 //      File: qpck.bt
 //   Authors: Randerion(HaoJun0823) https://www.haojun0823.xyz/
-//   Version: 1.0
+//   Version: 1.0.1
 //   Purpose: Parse GOD EATER PC QPCK File
 //  Category: Game
 // File Mask: *.qpck
 //  ID Bytes: 37 40 28 58
 //   History: 
 //------------------------------------------------
+//Please Right Click A Variables And Click Show Local Variables!!!
 RequiresVersion( 16 );
 LittleEndian();
 FSeek(0x0);
-local uint32 cursor;
+local uint32 cursor <hidden=true>;
 
 struct{
 	uint32 QpckMagic <format=hex,fgcolor=cPurple,bgcolor=cWhite>;
 	uint32 FileCount <format=octal,fgcolor=cGreen,bgcolor=cWhite>;
-	local uint32 index = 0;
+	local uint32 index <hidden=true> = 0;
 	struct{
-		local uint32 file_index = index;
+		local uint32 file_index <name="Virtual_FileIndex"> = index;
 		uint64 offset<format=hex,fgcolor=cAqua>;
 		uint64 hash<format=hex,fgcolor=cPurple>;
 		uint32 size<format=octal,fgcolor=cYellow>;
+		local uint32 Virtual_Hex_Size<format=hex>;
+		Virtual_Hex_Size = size;
 		if (size > 0){
 			cursor = FTell();
 			FSeek(offset);
