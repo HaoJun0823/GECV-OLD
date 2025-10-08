@@ -1,0 +1,165 @@
+//------------------------------------------------
+//--- 010 Editor v16.0.2 Binary Template
+//
+//      File: pc_pres.bt
+//   Authors: Randerion(HaoJun0823) https://www.haojun0823.xyz/
+//   Version: 1.0
+//   Purpose: Parse GOD EATER PC QPCK File (From QPCK File)
+//  Category: Game
+// File Mask: *.pres
+//  ID Bytes: 50 72 65 73
+//   History: 
+//------------------------------------------------
+//Please Right Click A Variables And Click Show Local Variables!!!
+RequiresVersion( 16 );
+LittleEndian();
+FSeek(0x0);
+local uint32 cursor <hidden=true>;
+local uint32 secondary_cursor <hidden=true>;
+local uint32 third_cursor <hidden=true>;
+local uint32 fourth_cursor <hidden=true>;
+
+local uint32 global_dataset_type_count <hidden=true>;
+global_dataset_type_count = 0;
+
+enum EnumPresCountryStatus{
+	SinglePackage,MultipleCountry
+};
+
+enum EnumDataEntryType{
+	DATAENTRY_F_PACKAGED=0xF,DATAENTRY_B_VIRTUAL=0xB,DATAENTRY_0_UNKNOWN=0x0
+};
+
+enum EnumDataType{
+	DATA_RES,DATA_PRX,DATA_ASSET,DATA_UNK,DATA_CONFIG,DATA_TBL,DATA_TEXT,DATA_RTBL
+};
+
+enum EnumCountryType{
+	COUNTRY_EN,COUNTRY_FR,COUNTRY_IT,COUNTRY_DE,COUNTRY_ES,COUNTRY_RU
+};
+
+struct DataEntry(EnumDataType data_type){
+	local EnumDataType Virtual_ParentDataType = data_type;
+	local byte Virtual_FileTypeMask <format=hex>;
+	local EnumDataEntryType Virtual_FileType;
+	local uint32 Virtual_RealOffset <format=hex>;
+	uint32 Offset <format=hex,fgcolor=cBlue>;
+	Virtual_FileTypeMask =  (Offset >> 28) & 0x0F;
+	Virtual_RealOffset = Offset & 0x0FFFFFFF;
+	Virtual_FileType = DATAENTRY_0_UNKNOWN;
+	
+	if(Virtual_FileTypeMask == 0xF){
+		Virtual_FileType = DATAENTRY_F_PACKAGED;
+	}
+	if(Virtual_FileTypeMask == 0xB){
+		Virtual_FileType = DATAENTRY_B_VIRTUAL;
+	}
+	
+	uint32 PackedSize <format=hex,fgcolor=cRed>;
+	uint32 ConfigOffset <format=hex,fgcolor=cBlue>;
+	uint32 ConfigCount <fgcolor=cWhite>;
+	uint32 Unknown1 <format=hex,fgcolor=cGray>;
+	uint32 Unknown2 <format=hex,fgcolor=cGray>;
+	uint32 Unknown3 <format=hex,fgcolor=cGray>;
+	uint32 DecompressedSize <format=hex,fgcolor=cRed>;
+	
+	if(ConfigCount >0 && ConfigOffset > 0){
+		third_cursor = FTell();
+		FSeek(ConfigOffset);
+		struct{
+			uint32 ConfigDataOffset <format=hex,fgcolor=cBlue>;
+			fourth_cursor = FTell();
+			FSeek(ConfigDataOffset);
+			char ConfigDataText[] <format=hex,fgcolor=cGreen>;
+			FSeek(fourth_cursor);
+			if(FTell()%16!=0){
+				
+			}
+		} ConfigData[ConfigCount] <optimize=false,fgcolor=cWhite,bgcolor=cLtYellow>;
+		FSeek(third_cursor);
+	}
+	
+	
+	if(Virtual_FileType==DATAENTRY_F_PACKAGED){
+		local uint32 Virtual_FixedSize <comment="For TBL Resource (Virtual_FixedSize*4)"> = PackedSize;
+		if(Virtual_ParentDataType == DATA_TBL){
+			Virtual_FixedSize = Virtual_FixedSize * 4;
+		};
+		if(PackedSize>0){
+			third_cursor = FTell();
+			FSeek(Virtual_RealOffset);
+			byte EntryPackagedData[Virtual_FixedSize] <fgcolor=cWhite,bgcolor=cLtPurple>;
+			FSeek(third_cursor);
+		}
+	};
+	
+	if(Virtual_FileType==DATAENTRY_B_VIRTUAL){
+		third_cursor = FTell();
+		FSeek(Virtual_RealOffset);
+		char EntryPackagedData[] <fgcolor=cWhite,bgcolor=cLtPurple>;
+		FSeek(third_cursor);
+	};	
+	
+};
+
+struct DataSet{
+	local EnumDataType Virtual_DataType = global_dataset_type_count;
+	global_dataset_type_count = global_dataset_type_count + 1;
+	uint32 Offset <format=hex,fgcolor=cYellow>;;
+	uint32 Count <fgcolor=cGreen>;
+	secondary_cursor = FTell();
+	if(Count>0 || Offset>0){
+		FSeek(Offset);
+		DataEntry DataEntryInfo(Virtual_DataType)[Count] <optimize=false,name="DataEntry",fgcolor=cWhite,bgcolor=cLtGreen>;
+		FSeek(secondary_cursor);
+	}
+	
+};
+
+
+struct{
+	char FileMagic[4] <fgcolor=cPurple,bgcolor=cWhite>;
+	uint32 FileMagic1 <format=hex,fgcolor=cLtRed,bgcolor=cLtYellow>;
+	uint32 FileMagic2 <format=hex,fgcolor=cLtRed,bgcolor=cLtYellow>;
+	uint32 FileMagic3 <format=hex,fgcolor=cLtRed,bgcolor=cLtYellow>;
+	uint32 PresConfigLength <format=hex,fgcolor=cGreen,bgcolor=cWhite>;
+	uint64 ZeroZero <fgcolor=cGray>;
+	uint32 CountryCount <fgcolor=cAqua,bgcolor=cWhite>;
+	local uint32 Index <hidden=true> = 0;
+	local EnumPresCountryStatus Virtual_CountryStatus;
+	if(CountryCount==6){
+		Virtual_CountryStatus = MultipleCountry;
+		struct{
+			local uint32 Virtual_CountryIndex = Index;
+			local EnumCountryType Virtual_CountryType = Virtual_CountryIndex;
+			uint32 DataOffset <format=hex,fgcolor=cYellow>;
+			uint32 DataCount<fgcolor=cGreen>;
+			cursor = FTell();
+			FSeek(DataOffset);
+			DataSet DataSetInfo[8] <name="DataSet",optimize=false,fgcolor=cWhite,bgcolor=cLtRed>;
+			global_dataset_type_count = 0;
+			FSeek(cursor);
+			Index = Index + 1;
+		} CountryInfo[CountryCount] <optimize=false,fgcolor=cWhite,bgcolor=cLtBlue>;
+	}
+	else{
+		Virtual_CountryStatus = SinglePackage;
+		DataSet DataSetInfo[8] <optimize=false,fgcolor=cWhite,bgcolor=cLtRed>;	
+		global_dataset_type_count = 0;
+	}
+	
+	
+} PCPresFile;
+
+
+
+
+
+
+
+
+
+
+
+
+//------------------------------------------------
