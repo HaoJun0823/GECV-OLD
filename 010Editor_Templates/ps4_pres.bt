@@ -3,11 +3,11 @@
 //
 //      File: ps4_pres.bt
 //   Authors: Randerion(HaoJun0823) https://www.haojun0823.xyz/
-//   Version: 1.0
+//   Version: 1.1
 //   Purpose: Parse GOD EATER PS4 RES File (From PSV) (This Template Branch From PSV Version)
 //  Category: Game
 // File Mask: *.pres
-//  ID Bytes: 50 72 65 73
+//  ID Bytes: 50 72 65 73 00 00 00 00
 //   History: 
 //------------------------------------------------
 //Please Right Click A Variables And Click Show Local Variables!!!
@@ -24,7 +24,7 @@ global_dataset_type_count = 0;
 
 
 enum EnumDataEntryType{
-	DATAENTRY_F_PACKAGED=0xF,DATAENTRY_B_VIRTUAL=0xB,DATAENTRY_0_UNKNOWN=0x0,DATAENTRY_C_UPDATE_PACKAGED=0xC,DATAENTRY_3_OTHER_PACKAGED=0x3
+	DATAENTRY_F_PACKAGED=0xF,DATAENTRY_B_VIRTUAL=0xB,DATAENTRY_0_UNKNOWN=0x0,DATAENTRY_C_UPDATE_PACKAGED=0xC,DATAENTRY_3_OTHER_PACKAGED=0x3,DATAENTRY_4_PACKAGE_MUL_800=0x4,DATAENTRY_5_DATA_RDP=0x5,DATAENTRY_6_PATCH_RDP=0x6
 };
 
 enum EnumDataType{
@@ -57,6 +57,18 @@ struct DataEntry(EnumDataType data_type){
 	if(Virtual_FileTypeMask == 0x3){
 		Virtual_FileType = DATAENTRY_3_OTHER_PACKAGED;
 	}	
+	
+	if(Virtual_FileTypeMask == 0x4){
+		Virtual_FileType = DATAENTRY_4_PACKAGE_MUL_800;
+	}	
+	
+	if(Virtual_FileTypeMask == 0x5){
+		Virtual_FileType = DATAENTRY_5_DATA_RDP;
+	}	
+	
+	if(Virtual_FileTypeMask == 0x6){
+		Virtual_FileType = DATAENTRY_6_PATCH_RDP;
+	}				
 	
 	uint64 PackedSize <format=hex,fgcolor=cRed>;
 	uint64 ConfigOffset <format=hex,fgcolor=cBlue>;
@@ -100,7 +112,7 @@ struct DataEntry(EnumDataType data_type){
 		FSeek(third_cursor);
 	};	
 	
-	if(Virtual_FileType==DATAENTRY_3_OTHER_PACKAGED){
+	if(Virtual_FileType==DATAENTRY_3_OTHER_PACKAGED || Virtual_FileType==DATAENTRY_4_PACKAGE_MUL_800 || Virtual_FileType==DATAENTRY_5_DATA_RDP || Virtual_FileType==DATAENTRY_6_PATCH_RDP){
 		
 	}
 	
