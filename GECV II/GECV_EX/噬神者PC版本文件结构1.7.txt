@@ -20,7 +20,7 @@ PRES PC结构：
 	Pres国家(country)结构（条件：如果country_count不等于1的时候才存在，如果country_count等于1，从这里开始直接是dataset，也就是说country不存在）
 		dataset_offset:集合(dataset)信息的地址指针。
 		dataset_length:整个集合的大小。
-	Pres国家(country)结构结束（大小0或者(4+4)*6=48），如果country不存在，那么数量和指针都是0。
+	Pres国家(country)结构结束（大小0或者(4+4)*6=48），如果country不存在，那么数量和指针都是0，并且立刻开始读取dataset。
 		
 		=从这里开始为第每个国家的dataset=
 		Pres集合(dataset)结构：总是有8个，分别是res，prx,asset,unk,conf,tbl,text,rtbl
@@ -42,12 +42,12 @@ PRES PC结构：
 				unk3
 				usize：如果文件是blz4压缩，那么这个是解压后的大小，如果不是blz4，那么和csize一样。(这个地方是给BLZ2使用的)
 				
-				*file_data：不是游戏内的数据！如果*real_offset=F，从real_offset取csize大小的文件（如果dataset=tbl，那么csize需要*6，csize*6）
+				*file_data：不是游戏内的数据！如果*real_offset=F，从real_offset取csize大小的文件（如果dataset=tbl，那么csize需要*6，csize*6[2025.10.8：存疑，目前来看*4即可]）
 				*B_file_name：不是游戏内的数据！如果*real_offset=B，从real_offset读取UTF8编码的字符串直到00结束。
 				
 			Pres集合的数据区(data)结束：每个data大小为4+4+4+4+4+4+4+4=32。
 			
-			Pres集合信息的数据（data_conf）：
+			Pres集合信息的数据（data_conf）】：
 			
 				（如果是第六集合，第七集合，(dataset=tbl,dataset=text)，且data的offset为F（真实引用））：这里的文件不可被重复引用，每个国家的语言是单独的。
 					*file_data：是上文所提到的*file_data，需要用0对齐文件大小为16的整数倍，如果file_data能够是16的整数倍，需要补16个0。这里的地址是*real_offset的值，offset= 'F' + *real_offset。
@@ -65,7 +65,7 @@ PRES PC结构：
 				（如果*offset_type='B'）：这里的文件不可被重复引用，每个国家的语言是单独的。
 					*B_file_name：是上文提到的*B_file_name，需要用0对齐文件大小为16的整数倍，如果file_data能够是16的整数倍，需要补16个0。这里的地址是*real_offset的值，offset= 'B' + *real_offset。
 				
-				
+			
 				
 		=从这里为第每个国家的dataset的结束= pres_config_length = 这里的指针 这里应该是16的整数倍。
 	
