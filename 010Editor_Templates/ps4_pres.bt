@@ -1,0 +1,153 @@
+//------------------------------------------------
+//--- 010 Editor v16.0.2 Binary Template
+//
+//      File: ps4_pres.bt
+//   Authors: Randerion(HaoJun0823) https://www.haojun0823.xyz/
+//   Version: 1.0
+//   Purpose: Parse GOD EATER PS4 RES File (From PSV) (This Template Branch From PSV Version)
+//  Category: Game
+// File Mask: *.pres
+//  ID Bytes: 50 72 65 73
+//   History: 
+//------------------------------------------------
+//Please Right Click A Variables And Click Show Local Variables!!!
+RequiresVersion( 16 );
+LittleEndian();
+FSeek(0x0);
+local uint64 cursor <hidden=true>;
+local uint64 secondary_cursor <hidden=true>;
+local uint64 third_cursor <hidden=true>;
+local uint64 fourth_cursor <hidden=true>;
+
+local uint64 global_dataset_type_count <hidden=true>;
+global_dataset_type_count = 0;
+
+
+enum EnumDataEntryType{
+	DATAENTRY_F_PACKAGED=0xF,DATAENTRY_B_VIRTUAL=0xB,DATAENTRY_0_UNKNOWN=0x0,DATAENTRY_C_UPDATE_PACKAGED=0xC,DATAENTRY_3_OTHER_PACKAGED=0x3
+};
+
+enum EnumDataType{
+	DATA_RES,DATA_PRX,DATA_ASSET,DATA_UNK,DATA_CONFIG,DATA_TBL,DATA_TEXT,DATA_RTBL
+};
+
+
+struct DataEntry(EnumDataType data_type){
+	local EnumDataType Virtual_ParentDataType = data_type;
+	local byte Virtual_FileTypeMask <format=hex>;
+	local EnumDataEntryType Virtual_FileType;
+	local uint64 Virtual_RealOffset <format=hex>;
+	uint64 Offset <format=hex,fgcolor=cBlue>;
+	Virtual_FileTypeMask =  (Offset >> 28) & 0x0F;
+	Virtual_RealOffset = Offset & 0x0FFFFFFF;
+	Virtual_FileType = DATAENTRY_0_UNKNOWN;
+	
+	
+	if(Virtual_FileTypeMask == 0xF){
+		Virtual_FileType = DATAENTRY_F_PACKAGED;
+	}
+	
+	if(Virtual_FileTypeMask == 0xC){
+		Virtual_FileType = DATAENTRY_C_UPDATE_PACKAGED;
+	}
+	if(Virtual_FileTypeMask == 0xB){
+		Virtual_FileType = DATAENTRY_B_VIRTUAL;
+	}
+	
+	if(Virtual_FileTypeMask == 0x3){
+		Virtual_FileType = DATAENTRY_3_OTHER_PACKAGED;
+	}	
+	
+	uint64 PackedSize <format=hex,fgcolor=cRed>;
+	uint64 ConfigOffset <format=hex,fgcolor=cBlue>;
+	uint64 ConfigCount <fgcolor=cWhite>;
+	uint64 Unknown1 <format=hex,fgcolor=cGray>;
+	uint64 Unknown2 <format=hex,fgcolor=cGray>;
+	uint64 Unknown3 <format=hex,fgcolor=cGray>;
+	uint64 DecompressedSize <format=hex,fgcolor=cRed>;
+	
+	if(ConfigCount >0 && ConfigOffset > 0){
+		third_cursor = FTell();
+		FSeek(ConfigOffset);
+		struct{
+			uint64 ConfigDataOffset <format=hex,fgcolor=cBlue>;
+			fourth_cursor = FTell();
+			FSeek(ConfigDataOffset);
+			char ConfigDataText[] <format=hex,fgcolor=cGreen>;
+			FSeek(fourth_cursor);
+		} ConfigData[ConfigCount] <optimize=false,fgcolor=cWhite,bgcolor=cLtYellow>;
+		FSeek(third_cursor);
+	}
+	
+	
+	if(Virtual_FileType==DATAENTRY_F_PACKAGED || Virtual_FileType==DATAENTRY_C_UPDATE_PACKAGED){
+		local uint64 Virtual_FixedSize <comment="For TBL Resource (Virtual_FixedSize*4)"> = PackedSize;
+		if(Virtual_ParentDataType == DATA_TBL){
+			Virtual_FixedSize = Virtual_FixedSize * 4;
+		};
+		if(PackedSize>0){
+			third_cursor = FTell();
+			FSeek(Virtual_RealOffset);
+			byte EntryPackagedData[Virtual_FixedSize] <fgcolor=cWhite,bgcolor=cLtPurple>;
+			FSeek(third_cursor);
+		}
+	};
+	
+	if(Virtual_FileType==DATAENTRY_B_VIRTUAL){
+		third_cursor = FTell();
+		FSeek(Virtual_RealOffset);
+		char EntryPackagedData[] <fgcolor=cWhite,bgcolor=cLtPurple>;
+		FSeek(third_cursor);
+	};	
+	
+	if(Virtual_FileType==DATAENTRY_3_OTHER_PACKAGED){
+		
+	}
+	
+	if(Virtual_FileType==DATAENTRY_0_UNKNOWN){
+		
+	}
+	
+};
+
+struct DataSet{
+	local EnumDataType Virtual_DataType = global_dataset_type_count;
+	global_dataset_type_count = global_dataset_type_count + 1;
+	uint64 Offset <format=hex,fgcolor=cYellow>;;
+	uint64 Count <fgcolor=cGreen>;
+	secondary_cursor = FTell();
+	if(Count>0 || Offset>0){
+		FSeek(Offset);
+		DataEntry DataEntryInfo(Virtual_DataType)[Count] <optimize=false,name="DataEntry",fgcolor=cWhite,bgcolor=cLtGreen>;
+		FSeek(secondary_cursor);
+	}
+	
+};
+
+
+struct{
+	char FileMagic[8] <fgcolor=cPurple,bgcolor=cWhite>;
+	uint64 FileMagic1 <format=hex,fgcolor=cLtRed,bgcolor=cLtYellow>;
+	uint32 FileMagic2 <format=hex,fgcolor=cLtRed,bgcolor=cLtYellow>;
+	uint32 FileMagic3 <format=hex,fgcolor=cLtRed,bgcolor=cLtYellow>;
+	uint64 PresConfigLength <format=hex,fgcolor=cGreen,bgcolor=cWhite>;
+	uint64 UpdateDataOffset <format=hex,fgcolor=cRed,bgcolor=cWhite>;
+	uint64 UpdateDataSize <fgcolor=cRed,bgcolor=cGreen>;
+	DataSet DataSetInfo[8] <optimize=false,fgcolor=cWhite,bgcolor=cLtRed>;	
+	global_dataset_type_count = 0;
+	
+	
+} PS4PresFile;
+
+
+
+
+
+
+
+
+
+
+
+
+//------------------------------------------------
