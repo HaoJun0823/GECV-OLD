@@ -3,7 +3,7 @@
 //
 //      File: ps4_pres.bt
 //   Authors: Randerion(HaoJun0823) https://www.haojun0823.xyz/
-//   Version: 1.1
+//   Version: 1.2
 //   Purpose: Parse GOD EATER PS4 RES File (From PSV) (This Template Branch From PSV Version)
 //  Category: Game
 // File Mask: *.pres
@@ -75,8 +75,9 @@ struct DataEntry(EnumDataType data_type){
 	uint64 ConfigCount <fgcolor=cWhite>;
 	uint64 Unknown1 <format=hex,fgcolor=cGray>;
 	uint64 Unknown2 <format=hex,fgcolor=cGray>;
-	uint64 Unknown3 <format=hex,fgcolor=cGray>;
+	uint32 Unknown3 <format=hex,fgcolor=cGray>;
 	uint64 DecompressedSize <format=hex,fgcolor=cRed>;
+	uint32 Unknown4 <format=hex,fgcolor=cGray>;
 	
 	if(ConfigCount >0 && ConfigOffset > 0){
 		third_cursor = FTell();
